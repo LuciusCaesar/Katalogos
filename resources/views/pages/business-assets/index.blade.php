@@ -39,7 +39,9 @@
                         @foreach ($businessAssets as $asset)
                             <tr class="hover:bg-gray-50 dark:hover:bg-zinc-700">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                    {{ $asset->name }}
+                                    <a href="{{ route('web.business-assets.show', $asset) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
+                                        {{ $asset->name }}
+                                    </a>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                     {{ $asset->definition ?? '-' }}

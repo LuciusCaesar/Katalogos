@@ -18,4 +18,14 @@ class BusinessAssetController extends Controller
 
         return view('pages.business-assets.index', compact('businessAssets'));
     }
+
+    /**
+     * Display the specified business asset.
+     */
+    public function show(BusinessAsset $businessAsset)
+    {
+        $businessAsset->load(['dataInitiative', 'dataSteward', 'dataOwner']);
+
+        return view('pages.business-assets.show', compact('businessAsset'));
+    }
 }
