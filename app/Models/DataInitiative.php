@@ -11,4 +11,9 @@ class DataInitiative extends Model
     use HasFactory;
 
     protected $fillable = ['code', 'label', 'description'];
+
+    public function businessAssets()
+    {
+        return $this->hasMany(BusinessAsset::class);
+    }
 }
