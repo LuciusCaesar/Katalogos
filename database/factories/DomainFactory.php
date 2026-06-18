@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use App\Models\BusinessAsset;
+use App\Models\Domain;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<BusinessAsset>
+ * @extends Factory<Domain>
  */
-class BusinessAssetFactory extends Factory
+class DomainFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -19,9 +19,7 @@ class BusinessAssetFactory extends Factory
     {
         return [
             'name' => $this->faker->word(),
-            'definition' => $this->faker->sentence(),
-            'data_initiative_id' => \App\Models\DataInitiative::factory(),
-            'domain_id' => \App\Models\Domain::factory(),
+            'description' => $this->faker->sentence(),
         ];
     }
 }

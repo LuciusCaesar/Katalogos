@@ -19,6 +19,26 @@
             
             <!-- Right column (1/3 width) - info cards -->
             <div class="lg:col-span-1 space-y-4">
+                <!-- Domain Card -->
+                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        {{ __('Domain') }}
+                    </h3>
+                    <p class="mt-2 text-gray-900 dark:text-gray-100">
+                        {{ $businessAsset->domain?->name ?? '-' }}
+                    </p>
+                </div>
+                
+                <!-- Data Initiative Card -->
+                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        {{ __('Data Initiative') }}
+                    </h3>
+                    <p class="mt-2 text-gray-900 dark:text-gray-100">
+                        {{ $businessAsset->dataInitiative?->label ?? '-' }}
+                    </p>
+                </div>
+                
                 <!-- Data Steward Card -->
                 <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
                     <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -36,16 +56,6 @@
                     </h3>
                     <p class="mt-2 text-gray-900 dark:text-gray-100">
                         {{ $businessAsset->dataOwner()->first()?->name ?? '-' }}
-                    </p>
-                </div>
-                
-                <!-- Data Initiative Card -->
-                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {{ __('Data Initiative') }}
-                    </h3>
-                    <p class="mt-2 text-gray-900 dark:text-gray-100">
-                        {{ $businessAsset->dataInitiative?->label ?? '-' }}
                     </p>
                 </div>
             </div>

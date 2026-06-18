@@ -12,7 +12,7 @@ class BusinessAssetController extends Controller
      */
     public function index(Request $request)
     {
-        $businessAssets = BusinessAsset::with(['dataInitiative', 'dataSteward', 'dataOwner'])
+        $businessAssets = BusinessAsset::with(['dataInitiative', 'domain', 'dataSteward', 'dataOwner'])
             ->latest()
             ->paginate(10);
 
@@ -24,7 +24,7 @@ class BusinessAssetController extends Controller
      */
     public function show(BusinessAsset $businessAsset)
     {
-        $businessAsset->load(['dataInitiative', 'dataSteward', 'dataOwner']);
+        $businessAsset->load(['dataInitiative', 'domain', 'dataSteward', 'dataOwner']);
 
         return view('pages.business-assets.show', compact('businessAsset'));
     }

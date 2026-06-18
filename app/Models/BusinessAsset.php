@@ -13,11 +13,17 @@ class BusinessAsset extends Model
         'name',
         'definition',
         'data_initiative_id',
+        'domain_id',
     ];
 
     public function dataInitiative()
     {
         return $this->belongsTo(DataInitiative::class);
+    }
+
+    public function domain()
+    {
+        return $this->belongsTo(Domain::class);
     }
 
     /**
