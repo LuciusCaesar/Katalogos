@@ -12,6 +12,9 @@ class Domain extends Model
 
     protected $fillable = ['name', 'description'];
 
+    /**
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\HasMany<BusinessAsset, $this>
+     */
     public function businessAssets()
     {
         return $this->hasMany(BusinessAsset::class);

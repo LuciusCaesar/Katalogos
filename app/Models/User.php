@@ -68,6 +68,8 @@ class User extends Authenticatable implements PasskeyUser
 
     /**
      * Get all role assignments for this user.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\HasMany<RoleAssignment, $this>
      */
     public function roleAssignments()
     {
@@ -76,6 +78,8 @@ class User extends Authenticatable implements PasskeyUser
 
     /**
      * Get all roles assigned to this user.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<Role, $this, RoleAssignment>
      */
     public function roles()
     {
@@ -86,6 +90,8 @@ class User extends Authenticatable implements PasskeyUser
 
     /**
      * Get all DataInitiatives where this user has a role.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<DataInitiative, $this, RoleAssignment>
      */
     public function dataInitiatives()
     {
@@ -101,6 +107,8 @@ class User extends Authenticatable implements PasskeyUser
 
     /**
      * Get all BusinessAssets where this user has a role.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<BusinessAsset, $this, RoleAssignment>
      */
     public function businessAssets()
     {
@@ -117,14 +125,10 @@ class User extends Authenticatable implements PasskeyUser
     /**
      * Check if the user has a specific role on a specific entity.
      */
-    public function hasRoleOn(string $roleName, $entity): bool
+    public function hasRoleOn(string $roleName, Model $entity): bool
     {
-        if (! $entity instanceof Model) {
-            return false;
-        }
-
         return $this->roleAssignments()
-            ->where('roleable_id', $entity->id)
+            ->where('roleable_id', $entity->id) // @phpstan-ignore-line
             ->where('roleable_type', $entity::class)
             ->whereHas('role', fn ($query) => $query->where('name', $roleName))
             ->exists();
@@ -133,7 +137,7 @@ class User extends Authenticatable implements PasskeyUser
     /**
      * Check if the user is a Data Steward for the given entity.
      */
-    public function isDataStewardFor($entity): bool
+    public function isDataStewardFor(Model $entity): bool
     {
         return $this->hasRoleOn('Data Steward', $entity);
     }
@@ -141,7 +145,7 @@ class User extends Authenticatable implements PasskeyUser
     /**
      * Check if the user is a Data Owner for the given entity.
      */
-    public function isDataOwnerFor($entity): bool
+    public function isDataOwnerFor(Model $entity): bool
     {
         return $this->hasRoleOn('Data Owner', $entity);
     }

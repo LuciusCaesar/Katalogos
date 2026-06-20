@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\RoleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,12 +13,15 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Role extends Model
 {
+    /** @use HasFactory<RoleFactory> */
     use HasFactory;
 
     protected $fillable = ['name', 'description'];
 
     /**
      * Get the users that have this role assigned.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, $this, RoleAssignment>
      */
     public function users()
     {
@@ -28,6 +32,8 @@ class Role extends Model
 
     /**
      * Get the data initiatives where this role is assigned.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<DataInitiative, $this, RoleAssignment>
      */
     public function dataInitiatives()
     {
@@ -43,6 +49,8 @@ class Role extends Model
 
     /**
      * Get the business assets where this role is assigned.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<BusinessAsset, $this, RoleAssignment>
      */
     public function businessAssets()
     {

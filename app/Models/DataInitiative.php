@@ -2,16 +2,20 @@
 
 namespace App\Models;
 
+use Database\Factories\DataInitiativeFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class DataInitiative extends Model
 {
-    /** @use HasFactory<\Database\Factories\DataInitiativeFactory> */
+    /** @use HasFactory<DataInitiativeFactory> */
     use HasFactory;
 
     protected $fillable = ['code', 'label', 'description'];
 
+    /**
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\HasMany<BusinessAsset, $this>
+     */
     public function businessAssets()
     {
         return $this->hasMany(BusinessAsset::class);
@@ -19,6 +23,8 @@ class DataInitiative extends Model
 
     /**
      * Get all role assignments for this data initiative.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\MorphMany<RoleAssignment, $this>
      */
     public function roleAssignments()
     {
@@ -27,6 +33,8 @@ class DataInitiative extends Model
 
     /**
      * Get all users assigned to this data initiative with any role.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, $this, RoleAssignment>
      */
     public function users()
     {
@@ -42,6 +50,8 @@ class DataInitiative extends Model
 
     /**
      * Get all roles assigned to this data initiative.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<Role, $this, RoleAssignment>
      */
     public function roles()
     {
@@ -57,6 +67,8 @@ class DataInitiative extends Model
 
     /**
      * Get the Data Steward for this data initiative.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, $this, RoleAssignment>
      */
     public function dataSteward()
     {
@@ -68,6 +80,8 @@ class DataInitiative extends Model
 
     /**
      * Get the Data Owner for this data initiative.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, $this, RoleAssignment>
      */
     public function dataOwner()
     {

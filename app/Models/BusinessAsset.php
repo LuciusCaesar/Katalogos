@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\BusinessAssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class BusinessAsset extends Model
 {
+    /** @use HasFactory<BusinessAssetFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -16,11 +18,17 @@ class BusinessAsset extends Model
         'domain_id',
     ];
 
+    /**
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsTo<DataInitiative, $this>
+     */
     public function dataInitiative()
     {
         return $this->belongsTo(DataInitiative::class);
     }
 
+    /**
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsTo<Domain, $this>
+     */
     public function domain()
     {
         return $this->belongsTo(Domain::class);
@@ -28,6 +36,8 @@ class BusinessAsset extends Model
 
     /**
      * Get all role assignments for this business asset.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\MorphMany<RoleAssignment, $this>
      */
     public function roleAssignments()
     {
@@ -36,6 +46,8 @@ class BusinessAsset extends Model
 
     /**
      * Get all users assigned to this business asset with any role.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, $this, RoleAssignment>
      */
     public function users()
     {
@@ -51,6 +63,8 @@ class BusinessAsset extends Model
 
     /**
      * Get all roles assigned to this business asset.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<Role, $this, RoleAssignment>
      */
     public function roles()
     {
@@ -66,6 +80,8 @@ class BusinessAsset extends Model
 
     /**
      * Get the Data Steward for this business asset.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, $this, RoleAssignment>
      */
     public function dataSteward()
     {
@@ -77,6 +93,8 @@ class BusinessAsset extends Model
 
     /**
      * Get the Data Owner for this business asset.
+     *
+     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, $this, RoleAssignment>
      */
     public function dataOwner()
     {

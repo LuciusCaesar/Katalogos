@@ -51,7 +51,7 @@ class BusinessAssetController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(BusinessAsset $businessAsset)
+    public function destroy(BusinessAsset $businessAsset): JsonResponse
     {
         $businessAsset->delete();
 

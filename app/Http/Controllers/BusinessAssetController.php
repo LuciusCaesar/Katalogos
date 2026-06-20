@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\BusinessAsset;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class BusinessAssetController extends Controller
 {
     /**
      * Display a listing of the business assets.
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $businessAssets = BusinessAsset::with(['dataInitiative', 'domain', 'dataSteward', 'dataOwner'])
             ->latest()
@@ -22,7 +23,7 @@ class BusinessAssetController extends Controller
     /**
      * Display the specified business asset.
      */
-    public function show(BusinessAsset $businessAsset)
+    public function show(BusinessAsset $businessAsset): View
     {
         $businessAsset->load(['dataInitiative', 'domain', 'dataSteward', 'dataOwner']);
 
