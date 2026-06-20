@@ -2,4 +2,19 @@
 name = "laravel-boost"
 transport = "stdio"
 command = "php"
-args = ["artisan", "boost:mcp"]
+args = [
+    "artisan",
+    "boost:mcp",
+]
+
+[tools.write_file]
+permission = "always"
+
+[tools.edit]
+permission = "always"
+
+[tools.bash]
+allowlist = [
+    "cd",
+    "php",
+]

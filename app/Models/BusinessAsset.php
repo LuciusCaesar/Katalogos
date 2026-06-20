@@ -123,6 +123,21 @@ class BusinessAsset extends Model
     }
 
     /**
+     * Get all data issues associated with this business asset.
+     *
+     * @return BelongsToMany<DataIssue, $this, business_asset_data_issue>
+     */
+    public function dataIssues(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            DataIssue::class,
+            'business_asset_data_issue',
+            'business_asset_id',
+            'data_issue_id'
+        );
+    }
+
+    /**
      * Remove a role assignment from a user for this business asset.
      */
     public function removeRoleFromUser(User $user, Role $role): bool

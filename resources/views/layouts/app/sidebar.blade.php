@@ -21,6 +21,9 @@
                     <flux:sidebar.item icon="folder" :href="route('web.domains.index')" :current="request()->routeIs('web.domains.*')" wire:navigate>
                         {{ __('Domains') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="exclamation-triangle" :href="route('web.data-issues.index')" :current="request()->routeIs('web.data-issues.*')" wire:navigate>
+                        {{ __('Data Issues') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
