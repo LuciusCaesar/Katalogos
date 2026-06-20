@@ -16,6 +16,7 @@ permission = "always"
 [tools.bash]
 allowlist = [
     "cd",
+    "composer types:check",
     "find",
     "git status",
     "head",

@@ -125,7 +125,7 @@ class BusinessAsset extends Model
     /**
      * Get all data issues associated with this business asset.
      *
-     * @return BelongsToMany<DataIssue, $this, business_asset_data_issue>
+     * @return BelongsToMany<DataIssue, $this>
      */
     public function dataIssues(): BelongsToMany
     {

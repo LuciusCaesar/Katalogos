@@ -21,14 +21,14 @@ enum RootCauseDimension: string
     /**
      * Get all dimension options for select dropdowns.
      *
-     * @return array<self, string>
+     * @return array<string, string>
      */
     public static function options(): array
     {
         return [
-            self::Process => __('Process'),
-            self::People => __('People'),
-            self::Tool => __('Tool'),
+            'Process' => __('Process'),
+            'People' => __('People'),
+            'Tool' => __('Tool'),
         ];
     }
 }

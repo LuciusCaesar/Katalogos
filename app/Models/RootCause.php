@@ -26,7 +26,7 @@ class RootCause extends Model
     /**
      * Get all data issues associated with this root cause.
      *
-     * @return BelongsToMany<DataIssue, $this, data_issue_root_cause>
+     * @return BelongsToMany<DataIssue, $this>
      */
     public function dataIssues(): BelongsToMany
     {

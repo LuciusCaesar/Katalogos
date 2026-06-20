@@ -20,7 +20,7 @@ class DataIssue extends Model
     /**
      * Get all business assets associated with this data issue.
      *
-     * @return BelongsToMany<BusinessAsset, $this, business_asset_data_issue>
+     * @return BelongsToMany<BusinessAsset, $this>
      */
     public function businessAssets(): BelongsToMany
     {
@@ -35,7 +35,7 @@ class DataIssue extends Model
     /**
      * Get all root causes associated with this data issue.
      *
-     * @return BelongsToMany<RootCause, $this, data_issue_root_cause>
+     * @return BelongsToMany<RootCause, $this>
      */
     public function rootCauses(): BelongsToMany
     {
