@@ -31,4 +31,19 @@ class DataIssue extends Model
             'business_asset_id'
         );
     }
+
+    /**
+     * Get all root causes associated with this data issue.
+     *
+     * @return BelongsToMany<RootCause, $this, data_issue_root_cause>
+     */
+    public function rootCauses(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            RootCause::class,
+            'data_issue_root_cause',
+            'data_issue_id',
+            'root_cause_id'
+        );
+    }
 }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\BusinessAssetController;
 use App\Http\Controllers\DataIssueController;
 use App\Http\Controllers\DomainController;
+use App\Http\Controllers\RootCauseController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
@@ -32,6 +33,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('data-issues/{dataIssue}/edit', [DataIssueController::class, 'edit'])->name('web.data-issues.edit');
     Route::put('data-issues/{dataIssue}', [DataIssueController::class, 'update'])->name('web.data-issues.update');
     Route::delete('data-issues/{dataIssue}', [DataIssueController::class, 'destroy'])->name('web.data-issues.destroy');
+
+    Route::get('root-causes', [RootCauseController::class, 'index'])->name('web.root-causes.index');
+    Route::get('root-causes/create', [RootCauseController::class, 'create'])->name('web.root-causes.create');
+    Route::post('root-causes', [RootCauseController::class, 'store'])->name('web.root-causes.store');
+    Route::get('root-causes/{rootCause}', [RootCauseController::class, 'show'])->name('web.root-causes.show');
+    Route::get('root-causes/{rootCause}/edit', [RootCauseController::class, 'edit'])->name('web.root-causes.edit');
+    Route::put('root-causes/{rootCause}', [RootCauseController::class, 'update'])->name('web.root-causes.update');
+    Route::delete('root-causes/{rootCause}', [RootCauseController::class, 'destroy'])->name('web.root-causes.destroy');
 });
 
 require __DIR__.'/settings.php';

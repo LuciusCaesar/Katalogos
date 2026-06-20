@@ -16,5 +16,11 @@ permission = "always"
 [tools.bash]
 allowlist = [
     "cd",
+    "find",
+    "git status",
+    "head",
+    "ls",
+    "mkdir",
     "php",
+    "vendor/bin/pint",
 ]

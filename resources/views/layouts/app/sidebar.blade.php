@@ -24,6 +24,9 @@
                     <flux:sidebar.item icon="exclamation-triangle" :href="route('web.data-issues.index')" :current="request()->routeIs('web.data-issues.*')" wire:navigate>
                         {{ __('Data Issues') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="puzzle-piece" :href="route('web.root-causes.index')" :current="request()->routeIs('web.root-causes.*')" wire:navigate>
+                        {{ __('Root Causes') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
