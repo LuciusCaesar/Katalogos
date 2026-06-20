@@ -1,0 +1,5 @@
+[[mcp_servers]]
+name = "laravel-boost"
+transport = "stdio"
+command = "php"
+args = ["artisan", "boost:mcp"]
