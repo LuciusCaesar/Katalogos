@@ -13,7 +13,7 @@ beforeEach(function () {
 
 it('lists all data initiatives', function () {
     Sanctum::actingAs($this->user);
-    
+
     DataInitiative::factory()->count(3)->create();
 
     $response = $this->getJson('/api/v1/data-initiatives');
@@ -24,7 +24,7 @@ it('lists all data initiatives', function () {
 
 it('creates a data initiative', function () {
     Sanctum::actingAs($this->user);
-    
+
     $data = [
         'code' => 'TEST-001',
         'label' => 'Test Initiative',
@@ -41,7 +41,7 @@ it('creates a data initiative', function () {
 
 it('validates create request', function () {
     Sanctum::actingAs($this->user);
-    
+
     $response = $this->postJson('/api/v1/data-initiatives', []);
 
     $response->assertStatus(422)
@@ -61,7 +61,7 @@ it('shows a data initiative', function () {
 
 it('updates a data initiative', function () {
     Sanctum::actingAs($this->user);
-    
+
     $dataInitiative = DataInitiative::factory()->create();
 
     $updatedData = [

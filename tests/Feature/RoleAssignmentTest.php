@@ -5,6 +5,7 @@ use App\Models\DataInitiative;
 use App\Models\Role;
 use App\Models\RoleAssignment;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 
 it('can create roles', function () {
     $role = Role::factory()->create([
@@ -179,7 +180,7 @@ it('prevents duplicate role assignments', function () {
 
     // Second assignment of same role to same user should fail due to unique constraint
     expect(fn () => $initiative->assignRoleToUser($user, $stewardRole))
-        ->toThrow(\Illuminate\Database\QueryException::class);
+        ->toThrow(QueryException::class);
 });
 
 it('user can have different roles on different entities', function () {
@@ -258,7 +259,7 @@ it('prevents multiple users from having the same role on data initiative', funct
 
     // Second assignment of same role to different user should fail
     expect(fn () => $initiative->assignRoleToUser($user2, $stewardRole))
-        ->toThrow(\Illuminate\Database\QueryException::class);
+        ->toThrow(QueryException::class);
 });
 
 it('prevents multiple users from having the same role on business asset', function () {
@@ -273,7 +274,7 @@ it('prevents multiple users from having the same role on business asset', functi
 
     // Second assignment of same role to different user should fail
     expect(fn () => $asset->assignRoleToUser($user2, $ownerRole))
-        ->toThrow(\Illuminate\Database\QueryException::class);
+        ->toThrow(QueryException::class);
 });
 
 it('ensures only one data steward per business asset', function () {
@@ -284,15 +285,15 @@ it('ensures only one data steward per business asset', function () {
 
     // Assign first steward
     $asset->assignRoleToUser($user1, $stewardRole);
-    
+
     // Verify only one steward
     expect($asset->dataSteward()->count())->toBe(1);
     expect($asset->dataSteward()->first()?->name)->toBe('Steward 1');
 
     // Try to assign second steward - should fail
     expect(fn () => $asset->assignRoleToUser($user2, $stewardRole))
-        ->toThrow(\Illuminate\Database\QueryException::class);
-    
+        ->toThrow(QueryException::class);
+
     // Still only one steward
     expect($asset->fresh()->dataSteward()->count())->toBe(1);
     expect($asset->fresh()->dataSteward()->first()?->name)->toBe('Steward 1');
@@ -306,15 +307,15 @@ it('ensures only one data owner per business asset', function () {
 
     // Assign first owner
     $asset->assignRoleToUser($user1, $ownerRole);
-    
+
     // Verify only one owner
     expect($asset->dataOwner()->count())->toBe(1);
     expect($asset->dataOwner()->first()?->name)->toBe('Owner 1');
 
     // Try to assign second owner - should fail
     expect(fn () => $asset->assignRoleToUser($user2, $ownerRole))
-        ->toThrow(\Illuminate\Database\QueryException::class);
-    
+        ->toThrow(QueryException::class);
+
     // Still only one owner
     expect($asset->fresh()->dataOwner()->count())->toBe(1);
     expect($asset->fresh()->dataOwner()->first()?->name)->toBe('Owner 1');
@@ -328,15 +329,15 @@ it('ensures only one data steward per data initiative', function () {
 
     // Assign first steward
     $initiative->assignRoleToUser($user1, $stewardRole);
-    
+
     // Verify only one steward
     expect($initiative->dataSteward()->count())->toBe(1);
     expect($initiative->dataSteward()->first()?->name)->toBe('Steward 1');
 
     // Try to assign second steward - should fail
     expect(fn () => $initiative->assignRoleToUser($user2, $stewardRole))
-        ->toThrow(\Illuminate\Database\QueryException::class);
-    
+        ->toThrow(QueryException::class);
+
     // Still only one steward
     expect($initiative->fresh()->dataSteward()->count())->toBe(1);
     expect($initiative->fresh()->dataSteward()->first()?->name)->toBe('Steward 1');
@@ -350,15 +351,15 @@ it('ensures only one data owner per data initiative', function () {
 
     // Assign first owner
     $initiative->assignRoleToUser($user1, $ownerRole);
-    
+
     // Verify only one owner
     expect($initiative->dataOwner()->count())->toBe(1);
     expect($initiative->dataOwner()->first()?->name)->toBe('Owner 1');
 
     // Try to assign second owner - should fail
     expect(fn () => $initiative->assignRoleToUser($user2, $ownerRole))
-        ->toThrow(\Illuminate\Database\QueryException::class);
-    
+        ->toThrow(QueryException::class);
+
     // Still only one owner
     expect($initiative->fresh()->dataOwner()->count())->toBe(1);
     expect($initiative->fresh()->dataOwner()->first()?->name)->toBe('Owner 1');
@@ -373,7 +374,7 @@ it('allows a user to have both steward and owner roles on same entity', function
     // User can have both roles
     $asset->assignRoleToUser($user, $stewardRole);
     $asset->assignRoleToUser($user, $ownerRole);
-    
+
     expect($asset->roleAssignments()->count())->toBe(2);
     expect($asset->dataSteward()->first()?->id)->toBe($user->id);
     expect($asset->dataOwner()->first()?->id)->toBe($user->id);

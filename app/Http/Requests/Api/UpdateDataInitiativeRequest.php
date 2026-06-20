@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Api;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateDataInitiativeRequest extends FormRequest
 {
@@ -17,12 +19,12 @@ class UpdateDataInitiativeRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'code' => ['sometimes', 'string', 'unique:data_initiatives,code,'.$this->route('dataInitiative').'id'],
+            'code' => ['sometimes', 'string', Rule::unique('data_initiatives', 'code')->ignore($this->route('dataInitiative'))],
             'label' => ['sometimes', 'string'],
             'description' => ['nullable', 'string'],
         ];

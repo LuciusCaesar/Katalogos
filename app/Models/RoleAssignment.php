@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
@@ -20,12 +22,13 @@ class RoleAssignment extends Pivot
      * @var string
      */
     protected $table = 'role_assignments';
+
     /**
      * Get the user that owns the role assignment.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsTo<User, $this>
+     * @return BelongsTo<User, $this>
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -33,9 +36,9 @@ class RoleAssignment extends Pivot
     /**
      * Get the role that is assigned.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsTo<Role, $this>
+     * @return BelongsTo<Role, $this>
      */
-    public function role()
+    public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
     }
@@ -43,9 +46,9 @@ class RoleAssignment extends Pivot
     /**
      * Get the roleable entity (DataInitiative, BusinessAsset, etc.).
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\MorphTo<Model, $this>
+     * @return MorphTo<Model, $this>
      */
-    public function roleable()
+    public function roleable(): MorphTo
     {
         return $this->morphTo();
     }

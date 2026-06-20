@@ -5,6 +5,9 @@ namespace App\Models;
 use Database\Factories\BusinessAssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class BusinessAsset extends Model
 {
@@ -19,17 +22,21 @@ class BusinessAsset extends Model
     ];
 
     /**
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsTo<DataInitiative, $this>
+     * Get the data initiative this asset belongs to.
+     *
+     * @return BelongsTo<DataInitiative, $this>
      */
-    public function dataInitiative()
+    public function dataInitiative(): BelongsTo
     {
         return $this->belongsTo(DataInitiative::class);
     }
 
     /**
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsTo<Domain, $this>
+     * Get the domain this asset belongs to.
+     *
+     * @return BelongsTo<Domain, $this>
      */
-    public function domain()
+    public function domain(): BelongsTo
     {
         return $this->belongsTo(Domain::class);
     }
@@ -37,9 +44,9 @@ class BusinessAsset extends Model
     /**
      * Get all role assignments for this business asset.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\MorphMany<RoleAssignment, $this>
+     * @return MorphMany<RoleAssignment, $this>
      */
-    public function roleAssignments()
+    public function roleAssignments(): MorphMany
     {
         return $this->morphMany(RoleAssignment::class, 'roleable');
     }
@@ -47,9 +54,9 @@ class BusinessAsset extends Model
     /**
      * Get all users assigned to this business asset with any role.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, $this, RoleAssignment>
+     * @return BelongsToMany<User, $this, RoleAssignment>
      */
-    public function users()
+    public function users(): BelongsToMany
     {
         return $this->belongsToMany(
             User::class,
@@ -64,9 +71,9 @@ class BusinessAsset extends Model
     /**
      * Get all roles assigned to this business asset.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<Role, $this, RoleAssignment>
+     * @return BelongsToMany<Role, $this, RoleAssignment>
      */
-    public function roles()
+    public function roles(): BelongsToMany
     {
         return $this->belongsToMany(
             Role::class,
@@ -81,9 +88,9 @@ class BusinessAsset extends Model
     /**
      * Get the Data Steward for this business asset.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, $this, RoleAssignment>
+     * @return BelongsToMany<User, $this, RoleAssignment>
      */
-    public function dataSteward()
+    public function dataSteward(): BelongsToMany
     {
         return $this->users()->whereHas(
             'roles',
@@ -94,9 +101,9 @@ class BusinessAsset extends Model
     /**
      * Get the Data Owner for this business asset.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, $this, RoleAssignment>
+     * @return BelongsToMany<User, $this, RoleAssignment>
      */
-    public function dataOwner()
+    public function dataOwner(): BelongsToMany
     {
         return $this->users()->whereHas(
             'roles',

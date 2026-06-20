@@ -5,6 +5,9 @@ namespace App\Models;
 use Database\Factories\DataInitiativeFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class DataInitiative extends Model
 {
@@ -14,9 +17,11 @@ class DataInitiative extends Model
     protected $fillable = ['code', 'label', 'description'];
 
     /**
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\HasMany<BusinessAsset, $this>
+     * Get all business assets belonging to this data initiative.
+     *
+     * @return HasMany<BusinessAsset, $this>
      */
-    public function businessAssets()
+    public function businessAssets(): HasMany
     {
         return $this->hasMany(BusinessAsset::class);
     }
@@ -24,9 +29,9 @@ class DataInitiative extends Model
     /**
      * Get all role assignments for this data initiative.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\MorphMany<RoleAssignment, $this>
+     * @return MorphMany<RoleAssignment, $this>
      */
-    public function roleAssignments()
+    public function roleAssignments(): MorphMany
     {
         return $this->morphMany(RoleAssignment::class, 'roleable');
     }
@@ -34,9 +39,9 @@ class DataInitiative extends Model
     /**
      * Get all users assigned to this data initiative with any role.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, $this, RoleAssignment>
+     * @return BelongsToMany<User, $this, RoleAssignment>
      */
-    public function users()
+    public function users(): BelongsToMany
     {
         return $this->belongsToMany(
             User::class,
@@ -51,9 +56,9 @@ class DataInitiative extends Model
     /**
      * Get all roles assigned to this data initiative.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<Role, $this, RoleAssignment>
+     * @return BelongsToMany<Role, $this, RoleAssignment>
      */
-    public function roles()
+    public function roles(): BelongsToMany
     {
         return $this->belongsToMany(
             Role::class,
@@ -68,9 +73,9 @@ class DataInitiative extends Model
     /**
      * Get the Data Steward for this data initiative.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, $this, RoleAssignment>
+     * @return BelongsToMany<User, $this, RoleAssignment>
      */
-    public function dataSteward()
+    public function dataSteward(): BelongsToMany
     {
         return $this->users()->whereHas(
             'roles',
@@ -81,9 +86,9 @@ class DataInitiative extends Model
     /**
      * Get the Data Owner for this data initiative.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, $this, RoleAssignment>
+     * @return BelongsToMany<User, $this, RoleAssignment>
      */
-    public function dataOwner()
+    public function dataOwner(): BelongsToMany
     {
         return $this->users()->whereHas(
             'roles',

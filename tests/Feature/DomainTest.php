@@ -1,8 +1,9 @@
 <?php
 
 use App\Models\BusinessAsset;
-use App\Models\Domain;
 use App\Models\DataInitiative;
+use App\Models\Domain;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -15,7 +16,7 @@ it('can create a domain', function () {
 
     expect($domain->name)->toBe('Test Domain');
     expect($domain->description)->toBe('Test Description');
-    
+
     $this->assertDatabaseHas('domains', [
         'name' => 'Test Domain',
         'description' => 'Test Description',
@@ -34,12 +35,12 @@ it('domain name is required', function () {
         'description' => 'Test Description',
     ]);
 
-    expect(fn () => $domain->save())->toThrow(\Illuminate\Database\QueryException::class);
+    expect(fn () => $domain->save())->toThrow(QueryException::class);
 });
 
 it('domain has many business assets', function () {
     $domain = Domain::factory()->create();
-    
+
     BusinessAsset::factory()->count(3)->create([
         'domain_id' => $domain->id,
     ]);
@@ -50,7 +51,7 @@ it('domain has many business assets', function () {
 it('business asset belongs to domain', function () {
     $domain = Domain::factory()->create();
     $dataInitiative = DataInitiative::factory()->create();
-    
+
     $asset = BusinessAsset::create([
         'name' => 'Test Asset',
         'definition' => 'Test Definition',
@@ -64,7 +65,7 @@ it('business asset belongs to domain', function () {
 
 it('business asset domain can be null', function () {
     $dataInitiative = DataInitiative::factory()->create();
-    
+
     $asset = BusinessAsset::create([
         'name' => 'Asset Without Domain',
         'definition' => 'Test Definition',
@@ -79,19 +80,19 @@ it('can query business assets by domain', function () {
     $domain1 = Domain::factory()->create();
     $domain2 = Domain::factory()->create();
     $dataInitiative = DataInitiative::factory()->create();
-    
+
     BusinessAsset::factory()->create([
         'name' => 'Asset 1',
         'data_initiative_id' => $dataInitiative->id,
         'domain_id' => $domain1->id,
     ]);
-    
+
     BusinessAsset::factory()->create([
         'name' => 'Asset 2',
         'data_initiative_id' => $dataInitiative->id,
         'domain_id' => $domain1->id,
     ]);
-    
+
     BusinessAsset::factory()->create([
         'name' => 'Asset 3',
         'data_initiative_id' => $dataInitiative->id,

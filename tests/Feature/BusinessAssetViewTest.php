@@ -29,7 +29,7 @@ it('displays empty state when no business assets exist', function () {
 
 it('displays business assets in a table', function () {
     $dataInitiative = DataInitiative::factory()->create(['label' => 'Test Initiative']);
-    
+
     BusinessAsset::factory()->create([
         'name' => 'Test Asset',
         'definition' => 'Test Definition',
@@ -53,7 +53,7 @@ it('displays data steward and data owner when assigned', function () {
     $steward = User::factory()->create(['name' => 'John Steward']);
     $owner = User::factory()->create(['name' => 'Jane Owner']);
     $dataInitiative = DataInitiative::factory()->create();
-    
+
     $asset = BusinessAsset::factory()->create([
         'name' => 'Test Asset',
         'data_initiative_id' => $dataInitiative->id,
@@ -74,7 +74,7 @@ it('displays data steward and data owner when assigned', function () {
 
 it('displays dash when no data steward is assigned', function () {
     $dataInitiative = DataInitiative::factory()->create();
-    
+
     $asset = BusinessAsset::factory()->create([
         'name' => 'Test Asset',
         'data_initiative_id' => $dataInitiative->id,

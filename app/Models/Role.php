@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\RoleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property int $id
@@ -21,9 +22,9 @@ class Role extends Model
     /**
      * Get the users that have this role assigned.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, $this, RoleAssignment>
+     * @return BelongsToMany<User, $this, RoleAssignment>
      */
-    public function users()
+    public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'role_assignments')
             ->withPivot('roleable_id', 'roleable_type')
@@ -33,9 +34,9 @@ class Role extends Model
     /**
      * Get the data initiatives where this role is assigned.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<DataInitiative, $this, RoleAssignment>
+     * @return BelongsToMany<DataInitiative, $this, RoleAssignment>
      */
-    public function dataInitiatives()
+    public function dataInitiatives(): BelongsToMany
     {
         return $this->belongsToMany(
             DataInitiative::class,
@@ -50,9 +51,9 @@ class Role extends Model
     /**
      * Get the business assets where this role is assigned.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<BusinessAsset, $this, RoleAssignment>
+     * @return BelongsToMany<BusinessAsset, $this, RoleAssignment>
      */
-    public function businessAssets()
+    public function businessAssets(): BelongsToMany
     {
         return $this->belongsToMany(
             BusinessAsset::class,

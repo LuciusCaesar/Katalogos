@@ -8,14 +8,12 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
-use App\Models\BusinessAsset;
-use App\Models\DataInitiative;
-use App\Models\Role;
-use App\Models\RoleAssignment;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -69,9 +67,9 @@ class User extends Authenticatable implements PasskeyUser
     /**
      * Get all role assignments for this user.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\HasMany<RoleAssignment, $this>
+     * @return HasMany<RoleAssignment, $this>
      */
-    public function roleAssignments()
+    public function roleAssignments(): HasMany
     {
         return $this->hasMany(RoleAssignment::class);
     }
@@ -79,9 +77,9 @@ class User extends Authenticatable implements PasskeyUser
     /**
      * Get all roles assigned to this user.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<Role, $this, RoleAssignment>
+     * @return BelongsToMany<Role, $this, RoleAssignment>
      */
-    public function roles()
+    public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'role_assignments')
             ->withPivot('roleable_id', 'roleable_type')
@@ -91,9 +89,9 @@ class User extends Authenticatable implements PasskeyUser
     /**
      * Get all DataInitiatives where this user has a role.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<DataInitiative, $this, RoleAssignment>
+     * @return BelongsToMany<DataInitiative, $this, RoleAssignment>
      */
-    public function dataInitiatives()
+    public function dataInitiatives(): BelongsToMany
     {
         return $this->belongsToMany(
             DataInitiative::class,
@@ -108,9 +106,9 @@ class User extends Authenticatable implements PasskeyUser
     /**
      * Get all BusinessAssets where this user has a role.
      *
-     * @phpstan-return \Illuminate\Database\Eloquent\Relations\BelongsToMany<BusinessAsset, $this, RoleAssignment>
+     * @return BelongsToMany<BusinessAsset, $this, RoleAssignment>
      */
-    public function businessAssets()
+    public function businessAssets(): BelongsToMany
     {
         return $this->belongsToMany(
             BusinessAsset::class,

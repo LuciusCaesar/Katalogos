@@ -19,6 +19,7 @@ class BusinessAssetSeeder extends Seeder
 
         if ($domains->isEmpty() || $initiatives->isEmpty()) {
             $this->command->info('Skipping BusinessAssetSeeder: Need domains and initiatives first');
+
             return;
         }
 

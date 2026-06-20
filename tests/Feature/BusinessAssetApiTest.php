@@ -14,7 +14,7 @@ beforeEach(function () {
 
 it('lists all business assets', function () {
     Sanctum::actingAs($this->user);
-    
+
     BusinessAsset::factory()->count(3)->create();
 
     $response = $this->getJson('/api/v1/business-assets');
@@ -25,9 +25,9 @@ it('lists all business assets', function () {
 
 it('creates a business asset', function () {
     Sanctum::actingAs($this->user);
-    
+
     $dataInitiative = DataInitiative::factory()->create();
-    
+
     $data = [
         'name' => 'Test Asset',
         'definition' => 'Test Definition',
@@ -44,7 +44,7 @@ it('creates a business asset', function () {
 
 it('validates create request', function () {
     Sanctum::actingAs($this->user);
-    
+
     $response = $this->postJson('/api/v1/business-assets', []);
 
     $response->assertStatus(422)
@@ -64,7 +64,7 @@ it('shows a business asset', function () {
 
 it('updates a business asset', function () {
     Sanctum::actingAs($this->user);
-    
+
     $businessAsset = BusinessAsset::factory()->create();
 
     $updatedData = [
@@ -82,7 +82,7 @@ it('updates a business asset', function () {
 
 it('deletes a business asset', function () {
     Sanctum::actingAs($this->user);
-    
+
     $businessAsset = BusinessAsset::factory()->create();
 
     $response = $this->deleteJson('/api/v1/business-assets/'.$businessAsset->id);
