@@ -9,7 +9,12 @@ Route::view('/', 'welcome')->name('home');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
     Route::get('business-assets', [BusinessAssetController::class, 'index'])->name('web.business-assets.index');
+    Route::get('business-assets/create', [BusinessAssetController::class, 'create'])->name('web.business-assets.create');
+    Route::post('business-assets', [BusinessAssetController::class, 'store'])->name('web.business-assets.store');
     Route::get('business-assets/{businessAsset}', [BusinessAssetController::class, 'show'])->name('web.business-assets.show');
+    Route::get('business-assets/{businessAsset}/edit', [BusinessAssetController::class, 'edit'])->name('web.business-assets.edit');
+    Route::put('business-assets/{businessAsset}', [BusinessAssetController::class, 'update'])->name('web.business-assets.update');
+    Route::delete('business-assets/{businessAsset}', [BusinessAssetController::class, 'destroy'])->name('web.business-assets.destroy');
 
     Route::get('domains', [DomainController::class, 'index'])->name('web.domains.index');
     Route::get('domains/create', [DomainController::class, 'create'])->name('web.domains.create');

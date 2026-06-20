@@ -1,10 +1,23 @@
 <x-layouts::app :title="__('Business Assets')">
     <div class="space-y-6">
+        <!-- Header with New Button -->
         <div class="flex justify-between items-center">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {{ __('Business Assets') }}
             </h1>
+            <a 
+                href="{{ route('web.business-assets.create') }}"
+                class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-900 uppercase tracking-widest hover:bg-blue-700 dark:hover:bg-blue-600 focus:bg-blue-700 dark:focus:bg-blue-600 active:bg-blue-800 dark:active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition ease-in-out duration-150"
+            >
+                {{ __('New') }}
+            </a>
         </div>
+
+        @if (session('success'))
+            <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-md p-4">
+                <p class="text-green-800 dark:text-green-200 text-sm">{{ session('success') }}</p>
+            </div>
+        @endif
 
         @if ($businessAssets->isEmpty())
             <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-8 text-center">

@@ -2,7 +2,7 @@
     'domain' => null,
 ])
 
-<form method="{{ $domain ? 'PUT' : 'POST' }}" action="{{ $domain ? route('web.domains.update', $domain) : route('web.domains.store') }}" class="space-y-6">
+<form method="POST" action="{{ $domain ? route('web.domains.update', $domain) : route('web.domains.store') }}" class="space-y-6">
     @csrf
     @if ($domain)
         @method('PUT')
