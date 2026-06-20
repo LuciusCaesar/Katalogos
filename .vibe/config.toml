@@ -23,5 +23,6 @@ allowlist = [
     "ls",
     "mkdir",
     "php",
+    "tail",
     "vendor/bin/pint",
 ]

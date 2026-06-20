@@ -37,4 +37,19 @@ class RootCause extends Model
             'data_issue_id'
         );
     }
+
+    /**
+     * Get all solutions associated with this root cause.
+     *
+     * @return BelongsToMany<Solution, $this>
+     */
+    public function solutions(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Solution::class,
+            'root_cause_solution',
+            'root_cause_id',
+            'solution_id'
+        );
+    }
 }

@@ -27,6 +27,9 @@
                     <flux:sidebar.item icon="puzzle-piece" :href="route('web.root-causes.index')" :current="request()->routeIs('web.root-causes.*')" wire:navigate>
                         {{ __('Root Causes') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="check-circle" :href="route('web.solutions.index')" :current="request()->routeIs('web.solutions.*')" wire:navigate>
+                        {{ __('Solutions') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

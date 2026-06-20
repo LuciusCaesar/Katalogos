@@ -4,6 +4,7 @@ use App\Http\Controllers\BusinessAssetController;
 use App\Http\Controllers\DataIssueController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\RootCauseController;
+use App\Http\Controllers\SolutionController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
@@ -41,6 +42,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('root-causes/{rootCause}/edit', [RootCauseController::class, 'edit'])->name('web.root-causes.edit');
     Route::put('root-causes/{rootCause}', [RootCauseController::class, 'update'])->name('web.root-causes.update');
     Route::delete('root-causes/{rootCause}', [RootCauseController::class, 'destroy'])->name('web.root-causes.destroy');
+
+    Route::get('solutions', [SolutionController::class, 'index'])->name('web.solutions.index');
+    Route::get('solutions/create', [SolutionController::class, 'create'])->name('web.solutions.create');
+    Route::post('solutions', [SolutionController::class, 'store'])->name('web.solutions.store');
+    Route::get('solutions/{solution}', [SolutionController::class, 'show'])->name('web.solutions.show');
+    Route::get('solutions/{solution}/edit', [SolutionController::class, 'edit'])->name('web.solutions.edit');
+    Route::put('solutions/{solution}', [SolutionController::class, 'update'])->name('web.solutions.update');
+    Route::delete('solutions/{solution}', [SolutionController::class, 'destroy'])->name('web.solutions.destroy');
 });
 
 require __DIR__.'/settings.php';
