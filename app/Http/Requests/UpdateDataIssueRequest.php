@@ -27,6 +27,8 @@ class UpdateDataIssueRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'business_asset_ids' => ['nullable', 'array'],
             'business_asset_ids.*' => ['exists:business_assets,id'],
+            'business_rule_ids' => ['nullable', 'array'],
+            'business_rule_ids.*' => ['exists:business_rules,id'],
         ];
     }
 
@@ -43,6 +45,7 @@ class UpdateDataIssueRequest extends FormRequest
             'name.max' => __('The name may not be greater than 255 characters.'),
             'description.string' => __('The description must be a string.'),
             'business_asset_ids.*.exists' => __('One or more selected business assets are invalid.'),
+            'business_rule_ids.*.exists' => __('One or more selected business rules are invalid.'),
         ];
     }
 }

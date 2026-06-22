@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreDataIssueRequest;
 use App\Http\Requests\UpdateDataIssueRequest;
 use App\Models\BusinessAsset;
+use App\Models\BusinessRule;
 use App\Models\DataIssue;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -29,8 +30,9 @@ class DataIssueController extends Controller
     public function create(): View
     {
         $businessAssets = BusinessAsset::latest()->get();
+        $businessRules = BusinessRule::latest()->get();
 
-        return view('pages.data-issues.create', compact('businessAssets'));
+        return view('pages.data-issues.create', compact('businessAssets', 'businessRules'));
     }
 
     /**
@@ -44,6 +46,10 @@ class DataIssueController extends Controller
             $dataIssue->businessAssets()->sync($request->input('business_asset_ids'));
         }
 
+        if ($request->has('business_rule_ids')) {
+            $dataIssue->businessRules()->sync($request->input('business_rule_ids'));
+        }
+
         return redirect()
             ->route('web.data-issues.index')
             ->with('success', __('Data issue created successfully.'));
@@ -54,7 +60,7 @@ class DataIssueController extends Controller
      */
     public function show(DataIssue $dataIssue): View
     {
-        $dataIssue->load(['businessAssets.dataInitiative', 'businessAssets.domain']);
+        $dataIssue->load(['businessAssets.dataInitiative', 'businessAssets.domain', 'businessRules']);
 
         return view('pages.data-issues.show', compact('dataIssue'));
     }
@@ -65,8 +71,9 @@ class DataIssueController extends Controller
     public function edit(DataIssue $dataIssue): View
     {
         $businessAssets = BusinessAsset::latest()->get();
+        $businessRules = BusinessRule::latest()->get();
 
-        return view('pages.data-issues.edit', compact('dataIssue', 'businessAssets'));
+        return view('pages.data-issues.edit', compact('dataIssue', 'businessAssets', 'businessRules'));
     }
 
     /**
@@ -78,6 +85,10 @@ class DataIssueController extends Controller
 
         if ($request->has('business_asset_ids')) {
             $dataIssue->businessAssets()->sync($request->input('business_asset_ids'));
+        }
+
+        if ($request->has('business_rule_ids')) {
+            $dataIssue->businessRules()->sync($request->input('business_rule_ids'));
         }
 
         return redirect()
