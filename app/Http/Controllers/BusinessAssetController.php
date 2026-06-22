@@ -53,7 +53,7 @@ class BusinessAssetController extends Controller
      */
     public function show(BusinessAsset $businessAsset): View
     {
-        $businessAsset->load(['dataInitiative', 'domain', 'dataSteward', 'dataOwner']);
+        $businessAsset->load(['dataInitiative', 'domain', 'dataSteward', 'dataOwner', 'businessRules', 'dataIssues']);
 
         return view('pages.business-assets.show', compact('businessAsset'));
     }

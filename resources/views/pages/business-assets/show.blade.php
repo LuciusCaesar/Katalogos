@@ -34,7 +34,93 @@
         <div class="grid gap-6 lg:grid-cols-3">
             <!-- Left column (2/3 width) - main content area -->
             <div class="lg:col-span-2 space-y-6">
-                <!-- Future content goes here -->
+                <!-- Business Rules Section -->
+                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-zinc-700">
+                        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                            {{ __('Business Rules') }} ({{ $businessAsset->businessRules->count() }})
+                        </h2>
+                    </div>
+                    @if ($businessAsset->businessRules->isEmpty())
+                        <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                            {{ __('No business rules associated with this business asset.') }}
+                        </div>
+                    @else
+                        <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-zinc-700">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        {{ __('Name') }}
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        {{ __('Description') }}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-zinc-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                @foreach ($businessAsset->businessRules as $rule)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-700">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                            <a href="{{ route('web.business-rules.show', $rule) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
+                                                {{ $rule->name }}
+                                            </a>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                            {{ $rule->description ?? '-' }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @endif
+                </div>
+
+                <!-- Data Issues Section -->
+                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-zinc-700">
+                        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                            {{ __('Data Issues') }} ({{ $businessAsset->dataIssues->count() }})
+                        </h2>
+                    </div>
+                    @if ($businessAsset->dataIssues->isEmpty())
+                        <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                            {{ __('No data issues associated with this business asset.') }}
+                        </div>
+                    @else
+                        <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-zinc-700">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        {{ __('Name') }}
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        {{ __('Description') }}
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        {{ __('Created At') }}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-zinc-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                @foreach ($businessAsset->dataIssues as $dataIssue)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-700">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                            <a href="{{ route('web.data-issues.show', $dataIssue) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
+                                                {{ $dataIssue->name }}
+                                            </a>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                            {{ $dataIssue->description ?? '-' }}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                            {{ $dataIssue->created_at->format('Y-m-d H:i') }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @endif
+                </div>
             </div>
             
             <!-- Right column (1/3 width) - info cards -->
