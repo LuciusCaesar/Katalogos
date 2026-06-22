@@ -153,6 +153,21 @@ class BusinessAsset extends Model
     }
 
     /**
+     * Get all business rules associated with this business asset.
+     *
+     * @return BelongsToMany<BusinessRule, $this>
+     */
+    public function businessRules(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            BusinessRule::class,
+            'business_asset_business_rule',
+            'business_asset_id',
+            'business_rule_id'
+        );
+    }
+
+    /**
      * Remove a role assignment from a user for this business asset.
      */
     public function removeRoleFromUser(User $user, Role $role): bool

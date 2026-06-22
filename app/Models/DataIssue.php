@@ -46,4 +46,19 @@ class DataIssue extends Model
             'root_cause_id'
         );
     }
+
+    /**
+     * Get all business rules associated with this data issue.
+     *
+     * @return BelongsToMany<BusinessRule, $this>
+     */
+    public function businessRules(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            BusinessRule::class,
+            'business_rule_data_issue',
+            'data_issue_id',
+            'business_rule_id'
+        );
+    }
 }

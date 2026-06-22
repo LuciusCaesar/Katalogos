@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BusinessAssetController;
+use App\Http\Controllers\BusinessRuleController;
 use App\Http\Controllers\DataIssueController;
 use App\Http\Controllers\DataSourceController;
 use App\Http\Controllers\DomainController;
@@ -19,6 +20,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('business-assets/{businessAsset}/edit', [BusinessAssetController::class, 'edit'])->name('web.business-assets.edit');
     Route::put('business-assets/{businessAsset}', [BusinessAssetController::class, 'update'])->name('web.business-assets.update');
     Route::delete('business-assets/{businessAsset}', [BusinessAssetController::class, 'destroy'])->name('web.business-assets.destroy');
+
+    Route::get('business-rules', [BusinessRuleController::class, 'index'])->name('web.business-rules.index');
+    Route::get('business-rules/create', [BusinessRuleController::class, 'create'])->name('web.business-rules.create');
+    Route::post('business-rules', [BusinessRuleController::class, 'store'])->name('web.business-rules.store');
+    Route::get('business-rules/{businessRule}', [BusinessRuleController::class, 'show'])->name('web.business-rules.show');
+    Route::get('business-rules/{businessRule}/edit', [BusinessRuleController::class, 'edit'])->name('web.business-rules.edit');
+    Route::put('business-rules/{businessRule}', [BusinessRuleController::class, 'update'])->name('web.business-rules.update');
+    Route::delete('business-rules/{businessRule}', [BusinessRuleController::class, 'destroy'])->name('web.business-rules.destroy');
 
     Route::get('domains', [DomainController::class, 'index'])->name('web.domains.index');
     Route::get('domains/create', [DomainController::class, 'create'])->name('web.domains.create');
