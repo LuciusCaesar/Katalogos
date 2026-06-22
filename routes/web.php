@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BusinessAssetController;
 use App\Http\Controllers\DataIssueController;
+use App\Http\Controllers\DataSourceController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\RootCauseController;
 use App\Http\Controllers\SolutionController;
@@ -34,6 +35,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('data-issues/{dataIssue}/edit', [DataIssueController::class, 'edit'])->name('web.data-issues.edit');
     Route::put('data-issues/{dataIssue}', [DataIssueController::class, 'update'])->name('web.data-issues.update');
     Route::delete('data-issues/{dataIssue}', [DataIssueController::class, 'destroy'])->name('web.data-issues.destroy');
+
+    Route::get('data-sources', [DataSourceController::class, 'index'])->name('web.data-sources.index');
+    Route::get('data-sources/create', [DataSourceController::class, 'create'])->name('web.data-sources.create');
+    Route::post('data-sources', [DataSourceController::class, 'store'])->name('web.data-sources.store');
+    Route::get('data-sources/{dataSource}', [DataSourceController::class, 'show'])->name('web.data-sources.show');
+    Route::get('data-sources/{dataSource}/edit', [DataSourceController::class, 'edit'])->name('web.data-sources.edit');
+    Route::put('data-sources/{dataSource}', [DataSourceController::class, 'update'])->name('web.data-sources.update');
+    Route::delete('data-sources/{dataSource}', [DataSourceController::class, 'destroy'])->name('web.data-sources.destroy');
 
     Route::get('root-causes', [RootCauseController::class, 'index'])->name('web.root-causes.index');
     Route::get('root-causes/create', [RootCauseController::class, 'create'])->name('web.root-causes.create');

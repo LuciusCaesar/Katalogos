@@ -17,6 +17,7 @@ permission = "always"
 allowlist = [
     "cd",
     "composer types:check",
+    "echo",
     "find",
     "git status",
     "head",
@@ -25,4 +26,9 @@ allowlist = [
     "php",
     "tail",
     "vendor/bin/pint",
+]
+
+[tools.read]
+allowlist = [
+    "/Users/lucienculot/.vibe/plans/*",
 ]

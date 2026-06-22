@@ -138,6 +138,21 @@ class BusinessAsset extends Model
     }
 
     /**
+     * Get all data sources associated with this business asset.
+     *
+     * @return BelongsToMany<DataSource, $this>
+     */
+    public function dataSources(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            DataSource::class,
+            'business_asset_data_source',
+            'business_asset_id',
+            'data_source_id'
+        );
+    }
+
+    /**
      * Remove a role assignment from a user for this business asset.
      */
     public function removeRoleFromUser(User $user, Role $role): bool
