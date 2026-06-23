@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDataInitiativeRequest;
 use App\Http\Requests\UpdateDataInitiativeRequest;
+use App\Http\Requests\UpdateDataInitiativeTeamRequest;
 use App\Models\DataInitiative;
 use App\Models\DataInitiativeGovernanceScoreHistory;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -94,6 +97,79 @@ class DataInitiativeController extends Controller
         return redirect()
             ->route('web.data-initiatives.index')
             ->with('success', __('Data Initiative deleted successfully.'));
+    }
+
+    /**
+     * Show the form for editing the team for the specified data initiative.
+     */
+    public function editTeam(DataInitiative $dataInitiative): View
+    {
+        $users = User::all();
+
+        return view('pages.data-initiatives.manage-team', compact('dataInitiative', 'users'));
+    }
+
+    /**
+     * Update the team for the specified data initiative in storage.
+     */
+    public function updateTeam(UpdateDataInitiativeTeamRequest $request, DataInitiative $dataInitiative): RedirectResponse
+    {
+        $dataStewardRole = Role::where('name', 'Data Steward')->firstOrFail();
+        $dataOwnerRole = Role::where('name', 'Data Owner')->firstOrFail();
+
+        // Handle Data Steward assignment
+        if ($request->filled('data_steward_id')) {
+            $user = User::findOrFail($request->data_steward_id);
+
+            // Check if user already has this role
+            $existingSteward = $dataInitiative->dataSteward()->first();
+            $userAlreadyAssigned = $existingSteward && $existingSteward->id === $user->id;
+
+            if (! $userAlreadyAssigned) {
+                // Remove existing Data Steward if different user
+                if ($existingSteward) {
+                    $dataInitiative->removeRoleFromUser($existingSteward, $dataStewardRole);
+                }
+
+                // Assign new Data Steward
+                $dataInitiative->assignRoleToUser($user, $dataStewardRole);
+            }
+        } else {
+            // Remove Data Steward if null selected
+            $existingSteward = $dataInitiative->dataSteward()->first();
+            if ($existingSteward) {
+                $dataInitiative->removeRoleFromUser($existingSteward, $dataStewardRole);
+            }
+        }
+
+        // Handle Data Owner assignment
+        if ($request->filled('data_owner_id')) {
+            $user = User::findOrFail($request->data_owner_id);
+
+            // Check if user already has this role
+            $existingOwner = $dataInitiative->dataOwner()->first();
+            $userAlreadyAssigned = $existingOwner && $existingOwner->id === $user->id;
+
+            if (! $userAlreadyAssigned) {
+                // Remove existing Data Owner if different user
+                if ($existingOwner) {
+                    $dataInitiative->removeRoleFromUser($existingOwner, $dataOwnerRole);
+                }
+
+                // Assign new Data Owner
+                $dataInitiative->assignRoleToUser($user, $dataOwnerRole);
+            }
+        } else {
+            // Remove Data Owner if null selected
+            $existingOwner = $dataInitiative->dataOwner()->first();
+            if ($existingOwner) {
+                $dataInitiative->removeRoleFromUser($existingOwner, $dataOwnerRole);
+            }
+        }
+
+        return redirect()
+            ->route('web.data-initiatives.show', $dataInitiative)
+            ->with('success', __('Team updated successfully.'));
     }
 
     /**

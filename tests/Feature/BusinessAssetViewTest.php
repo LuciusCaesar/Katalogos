@@ -330,6 +330,49 @@ it('requires authentication to access business asset show page', function () {
         ->assertRedirect(route('login'));
 });
 
+it('does not show user as data owner when only assigned as data steward on different asset', function () {
+    $steward = User::factory()->create(['name' => 'Cross Asset Steward']);
+    $dataInitiative = DataInitiative::factory()->create();
+    $domain = Domain::factory()->create();
+
+    $asset1 = BusinessAsset::factory()->create([
+        'name' => 'Asset One',
+        'data_initiative_id' => $dataInitiative->id,
+        'domain_id' => $domain->id,
+    ]);
+
+    $asset2 = BusinessAsset::factory()->create([
+        'name' => 'Asset Two',
+        'data_initiative_id' => $dataInitiative->id,
+        'domain_id' => $domain->id,
+    ]);
+
+    $stewardRole = Role::factory()->dataSteward()->create();
+    $ownerRole = Role::factory()->dataOwner()->create();
+
+    // Assign steward as Data Steward on Asset 1
+    $asset1->assignRoleToUser($steward, $stewardRole);
+
+    // Assign same user as Data Owner on Asset 2
+    $asset2->assignRoleToUser($steward, $ownerRole);
+
+    // Verify show page for Asset 1 only shows steward, not owner
+    $this->actingAs($this->user)
+        ->get(route('web.business-assets.show', $asset1))
+        ->assertStatus(200)
+        ->assertSee('Cross Asset Steward')
+        ->assertSeeInOrder([__('Data Steward'), 'Cross Asset Steward'])
+        ->assertSeeInOrder([__('Data Owner'), '-']);
+
+    // Verify show page for Asset 2 only shows owner, not steward
+    $this->actingAs($this->user)
+        ->get(route('web.business-assets.show', $asset2))
+        ->assertStatus(200)
+        ->assertSee('Cross Asset Steward')
+        ->assertSeeInOrder([__('Data Owner'), 'Cross Asset Steward'])
+        ->assertSeeInOrder([__('Data Steward'), '-']);
+});
+
 // Update Tests
 
 it('can update a business asset', function () {

@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreBusinessAssetRequest;
 use App\Http\Requests\UpdateBusinessAssetRequest;
+use App\Http\Requests\UpdateBusinessAssetTeamRequest;
 use App\Models\BusinessAsset;
 use App\Models\DataInitiative;
 use App\Models\Domain;
 use App\Models\GovernanceScore;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -116,6 +119,79 @@ class BusinessAssetController extends Controller
         return redirect()
             ->route('web.business-assets.index')
             ->with('success', __('Business Asset deleted successfully.'));
+    }
+
+    /**
+     * Show the form for editing the team for the specified business asset.
+     */
+    public function editTeam(BusinessAsset $businessAsset): View
+    {
+        $users = User::all();
+
+        return view('pages.business-assets.manage-team', compact('businessAsset', 'users'));
+    }
+
+    /**
+     * Update the team for the specified business asset in storage.
+     */
+    public function updateTeam(UpdateBusinessAssetTeamRequest $request, BusinessAsset $businessAsset): RedirectResponse
+    {
+        $dataStewardRole = Role::where('name', 'Data Steward')->firstOrFail();
+        $dataOwnerRole = Role::where('name', 'Data Owner')->firstOrFail();
+
+        // Handle Data Steward assignment
+        if ($request->filled('data_steward_id')) {
+            $user = User::findOrFail($request->data_steward_id);
+
+            // Check if user already has this role
+            $existingSteward = $businessAsset->dataSteward()->first();
+            $userAlreadyAssigned = $existingSteward && $existingSteward->id === $user->id;
+
+            if (! $userAlreadyAssigned) {
+                // Remove existing Data Steward if different user
+                if ($existingSteward) {
+                    $businessAsset->removeRoleFromUser($existingSteward, $dataStewardRole);
+                }
+
+                // Assign new Data Steward
+                $businessAsset->assignRoleToUser($user, $dataStewardRole);
+            }
+        } else {
+            // Remove Data Steward if null selected
+            $existingSteward = $businessAsset->dataSteward()->first();
+            if ($existingSteward) {
+                $businessAsset->removeRoleFromUser($existingSteward, $dataStewardRole);
+            }
+        }
+
+        // Handle Data Owner assignment
+        if ($request->filled('data_owner_id')) {
+            $user = User::findOrFail($request->data_owner_id);
+
+            // Check if user already has this role
+            $existingOwner = $businessAsset->dataOwner()->first();
+            $userAlreadyAssigned = $existingOwner && $existingOwner->id === $user->id;
+
+            if (! $userAlreadyAssigned) {
+                // Remove existing Data Owner if different user
+                if ($existingOwner) {
+                    $businessAsset->removeRoleFromUser($existingOwner, $dataOwnerRole);
+                }
+
+                // Assign new Data Owner
+                $businessAsset->assignRoleToUser($user, $dataOwnerRole);
+            }
+        } else {
+            // Remove Data Owner if null selected
+            $existingOwner = $businessAsset->dataOwner()->first();
+            if ($existingOwner) {
+                $businessAsset->removeRoleFromUser($existingOwner, $dataOwnerRole);
+            }
+        }
+
+        return redirect()
+            ->route('web.business-assets.show', $businessAsset)
+            ->with('success', __('Team updated successfully.'));
     }
 
     /**

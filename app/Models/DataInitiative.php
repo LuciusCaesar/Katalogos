@@ -81,10 +81,9 @@ class DataInitiative extends Model
      */
     public function dataSteward(): BelongsToMany
     {
-        return $this->users()->whereHas(
-            'roles',
-            fn ($query) => $query->where('name', 'Data Steward')
-        );
+        return $this->users()->wherePivot('role_id', function ($query) {
+            $query->select('id')->from('roles')->where('name', 'Data Steward');
+        });
     }
 
     /**
@@ -94,10 +93,9 @@ class DataInitiative extends Model
      */
     public function dataOwner(): BelongsToMany
     {
-        return $this->users()->whereHas(
-            'roles',
-            fn ($query) => $query->where('name', 'Data Owner')
-        );
+        return $this->users()->wherePivot('role_id', function ($query) {
+            $query->select('id')->from('roles')->where('name', 'Data Owner');
+        });
     }
 
     /**

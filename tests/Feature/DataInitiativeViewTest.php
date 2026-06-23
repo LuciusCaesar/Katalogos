@@ -234,6 +234,45 @@ it('requires authentication to access data initiative show page', function () {
         ->assertRedirect(route('login'));
 });
 
+it('does not show user as data owner when only assigned as data steward on different initiative', function () {
+    $steward = User::factory()->create(['name' => 'Cross Initiative Steward']);
+
+    $initiative1 = DataInitiative::factory()->create([
+        'code' => 'INIT-001',
+        'label' => 'Initiative One',
+    ]);
+
+    $initiative2 = DataInitiative::factory()->create([
+        'code' => 'INIT-002',
+        'label' => 'Initiative Two',
+    ]);
+
+    $stewardRole = Role::factory()->dataSteward()->create();
+    $ownerRole = Role::factory()->dataOwner()->create();
+
+    // Assign steward as Data Steward on Initiative 1
+    $initiative1->assignRoleToUser($steward, $stewardRole);
+
+    // Assign same user as Data Owner on Initiative 2
+    $initiative2->assignRoleToUser($steward, $ownerRole);
+
+    // Verify show page for Initiative 1 only shows steward, not owner
+    $this->actingAs($this->user)
+        ->get(route('web.data-initiatives.show', $initiative1))
+        ->assertStatus(200)
+        ->assertSee('Cross Initiative Steward')
+        ->assertSeeInOrder([__('Data Steward'), 'Cross Initiative Steward'])
+        ->assertSeeInOrder([__('Data Owner'), '-']);
+
+    // Verify show page for Initiative 2 only shows owner, not steward
+    $this->actingAs($this->user)
+        ->get(route('web.data-initiatives.show', $initiative2))
+        ->assertStatus(200)
+        ->assertSee('Cross Initiative Steward')
+        ->assertSeeInOrder([__('Data Owner'), 'Cross Initiative Steward'])
+        ->assertSeeInOrder([__('Data Steward'), '-']);
+});
+
 // Store Tests
 
 it('can store a new data initiative', function () {

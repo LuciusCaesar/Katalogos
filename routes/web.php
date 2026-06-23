@@ -24,6 +24,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('business-assets/{businessAsset}', [BusinessAssetController::class, 'update'])->name('web.business-assets.update');
     Route::delete('business-assets/{businessAsset}', [BusinessAssetController::class, 'destroy'])->name('web.business-assets.destroy');
 
+    // Team management routes
+    Route::get('business-assets/{businessAsset}/team', [BusinessAssetController::class, 'editTeam'])->name('web.business-assets.team');
+    Route::put('business-assets/{businessAsset}/team', [BusinessAssetController::class, 'updateTeam'])->name('web.business-assets.team.update');
+
     // Governance Score routes
     Route::get('business-assets/{businessAsset}/governance-score/details', [BusinessAssetController::class, 'showGovernanceScoreDetails'])->name('web.business-assets.governance-score.details');
     Route::get('business-assets/{businessAsset}/governance-score/history', [BusinessAssetController::class, 'showGovernanceScoreHistory'])->name('web.business-assets.governance-score.history');
@@ -36,6 +40,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('data-initiatives/{dataInitiative}/edit', [DataInitiativeController::class, 'edit'])->name('web.data-initiatives.edit');
     Route::put('data-initiatives/{dataInitiative}', [DataInitiativeController::class, 'update'])->name('web.data-initiatives.update');
     Route::delete('data-initiatives/{dataInitiative}', [DataInitiativeController::class, 'destroy'])->name('web.data-initiatives.destroy');
+
+    // Team management routes
+    Route::get('data-initiatives/{dataInitiative}/team', [DataInitiativeController::class, 'editTeam'])->name('web.data-initiatives.team');
+    Route::put('data-initiatives/{dataInitiative}/team', [DataInitiativeController::class, 'updateTeam'])->name('web.data-initiatives.team.update');
 
     // Governance Score History routes for Data Initiatives
     Route::get('data-initiatives/{dataInitiative}/governance-score/history', [DataInitiativeController::class, 'showGovernanceScoreHistory'])->name('web.data-initiatives.governance-score.history');
