@@ -320,3 +320,93 @@ it('does not show user as data steward when only assigned as data owner on this 
     expect($businessAsset2->dataSteward()->first()?->id)->toBe($owner->id);
     expect($businessAsset2->dataOwner()->first())->toBeNull();
 });
+
+it('triggers governance score recalculation when assigning data steward', function () {
+    $steward = User::factory()->create(['name' => 'New Steward']);
+
+    $businessAsset = BusinessAsset::factory()->create([
+        'name' => 'Test Asset',
+        'definition' => 'Test Definition',
+        'data_initiative_id' => $this->dataInitiative->id,
+        'domain_id' => $this->domain->id,
+    ]);
+
+    // BusinessAsset creation triggers initial governance score calculation
+    $initialScoreCount = $businessAsset->governanceScores()->count();
+
+    $this->actingAs($this->user)
+        ->put(route('web.business-assets.team.update', $businessAsset), [
+            'data_steward_id' => $steward->id,
+        ])
+        ->assertRedirect(route('web.business-assets.show', $businessAsset));
+
+    // Verify new governance score was created (assigning steward changes the score)
+    expect($businessAsset->governanceScores()->count())->toBeGreaterThan($initialScoreCount);
+
+    // Check that at least one score has the team_updated action
+    $teamUpdatedScoreExists = $businessAsset->governanceScores()
+        ->where('changes->action', 'team_updated')
+        ->exists();
+    expect($teamUpdatedScoreExists)->toBeTrue();
+});
+
+it('triggers governance score recalculation when assigning data owner', function () {
+    $owner = User::factory()->create(['name' => 'New Owner']);
+
+    $businessAsset = BusinessAsset::factory()->create([
+        'name' => 'Test Asset',
+        'definition' => 'Test Definition',
+        'data_initiative_id' => $this->dataInitiative->id,
+        'domain_id' => $this->domain->id,
+    ]);
+
+    // BusinessAsset creation triggers initial governance score calculation
+    $initialScoreCount = $businessAsset->governanceScores()->count();
+
+    $this->actingAs($this->user)
+        ->put(route('web.business-assets.team.update', $businessAsset), [
+            'data_owner_id' => $owner->id,
+        ])
+        ->assertRedirect(route('web.business-assets.show', $businessAsset));
+
+    // Verify new governance score was created
+    expect($businessAsset->governanceScores()->count())->toBeGreaterThan($initialScoreCount);
+
+    // Check that at least one score has the team_updated action
+    $teamUpdatedScoreExists = $businessAsset->governanceScores()
+        ->where('changes->action', 'team_updated')
+        ->exists();
+    expect($teamUpdatedScoreExists)->toBeTrue();
+});
+
+it('triggers governance score recalculation when removing data steward', function () {
+    $steward = User::factory()->create(['name' => 'Test Steward']);
+
+    $businessAsset = BusinessAsset::factory()->create([
+        'name' => 'Test Asset',
+        'definition' => 'Test Definition',
+        'data_initiative_id' => $this->dataInitiative->id,
+        'domain_id' => $this->domain->id,
+    ]);
+
+    // Assign initial steward and create initial governance score
+    $businessAsset->assignRoleToUser($steward, $this->stewardRole);
+    $businessAsset->calculateGovernanceScore(['initial' => true]);
+
+    $initialScoreCount = $businessAsset->governanceScores()->count();
+
+    $this->actingAs($this->user)
+        ->put(route('web.business-assets.team.update', $businessAsset), [
+            'data_steward_id' => null,
+        ])
+        ->assertRedirect(route('web.business-assets.show', $businessAsset));
+
+    // Verify new governance score was created
+    expect($businessAsset->governanceScores()->count())->toBeGreaterThan($initialScoreCount);
+
+    // Check that at least one score has the team_updated action
+    $teamUpdatedScoreExists = $businessAsset->governanceScores()
+        ->where('changes->action', 'team_updated')
+        ->exists();
+    expect($teamUpdatedScoreExists)->toBeTrue();
+});

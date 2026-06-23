@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\BusinessAssetChanged;
 use App\Http\Requests\StoreBusinessAssetRequest;
 use App\Http\Requests\UpdateBusinessAssetRequest;
 use App\Http\Requests\UpdateBusinessAssetTeamRequest;
@@ -188,6 +189,10 @@ class BusinessAssetController extends Controller
                 $businessAsset->removeRoleFromUser($existingOwner, $dataOwnerRole);
             }
         }
+
+        // Trigger governance score recalculation since team changes affect has_data_steward/has_data_owner criteria
+        // Fire the event which will trigger both BusinessAsset and DataInitiative score calculations
+        event(new BusinessAssetChanged($businessAsset, ['action' => 'team_updated', 'reason' => 'team_updated']));
 
         return redirect()
             ->route('web.business-assets.show', $businessAsset)

@@ -9,6 +9,7 @@ use App\Models\DataInitiative;
 use App\Models\DataInitiativeGovernanceScoreHistory;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\DataInitiativeGovernanceScoreService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -166,6 +167,15 @@ class DataInitiativeController extends Controller
                 $dataInitiative->removeRoleFromUser($existingOwner, $dataOwnerRole);
             }
         }
+
+        // Trigger governance score recalculation for the Data Initiative
+        // This will recalculate the average of all Business Assets' governance scores
+        // Clear any previous event tracking for this initiative to ensure the event is processed
+        app(DataInitiativeGovernanceScoreService::class)->clearProcessedEvents();
+        app(DataInitiativeGovernanceScoreService::class)->calculateAndSave(
+            $dataInitiative,
+            'team_updated'
+        );
 
         return redirect()
             ->route('web.data-initiatives.show', $dataInitiative)
