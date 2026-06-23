@@ -4,6 +4,7 @@ use App\Http\Controllers\BusinessAssetController;
 use App\Http\Controllers\BusinessRuleController;
 use App\Http\Controllers\DataIssueController;
 use App\Http\Controllers\DataQualityCheckController;
+use App\Http\Controllers\DataQualityCheckScoreController;
 use App\Http\Controllers\DataSourceController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\RootCauseController;
@@ -61,6 +62,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('data-quality-checks/{dataQualityCheck}/edit', [DataQualityCheckController::class, 'edit'])->name('web.data-quality-checks.edit');
     Route::put('data-quality-checks/{dataQualityCheck}', [DataQualityCheckController::class, 'update'])->name('web.data-quality-checks.update');
     Route::delete('data-quality-checks/{dataQualityCheck}', [DataQualityCheckController::class, 'destroy'])->name('web.data-quality-checks.destroy');
+
+    Route::get('data-quality-checks/{dataQualityCheck}/scores', [DataQualityCheckScoreController::class, 'index'])->name('web.data-quality-checks.scores.index');
+    Route::post('data-quality-checks/{dataQualityCheck}/scores', [DataQualityCheckScoreController::class, 'store'])->name('web.data-quality-checks.scores.store');
 
     Route::get('root-causes', [RootCauseController::class, 'index'])->name('web.root-causes.index');
     Route::get('root-causes/create', [RootCauseController::class, 'create'])->name('web.root-causes.create');

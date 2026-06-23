@@ -60,6 +60,8 @@ class DataQualityCheckController extends Controller
         $dataQualityCheck->load([
             'businessRule',
             'dataSources',
+            'latestScore',
+            'latestScore.origin',
         ]);
 
         return view('pages.data-quality-checks.show', compact('dataQualityCheck'));

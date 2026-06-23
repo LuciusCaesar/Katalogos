@@ -159,6 +159,9 @@
                                 {{ __('Description') }}
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                {{ __('Score') }}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 {{ __('Data Sources') }}
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -176,6 +179,11 @@
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                     {{ $dataQualityCheck->description ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm @if($dataQualityCheck->latestScore && $dataQualityCheck->latestScore->score >= 0.9) text-green-600 dark:text-green-400
+                                        @elseif($dataQualityCheck->latestScore && $dataQualityCheck->latestScore->score >= 0.7) text-yellow-600 dark:text-yellow-400
+                                        @else text-red-600 dark:text-red-400 @endif">
+                                    {{ $dataQualityCheck->latestScore?->score_percentage ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                     {{ $dataQualityCheck->dataSources->pluck('name')->implode(', ') }}

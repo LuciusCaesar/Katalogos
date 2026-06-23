@@ -64,7 +64,9 @@ class BusinessRuleController extends Controller
             'businessAssets.dataInitiative',
             'businessAssets.domain',
             'dataIssues',
-            'dataQualityChecks',
+            'dataQualityChecks' => function ($query) {
+                $query->with(['dataSources', 'latestScore']);
+            },
         ]);
 
         return view('pages.business-rules.show', compact('businessRule'));
