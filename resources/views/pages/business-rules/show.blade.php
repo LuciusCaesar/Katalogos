@@ -37,6 +37,39 @@
             </div>
         @endif
 
+        <!-- Data Quality Check Scores Summary -->
+        @if ($businessRule->dataQualityChecks->isNotEmpty())
+            <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{{ __('Data Quality Check Scores Summary') }}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-gray-50 dark:bg-zinc-700 rounded-lg p-4 text-center">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Minimum Score') }}</p>
+                        <p class="text-2xl font-bold @if($businessRule->min_data_quality_check_score >= 0.9) text-green-600 dark:text-green-400
+                                @elseif($businessRule->min_data_quality_check_score >= 0.7) text-yellow-600 dark:text-yellow-400
+                                @else text-red-600 dark:text-red-400 @endif">
+                            {{ $businessRule->min_data_quality_check_score !== null ? number_format($businessRule->min_data_quality_check_score * 100, 2) . '%' : '-' }}
+                        </p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-zinc-700 rounded-lg p-4 text-center">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Average Score') }}</p>
+                        <p class="text-2xl font-bold @if($businessRule->avg_data_quality_check_score >= 0.9) text-green-600 dark:text-green-400
+                                @elseif($businessRule->avg_data_quality_check_score >= 0.7) text-yellow-600 dark:text-yellow-400
+                                @else text-red-600 dark:text-red-400 @endif">
+                            {{ $businessRule->avg_data_quality_check_score !== null ? number_format($businessRule->avg_data_quality_check_score * 100, 2) . '%' : '-' }}
+                        </p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-zinc-700 rounded-lg p-4 text-center">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Maximum Score') }}</p>
+                        <p class="text-2xl font-bold @if($businessRule->max_data_quality_check_score >= 0.9) text-green-600 dark:text-green-400
+                                @elseif($businessRule->max_data_quality_check_score >= 0.7) text-yellow-600 dark:text-yellow-400
+                                @else text-red-600 dark:text-red-400 @endif">
+                            {{ $businessRule->max_data_quality_check_score !== null ? number_format($businessRule->max_data_quality_check_score * 100, 2) . '%' : '-' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Business Assets Section -->
         <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-zinc-700">

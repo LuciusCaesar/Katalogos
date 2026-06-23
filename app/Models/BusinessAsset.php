@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Collection;
 
 class BusinessAsset extends Model
 {
@@ -204,5 +205,58 @@ class BusinessAsset extends Model
     public function calculateGovernanceScore(?array $changes = null): GovernanceScore
     {
         return app(GovernanceScoreService::class)->calculateAndSave($this, $changes);
+    }
+
+    /**
+     * Get the minimum current data quality check score from all business rules.
+     */
+    public function getMinDataQualityCheckScoreAttribute(): ?float
+    {
+        $scores = $this->getAllDataQualityCheckScores();
+
+        if ($scores->isEmpty()) {
+            return null;
+        }
+
+        return $scores->min();
+    }
+
+    /**
+     * Get the maximum current data quality check score from all business rules.
+     */
+    public function getMaxDataQualityCheckScoreAttribute(): ?float
+    {
+        $scores = $this->getAllDataQualityCheckScores();
+
+        if ($scores->isEmpty()) {
+            return null;
+        }
+
+        return $scores->max();
+    }
+
+    /**
+     * Get the average current data quality check score from all business rules.
+     */
+    public function getAvgDataQualityCheckScoreAttribute(): ?float
+    {
+        $scores = $this->getAllDataQualityCheckScores();
+
+        if ($scores->isEmpty()) {
+            return null;
+        }
+
+        return $scores->avg();
+    }
+
+    /**
+     * Get all current data quality check scores from all business rules.
+     */
+    private function getAllDataQualityCheckScores(): Collection
+    {
+        return $this->businessRules
+            ->flatMap(fn (BusinessRule $businessRule) => $businessRule->dataQualityChecks)
+            ->pluck('latestScore.score')
+            ->filter(fn ($score) => $score !== null);
     }
 }

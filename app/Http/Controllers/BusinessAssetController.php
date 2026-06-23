@@ -18,7 +18,18 @@ class BusinessAssetController extends Controller
      */
     public function index(Request $request): View
     {
-        $businessAssets = BusinessAsset::with(['dataInitiative', 'domain', 'dataSteward', 'dataOwner', 'governanceScore'])
+        $businessAssets = BusinessAsset::with([
+            'dataInitiative',
+            'domain',
+            'dataSteward',
+            'dataOwner',
+            'governanceScore',
+            'businessRules' => function ($query) {
+                $query->with(['dataQualityChecks' => function ($query) {
+                    $query->with('latestScore');
+                }]);
+            },
+        ])
             ->latest()
             ->paginate(10);
 
@@ -53,7 +64,20 @@ class BusinessAssetController extends Controller
      */
     public function show(BusinessAsset $businessAsset): View
     {
-        $businessAsset->load(['dataInitiative', 'domain', 'dataSteward', 'dataOwner', 'businessRules', 'dataIssues', 'governanceScore', 'governanceScores']);
+        $businessAsset->load([
+            'dataInitiative',
+            'domain',
+            'dataSteward',
+            'dataOwner',
+            'businessRules' => function ($query) {
+                $query->with(['dataQualityChecks' => function ($query) {
+                    $query->with('latestScore');
+                }]);
+            },
+            'dataIssues',
+            'governanceScore',
+            'governanceScores',
+        ]);
 
         return view('pages.business-assets.show', compact('businessAsset'));
     }

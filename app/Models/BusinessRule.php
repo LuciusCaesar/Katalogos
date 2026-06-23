@@ -57,4 +57,54 @@ class BusinessRule extends Model
     {
         return $this->hasMany(DataQualityCheck::class);
     }
+
+    /**
+     * Get the minimum current score from all data quality checks.
+     */
+    public function getMinDataQualityCheckScoreAttribute(): ?float
+    {
+        if ($this->dataQualityChecks->isEmpty()) {
+            return null;
+        }
+
+        return $this->dataQualityChecks
+            ->pluck('latestScore.score')
+            ->filter(fn ($score) => $score !== null)
+            ->min();
+    }
+
+    /**
+     * Get the maximum current score from all data quality checks.
+     */
+    public function getMaxDataQualityCheckScoreAttribute(): ?float
+    {
+        if ($this->dataQualityChecks->isEmpty()) {
+            return null;
+        }
+
+        return $this->dataQualityChecks
+            ->pluck('latestScore.score')
+            ->filter(fn ($score) => $score !== null)
+            ->max();
+    }
+
+    /**
+     * Get the average current score from all data quality checks.
+     */
+    public function getAvgDataQualityCheckScoreAttribute(): ?float
+    {
+        if ($this->dataQualityChecks->isEmpty()) {
+            return null;
+        }
+
+        $scores = $this->dataQualityChecks
+            ->pluck('latestScore.score')
+            ->filter(fn ($score) => $score !== null);
+
+        if ($scores->isEmpty()) {
+            return null;
+        }
+
+        return $scores->avg();
+    }
 }

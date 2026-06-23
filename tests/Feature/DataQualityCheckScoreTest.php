@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\BusinessAsset;
 use App\Models\BusinessRule;
 use App\Models\DataQualityCheck;
 use App\Models\DataQualityCheckScore;
@@ -410,4 +411,124 @@ it('scheduled origin factory state works', function () {
     expect($score->origin_type)->toBe('scheduled');
     expect($score->origin_id)->toBeNull();
     expect($score->origin_name)->toBe('Scheduled Job');
+});
+
+// Business Rule score aggregation tests
+
+it('business rule calculates min score from data quality checks', function () {
+    $businessRule = BusinessRule::factory()->create();
+    $dqc1 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule->id]);
+    $dqc2 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule->id]);
+    $dqc3 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule->id]);
+
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc1->id, 'score' => 0.5]);
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc2->id, 'score' => 0.7]);
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc3->id, 'score' => 0.9]);
+
+    expect($businessRule->min_data_quality_check_score)->toBe(0.5);
+});
+
+it('business rule calculates max score from data quality checks', function () {
+    $businessRule = BusinessRule::factory()->create();
+    $dqc1 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule->id]);
+    $dqc2 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule->id]);
+    $dqc3 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule->id]);
+
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc1->id, 'score' => 0.5]);
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc2->id, 'score' => 0.7]);
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc3->id, 'score' => 0.9]);
+
+    expect($businessRule->max_data_quality_check_score)->toBe(0.9);
+});
+
+it('business rule calculates average score from data quality checks', function () {
+    $businessRule = BusinessRule::factory()->create();
+    $dqc1 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule->id]);
+    $dqc2 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule->id]);
+    $dqc3 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule->id]);
+
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc1->id, 'score' => 0.5]);
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc2->id, 'score' => 0.7]);
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc3->id, 'score' => 0.9]);
+
+    expect(abs($businessRule->avg_data_quality_check_score - 0.7) < 0.0001)->toBeTrue();
+});
+
+it('business rule score accessors return null when no data quality checks', function () {
+    $businessRule = BusinessRule::factory()->create();
+
+    expect($businessRule->min_data_quality_check_score)->toBeNull();
+    expect($businessRule->max_data_quality_check_score)->toBeNull();
+    expect($businessRule->avg_data_quality_check_score)->toBeNull();
+});
+
+it('business rule score accessors ignore checks without scores', function () {
+    $businessRule = BusinessRule::factory()->create();
+    $dqc1 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule->id]);
+    $dqc2 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule->id]);
+
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc1->id, 'score' => 0.8]);
+    // $dqc2 has no score
+
+    expect($businessRule->min_data_quality_check_score)->toBe(0.8);
+    expect($businessRule->max_data_quality_check_score)->toBe(0.8);
+    expect($businessRule->avg_data_quality_check_score)->toBe(0.8);
+});
+
+// Business Asset score aggregation tests
+
+it('business asset calculates min score from all business rules data quality checks', function () {
+    $businessAsset = BusinessAsset::factory()->create();
+    $businessRule1 = BusinessRule::factory()->create();
+    $businessRule2 = BusinessRule::factory()->create();
+
+    $dqc1 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule1->id]);
+    $dqc2 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule2->id]);
+
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc1->id, 'score' => 0.6]);
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc2->id, 'score' => 0.8]);
+
+    $businessAsset->businessRules()->sync([$businessRule1->id, $businessRule2->id]);
+
+    expect($businessAsset->fresh()->min_data_quality_check_score)->toBe(0.6);
+});
+
+it('business asset calculates max score from all business rules data quality checks', function () {
+    $businessAsset = BusinessAsset::factory()->create();
+    $businessRule1 = BusinessRule::factory()->create();
+    $businessRule2 = BusinessRule::factory()->create();
+
+    $dqc1 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule1->id]);
+    $dqc2 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule2->id]);
+
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc1->id, 'score' => 0.6]);
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc2->id, 'score' => 0.8]);
+
+    $businessAsset->businessRules()->sync([$businessRule1->id, $businessRule2->id]);
+
+    expect($businessAsset->fresh()->max_data_quality_check_score)->toBe(0.8);
+});
+
+it('business asset calculates average score from all business rules data quality checks', function () {
+    $businessAsset = BusinessAsset::factory()->create();
+    $businessRule1 = BusinessRule::factory()->create();
+    $businessRule2 = BusinessRule::factory()->create();
+
+    $dqc1 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule1->id]);
+    $dqc2 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule2->id]);
+
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc1->id, 'score' => 0.6]);
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc2->id, 'score' => 0.8]);
+
+    $businessAsset->businessRules()->sync([$businessRule1->id, $businessRule2->id]);
+
+    expect(abs($businessAsset->fresh()->avg_data_quality_check_score - 0.7) < 0.0001)->toBeTrue();
+});
+
+it('business asset score accessors return null when no business rules', function () {
+    $businessAsset = BusinessAsset::factory()->create();
+
+    expect($businessAsset->min_data_quality_check_score)->toBeNull();
+    expect($businessAsset->max_data_quality_check_score)->toBeNull();
+    expect($businessAsset->avg_data_quality_check_score)->toBeNull();
 });
