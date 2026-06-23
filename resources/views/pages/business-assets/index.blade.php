@@ -48,6 +48,9 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 {{ __('Data Owner') }}
                             </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                {{ __('Governance Score') }}
+                            </th>
 
                         </tr>
                     </thead>
@@ -73,6 +76,17 @@
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                     {{ $asset->dataOwner()->first()?->name ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 text-sm">
+                                    @if($asset->governanceScore)
+                                        <span class="@if($asset->governanceScore->score >= 0.8) text-green-600 dark:text-green-400
+                                            @elseif($asset->governanceScore->score >= 0.5) text-yellow-600 dark:text-yellow-400
+                                            @else text-red-600 dark:text-red-400 @endif font-medium">
+                                            {{ number_format($asset->governanceScore->score * 100, 1) }}%
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400 dark:text-gray-500">-</span>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

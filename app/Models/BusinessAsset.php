@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Services\GovernanceScoreService;
 use Database\Factories\BusinessAssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class BusinessAsset extends Model
@@ -176,5 +179,30 @@ class BusinessAsset extends Model
             ->where('user_id', $user->id)
             ->where('role_id', $role->id)
             ->delete() > 0;
+    }
+
+    /**
+     * Get all governance scores for this business asset (includes history).
+     */
+    public function governanceScores(): HasMany
+    {
+        return $this->hasMany(GovernanceScore::class)->orderBy('calculated_at', 'desc');
+    }
+
+    /**
+     * Get the current governance score for this business asset.
+     * Uses latestOfMany() to get the most recent score entry.
+     */
+    public function governanceScore(): HasOne
+    {
+        return $this->hasOne(GovernanceScore::class)->latestOfMany();
+    }
+
+    /**
+     * Calculate and save governance score.
+     */
+    public function calculateGovernanceScore(?array $changes = null): GovernanceScore
+    {
+        return app(GovernanceScoreService::class)->calculateAndSave($this, $changes);
     }
 }

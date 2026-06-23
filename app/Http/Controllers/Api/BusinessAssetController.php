@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\StoreBusinessAssetRequest;
 use App\Http\Requests\Api\UpdateBusinessAssetRequest;
+use App\Http\Resources\BusinessAssetResource;
 use App\Models\BusinessAsset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 class BusinessAssetController extends Controller
 {
@@ -17,35 +17,41 @@ class BusinessAssetController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
-        return JsonResource::collection(BusinessAsset::all());
+        return BusinessAssetResource::collection(
+            BusinessAsset::with(['governanceScore'])->get()
+        );
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreBusinessAssetRequest $request): JsonResource
+    public function store(StoreBusinessAssetRequest $request): BusinessAssetResource
     {
         $businessAsset = BusinessAsset::create($request->validated());
+        $businessAsset->load('governanceScore');
 
-        return new JsonResource($businessAsset);
+        return new BusinessAssetResource($businessAsset);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(BusinessAsset $businessAsset): JsonResource
+    public function show(BusinessAsset $businessAsset): BusinessAssetResource
     {
-        return new JsonResource($businessAsset);
+        $businessAsset->load(['governanceScore']);
+
+        return new BusinessAssetResource($businessAsset);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateBusinessAssetRequest $request, BusinessAsset $businessAsset): JsonResource
+    public function update(UpdateBusinessAssetRequest $request, BusinessAsset $businessAsset): BusinessAssetResource
     {
         $businessAsset->update($request->validated());
+        $businessAsset->load('governanceScore');
 
-        return new JsonResource($businessAsset);
+        return new BusinessAssetResource($businessAsset);
     }
 
     /**
