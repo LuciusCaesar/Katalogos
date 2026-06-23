@@ -46,6 +46,9 @@
                                 {{ __('Data Quality Checks') }}
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                {{ __('Avg Score') }}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 {{ __('Created At') }}
                             </th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -78,6 +81,17 @@
                                     <a href="{{ route('web.business-rules.show', $businessRule) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
                                         {{ $businessRule->data_quality_checks_count }} {{ __('Data Quality Check', ['count' => $businessRule->data_quality_checks_count]) }}
                                     </a>
+                                </td>
+                                <td class="px-6 py-4 text-sm">
+                                    @if($businessRule->avg_data_quality_check_score !== null)
+                                        <span class="@if($businessRule->avg_data_quality_check_score >= 0.9) text-green-600 dark:text-green-400
+                                            @elseif($businessRule->avg_data_quality_check_score >= 0.7) text-yellow-600 dark:text-yellow-400
+                                            @else text-red-600 dark:text-red-400 @endif font-medium">
+                                            {{ number_format($businessRule->avg_data_quality_check_score * 100, 2) }}%
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400 dark:text-gray-500">-</span>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                     {{ $businessRule->created_at->format('Y-m-d H:i') }}

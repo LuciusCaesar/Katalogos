@@ -18,6 +18,9 @@ class BusinessRuleController extends Controller
     public function index(): View
     {
         $businessRules = BusinessRule::withCount(['businessAssets', 'dataIssues', 'dataQualityChecks'])
+            ->with(['dataQualityChecks' => function ($query) {
+                $query->with('latestScore');
+            }])
             ->latest()
             ->paginate(10);
 

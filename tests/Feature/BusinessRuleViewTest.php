@@ -4,6 +4,8 @@ use App\Models\BusinessAsset;
 use App\Models\BusinessRule;
 use App\Models\DataInitiative;
 use App\Models\DataIssue;
+use App\Models\DataQualityCheck;
+use App\Models\DataQualityCheckScore;
 use App\Models\Domain;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -46,6 +48,8 @@ it('displays business rules in a table', function () {
         ->assertSee(__('Description'))
         ->assertSee(__('Business Assets'))
         ->assertSee(__('Data Issues'))
+        ->assertSee(__('Data Quality Checks'))
+        ->assertSee(__('Avg Score'))
         ->assertSee(__('Created At'))
         ->assertSee(__('Actions'));
 });
@@ -79,6 +83,21 @@ it('displays data issues count for business rule', function () {
         ->get(route('web.business-rules.index'))
         ->assertStatus(200)
         ->assertSee('2');
+});
+
+it('displays average score for business rule with data quality checks', function () {
+    $businessRule = BusinessRule::factory()->create();
+
+    $dqc1 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule->id]);
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc1->id, 'score' => 0.8]);
+
+    $dqc2 = DataQualityCheck::factory()->create(['business_rule_id' => $businessRule->id]);
+    DataQualityCheckScore::factory()->create(['data_quality_check_id' => $dqc2->id, 'score' => 0.9]);
+
+    $this->actingAs($this->user)
+        ->get(route('web.business-rules.index'))
+        ->assertStatus(200)
+        ->assertSee('85.00%');
 });
 
 it('displays new button on index page', function () {
