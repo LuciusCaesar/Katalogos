@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateBusinessAssetRequest;
 use App\Models\BusinessAsset;
 use App\Models\DataInitiative;
 use App\Models\Domain;
+use App\Models\GovernanceScore;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -115,5 +116,35 @@ class BusinessAssetController extends Controller
         return redirect()
             ->route('web.business-assets.index')
             ->with('success', __('Business Asset deleted successfully.'));
+    }
+
+    /**
+     * Show governance score details for a business asset.
+     */
+    public function showGovernanceScoreDetails(BusinessAsset $businessAsset): View
+    {
+        $businessAsset->load(['governanceScore', 'governanceScores']);
+
+        return view('pages.business-assets.governance-score-details', compact('businessAsset'));
+    }
+
+    /**
+     * Show governance score history for a business asset.
+     */
+    public function showGovernanceScoreHistory(BusinessAsset $businessAsset): View
+    {
+        $businessAsset->load(['governanceScores' => fn ($query) => $query->orderBy('calculated_at', 'desc')]);
+
+        return view('pages.business-assets.governance-score-history', compact('businessAsset'));
+    }
+
+    /**
+     * Show details for a specific governance score.
+     */
+    public function showSpecificGovernanceScore(BusinessAsset $businessAsset, GovernanceScore $governanceScore): View
+    {
+        abort_unless($governanceScore->business_asset_id === $businessAsset->id, 404);
+
+        return view('pages.business-assets.governance-score-show', compact('businessAsset', 'governanceScore'));
     }
 }

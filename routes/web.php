@@ -23,6 +23,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('business-assets/{businessAsset}', [BusinessAssetController::class, 'update'])->name('web.business-assets.update');
     Route::delete('business-assets/{businessAsset}', [BusinessAssetController::class, 'destroy'])->name('web.business-assets.destroy');
 
+    // Governance Score routes
+    Route::get('business-assets/{businessAsset}/governance-score/details', [BusinessAssetController::class, 'showGovernanceScoreDetails'])->name('web.business-assets.governance-score.details');
+    Route::get('business-assets/{businessAsset}/governance-score/history', [BusinessAssetController::class, 'showGovernanceScoreHistory'])->name('web.business-assets.governance-score.history');
+    Route::get('business-assets/{businessAsset}/governance-score/{governanceScore}', [BusinessAssetController::class, 'showSpecificGovernanceScore'])->name('web.business-assets.governance-score.show');
+
     Route::get('business-rules', [BusinessRuleController::class, 'index'])->name('web.business-rules.index');
     Route::get('business-rules/create', [BusinessRuleController::class, 'create'])->name('web.business-rules.create');
     Route::post('business-rules', [BusinessRuleController::class, 'store'])->name('web.business-rules.store');
