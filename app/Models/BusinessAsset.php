@@ -11,8 +11,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string|null $definition
+ * @property int|null $data_initiative_id
+ * @property int|null $domain_id
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ */
 class BusinessAsset extends Model
 {
     /** @use HasFactory<BusinessAssetFactory> */
@@ -23,6 +33,11 @@ class BusinessAsset extends Model
         'definition',
         'data_initiative_id',
         'domain_id',
+    ];
+
+    protected $casts = [
+        'data_initiative_id' => 'integer',
+        'domain_id' => 'integer',
     ];
 
     /**
@@ -184,6 +199,8 @@ class BusinessAsset extends Model
 
     /**
      * Get all governance scores for this business asset (includes history).
+     *
+     * @return HasMany<GovernanceScore, $this>
      */
     public function governanceScores(): HasMany
     {
@@ -193,6 +210,8 @@ class BusinessAsset extends Model
     /**
      * Get the current governance score for this business asset.
      * Uses latestOfMany() to get the most recent score entry.
+     *
+     * @return HasOne<GovernanceScore, $this>
      */
     public function governanceScore(): HasOne
     {
@@ -201,6 +220,8 @@ class BusinessAsset extends Model
 
     /**
      * Calculate and save governance score.
+     *
+     * @param  array<string, mixed>|null  $changes
      */
     public function calculateGovernanceScore(?array $changes = null): GovernanceScore
     {
@@ -251,6 +272,8 @@ class BusinessAsset extends Model
 
     /**
      * Get all current data quality check scores from all business rules.
+     *
+     * @return Collection<int, float>
      */
     private function getAllDataQualityCheckScores(): Collection
     {

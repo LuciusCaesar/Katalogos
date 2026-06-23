@@ -8,6 +8,7 @@ use App\Models\DataInitiative;
 use App\Models\DataIssue;
 use App\Models\RootCause;
 use App\Models\Solution;
+use Illuminate\View\View;
 use Livewire\Component;
 
 class DashboardComponent extends Component
@@ -34,7 +35,10 @@ class DashboardComponent extends Component
         $this->solutionsCount = Solution::count();
     }
 
-    public function render()
+    /**
+     * Render the component.
+     */
+    public function render(): View
     {
         return view('livewire.dashboard-component');
     }

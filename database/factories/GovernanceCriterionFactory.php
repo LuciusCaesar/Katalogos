@@ -30,6 +30,8 @@ class GovernanceCriterionFactory extends Factory
 
     /**
      * Create an inactive criterion.
+     *
+     * @return Factory<GovernanceCriterion>
      */
     public function inactive(): Factory
     {

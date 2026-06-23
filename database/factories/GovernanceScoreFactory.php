@@ -32,7 +32,7 @@ class GovernanceScoreFactory extends Factory
     /**
      * Create a perfect score.
      */
-    public function perfect(): Factory
+    public function perfect(): GovernanceScoreFactory
     {
         return $this->state(['score' => 1.0]);
     }
@@ -40,7 +40,7 @@ class GovernanceScoreFactory extends Factory
     /**
      * Create a zero score.
      */
-    public function zero(): Factory
+    public function zero(): GovernanceScoreFactory
     {
         return $this->state(['score' => 0.0]);
     }

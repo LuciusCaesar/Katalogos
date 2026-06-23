@@ -34,7 +34,9 @@ class RecalculateGovernanceScores extends Command
             $asset = BusinessAsset::findOrFail($this->option('asset'));
             $this->info("Recalculating governance score for Business Asset #{$asset->id}...");
             $scoreService->calculateAndSave($asset, ['reason' => 'manual_recalculation']);
-            $this->info("Score: {$asset->fresh()->governanceScore?->score}");
+            $freshAsset = $asset->fresh();
+            $score = $freshAsset->governanceScore?->score;
+            $this->info("Score: {$score}");
 
             return 0;
         }

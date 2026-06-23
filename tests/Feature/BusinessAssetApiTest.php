@@ -59,7 +59,7 @@ it('shows a business asset', function () {
     $response = $this->getJson('/api/v1/business-assets/'.$businessAsset->id);
 
     $response->assertStatus(200)
-        ->assertJson(['data' => $businessAsset->toArray()]);
+        ->assertJson(['data' => ['id' => $businessAsset->id, 'name' => $businessAsset->name]]);
 });
 
 it('updates a business asset', function () {

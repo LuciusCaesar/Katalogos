@@ -12,7 +12,7 @@ class GovernanceScoreService
     /**
      * Calculate and save governance score for a business asset.
      *
-     * @param  array|null  $changes  What triggered the recalculation
+     * @param  array<string, mixed>|null  $changes  What triggered the recalculation
      */
     public function calculateAndSave(BusinessAsset $businessAsset, ?array $changes = null): GovernanceScore
     {
@@ -23,7 +23,9 @@ class GovernanceScoreService
             ->get();
 
         // Calculate criteria results
+        /** @var array<string, bool> $results */
         $results = [];
+        /** @var array<string, float> $weights */
         $weights = [];
         $totalWeight = 0.0;
         $achievedWeight = 0.0;
@@ -63,8 +65,8 @@ class GovernanceScoreService
         return match ($criterion->key) {
             'has_name' => ! empty($businessAsset->name),
             'has_definition' => ! empty($businessAsset->definition),
-            'has_domain' => $businessAsset->domain_id !== null,
-            'has_data_initiative' => $businessAsset->data_initiative_id !== null,
+            'has_domain' => $businessAsset->domain !== null,
+            'has_data_initiative' => $businessAsset->dataInitiative !== null,
             'has_business_rule' => $businessAsset->businessRules()->exists(),
             'has_data_source' => $businessAsset->dataSources()->exists(),
             'has_data_steward' => $businessAsset->dataSteward()->exists(),
@@ -78,11 +80,16 @@ class GovernanceScoreService
      */
     public function getScore(BusinessAsset $businessAsset): ?GovernanceScore
     {
-        return $businessAsset->governanceScores()->latest()->first();
+        /** @var GovernanceScore|null $score */
+        $score = $businessAsset->governanceScores()->latest()->first();
+
+        return $score;
     }
 
     /**
      * Get score history for a business asset.
+     *
+     * @return Collection<int, GovernanceScore>
      */
     public function getHistory(BusinessAsset $businessAsset, int $limit = 50): Collection
     {

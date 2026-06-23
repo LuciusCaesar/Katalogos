@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::apiResource('business-rules', BusinessRuleController::class);
     Route::apiResource('data-initiatives', DataInitiativeController::class);
+    Route::get('data-initiatives/{dataInitiative}/governance-score-history',
+        [DataInitiativeController::class, 'governanceScoreHistory'])
+        ->name('api.data-initiatives.governance-score-history');
     Route::apiResource('business-assets', BusinessAssetController::class);
     Route::apiResource('data-issues', DataIssueController::class);
     Route::apiResource('data-quality-checks', DataQualityCheckController::class);

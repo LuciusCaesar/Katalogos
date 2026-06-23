@@ -8,6 +8,7 @@ use App\Models\DataInitiative;
 use App\Models\Domain;
 use App\Models\GovernanceCriterion;
 use App\Models\User;
+use App\Services\DataInitiativeGovernanceScoreService;
 use App\Services\GovernanceScoreService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -85,7 +86,10 @@ test('it increases score when business rule is attached', function () {
 
 test('listener handles business asset changed event', function () {
     $asset = BusinessAsset::factory()->create();
-    $listener = new CalculateGovernanceScore(new GovernanceScoreService);
+    $listener = new CalculateGovernanceScore(
+        new GovernanceScoreService,
+        new DataInitiativeGovernanceScoreService
+    );
 
     $event = new BusinessAssetChanged($asset, ['action' => 'test']);
     $listener->handle($event);

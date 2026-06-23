@@ -13,7 +13,7 @@ class BusinessAssetChanged
     /**
      * Create a new event instance.
      *
-     * @param  array|null  $changes  What triggered this change
+     * @param  array<string, mixed>|null  $changes  What triggered this change
      */
     public function __construct(
         public BusinessAsset $businessAsset,
