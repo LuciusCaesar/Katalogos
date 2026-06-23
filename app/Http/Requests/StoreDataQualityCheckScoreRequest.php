@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreDataQualityCheckScoreRequest extends FormRequest
 {
@@ -57,9 +58,9 @@ class StoreDataQualityCheckScoreRequest extends FormRequest
     /**
      * Configure the validator instance.
      */
-    public function withValidator($validator): void
+    public function withValidator(Validator $validator): void
     {
-        $validator->after(function ($validator) {
+        $validator->after(function (Validator $validator) {
             $hasRowsPassed = $this->filled('rows_passed');
             $hasRowsFailed = $this->filled('rows_failed');
             $hasTotalRows = $this->filled('total_rows');

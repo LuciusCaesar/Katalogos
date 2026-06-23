@@ -23,6 +23,8 @@ class DataQualityCheck extends Model
 
     /**
      * Get the business rule that owns this data quality check.
+     *
+     * @return BelongsTo<BusinessRule, $this>
      */
     public function businessRule(): BelongsTo
     {
@@ -31,6 +33,8 @@ class DataQualityCheck extends Model
 
     /**
      * Get all data sources associated with this data quality check.
+     *
+     * @return BelongsToMany<DataSource, $this>
      */
     public function dataSources(): BelongsToMany
     {
@@ -44,6 +48,8 @@ class DataQualityCheck extends Model
 
     /**
      * Get all scores for this data quality check.
+     *
+     * @return HasMany<DataQualityCheckScore, $this>
      */
     public function scores(): HasMany
     {
@@ -52,6 +58,8 @@ class DataQualityCheck extends Model
 
     /**
      * Get the latest score for this data quality check.
+     *
+     * @return HasOne<DataQualityCheckScore, $this>
      */
     public function latestScore(): HasOne
     {

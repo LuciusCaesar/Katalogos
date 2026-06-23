@@ -51,7 +51,7 @@ class BusinessRule extends Model
     /**
      * Get all data quality checks associated with this business rule.
      *
-     * @return HasMany<DataQualityCheck>
+     * @return HasMany<DataQualityCheck, $this>
      */
     public function dataQualityChecks(): HasMany
     {

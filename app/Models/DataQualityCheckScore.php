@@ -31,11 +31,21 @@ class DataQualityCheckScore extends Model
         'total_rows' => 'integer',
     ];
 
+    /**
+     * Get the data quality check that owns this score.
+     *
+     * @return BelongsTo<DataQualityCheck, $this>
+     */
     public function dataQualityCheck(): BelongsTo
     {
         return $this->belongsTo(DataQualityCheck::class);
     }
 
+    /**
+     * Get the origin user.
+     *
+     * @return BelongsTo<User, $this>
+     */
     public function origin(): BelongsTo
     {
         return $this->belongsTo(User::class, 'origin_id');

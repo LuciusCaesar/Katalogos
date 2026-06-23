@@ -4,7 +4,23 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $data_quality_check_id
+ * @property int $rows_passed
+ * @property int $rows_failed
+ * @property int $total_rows
+ * @property float $score
+ * @property string $score_percentage
+ * @property string|null $origin_type
+ * @property int|null $origin_id
+ * @property string|null $origin_name
+ * @property string|null $notes
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ */
 class DataQualityCheckScoreResource extends JsonResource
 {
     /**
