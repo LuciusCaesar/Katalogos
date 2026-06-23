@@ -18,6 +18,9 @@
                     <flux:sidebar.item icon="briefcase" :href="route('web.business-assets.index')" :current="request()->routeIs('web.business-assets.*')" wire:navigate>
                         {{ __('Business Assets') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="folder-open" :href="route('web.data-initiatives.index')" :current="request()->routeIs('web.data-initiatives.*')" wire:navigate>
+                        {{ __('Data Initiatives') }}
+                    </flux:sidebar.item>
                     <flux:sidebar.item icon="document-text" :href="route('web.business-rules.index')" :current="request()->routeIs('web.business-rules.*')" wire:navigate>
                         {{ __('Business Rules') }}
                     </flux:sidebar.item>

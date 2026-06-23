@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\DataInitiative;
+use App\Models\DataInitiativeGovernanceScoreHistory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -96,4 +97,31 @@ it('requires authentication', function () {
     $response = $this->getJson('/api/v1/data-initiatives');
 
     $response->assertStatus(401);
+});
+
+it('gets governance score history for a data initiative', function () {
+    Sanctum::actingAs($this->user);
+
+    $initiative = DataInitiative::factory()->create();
+    $history = DataInitiativeGovernanceScoreHistory::factory()->count(3)->create([
+        'data_initiative_id' => $initiative->id,
+    ]);
+
+    $response = $this->getJson('/api/v1/data-initiatives/'.$initiative->id.'/governance-score-history');
+
+    $response->assertStatus(200)
+        ->assertJsonCount(3, 'data')
+        ->assertJsonStructure([
+            'data' => [
+                '*' => [
+                    'id',
+                    'data_initiative_id',
+                    'score',
+                    'event',
+                    'calculated_at',
+                    'created_at',
+                    'updated_at',
+                ],
+            ],
+        ]);
 });

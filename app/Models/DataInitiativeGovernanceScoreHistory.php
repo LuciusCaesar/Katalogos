@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\DataInitiativeGovernanceScoreHistoryFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DataInitiativeGovernanceScoreHistory extends Model
 {
+    /** @use HasFactory<DataInitiativeGovernanceScoreHistoryFactory> */
+    use HasFactory;
+
     protected $table = 'data_initiative_governance_score_history';
 
     protected $fillable = [

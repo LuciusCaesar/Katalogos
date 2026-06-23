@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BusinessAssetController;
 use App\Http\Controllers\BusinessRuleController;
+use App\Http\Controllers\DataInitiativeController;
 use App\Http\Controllers\DataIssueController;
 use App\Http\Controllers\DataQualityCheckController;
 use App\Http\Controllers\DataQualityCheckScoreController;
@@ -27,6 +28,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('business-assets/{businessAsset}/governance-score/details', [BusinessAssetController::class, 'showGovernanceScoreDetails'])->name('web.business-assets.governance-score.details');
     Route::get('business-assets/{businessAsset}/governance-score/history', [BusinessAssetController::class, 'showGovernanceScoreHistory'])->name('web.business-assets.governance-score.history');
     Route::get('business-assets/{businessAsset}/governance-score/{governanceScore}', [BusinessAssetController::class, 'showSpecificGovernanceScore'])->name('web.business-assets.governance-score.show');
+
+    Route::get('data-initiatives', [DataInitiativeController::class, 'index'])->name('web.data-initiatives.index');
+    Route::get('data-initiatives/create', [DataInitiativeController::class, 'create'])->name('web.data-initiatives.create');
+    Route::post('data-initiatives', [DataInitiativeController::class, 'store'])->name('web.data-initiatives.store');
+    Route::get('data-initiatives/{dataInitiative}', [DataInitiativeController::class, 'show'])->name('web.data-initiatives.show');
+    Route::get('data-initiatives/{dataInitiative}/edit', [DataInitiativeController::class, 'edit'])->name('web.data-initiatives.edit');
+    Route::put('data-initiatives/{dataInitiative}', [DataInitiativeController::class, 'update'])->name('web.data-initiatives.update');
+    Route::delete('data-initiatives/{dataInitiative}', [DataInitiativeController::class, 'destroy'])->name('web.data-initiatives.destroy');
+
+    // Governance Score History routes for Data Initiatives
+    Route::get('data-initiatives/{dataInitiative}/governance-score/history', [DataInitiativeController::class, 'showGovernanceScoreHistory'])->name('web.data-initiatives.governance-score.history');
+    Route::get('data-initiatives/{dataInitiative}/governance-score/{history}', [DataInitiativeController::class, 'showSpecificGovernanceScore'])->name('web.data-initiatives.governance-score.show');
 
     Route::get('business-rules', [BusinessRuleController::class, 'index'])->name('web.business-rules.index');
     Route::get('business-rules/create', [BusinessRuleController::class, 'create'])->name('web.business-rules.create');

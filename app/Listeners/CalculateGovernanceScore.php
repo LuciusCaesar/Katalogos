@@ -4,6 +4,7 @@ namespace App\Listeners;
 
 use App\Events\BusinessAssetChanged;
 use App\Models\BusinessAsset;
+use App\Models\DataInitiative;
 use App\Services\DataInitiativeGovernanceScoreService;
 use App\Services\GovernanceScoreService;
 
@@ -32,10 +33,17 @@ class CalculateGovernanceScore
 
         // 2. Trigger Data Initiative recalculation if it has one
         if ($asset->data_initiative_id) {
-            $this->initiativeScoreService->calculateAndSave(
-                $asset->dataInitiative,
-                $this->buildEventMessage($asset, $event->changes)
-            );
+            // Load the initiative directly to avoid relationship caching issues
+            $initiative = DataInitiative::find($asset->data_initiative_id);
+
+            if ($initiative instanceof DataInitiative) {
+                $eventMessage = $this->buildEventMessage($asset, $event->changes);
+
+                $this->initiativeScoreService->calculateAndSave(
+                    $initiative,
+                    $eventMessage
+                );
+            }
         }
     }
 
@@ -58,6 +66,11 @@ class CalculateGovernanceScore
                 return "Business Asset #{$asset->id} deleted";
             }
             if (isset($changes['changed_fields']) && in_array('data_initiative_id', $changes['changed_fields'], true)) {
+                // Check if this is a link (from null) or reassignment (from one initiative to another)
+                if (array_key_exists('old_data_initiative_id', $changes) && $changes['old_data_initiative_id'] === null) {
+                    return "Business Asset #{$asset->id} linked";
+                }
+
                 return "Business Asset #{$asset->id} reassigned";
             }
             if (isset($changes['changed_fields'])) {

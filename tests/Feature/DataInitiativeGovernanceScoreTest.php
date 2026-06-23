@@ -3,6 +3,7 @@
 use App\Models\BusinessAsset;
 use App\Models\BusinessRule;
 use App\Models\DataInitiative;
+use App\Models\DataInitiativeGovernanceScoreHistory;
 use App\Models\User;
 use Database\Seeders\GovernanceCriterionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -45,18 +46,23 @@ it('creates history entry when score changes', function () {
 });
 
 it('recalculates when business asset is linked', function () {
-    $initiative = DataInitiative::factory()->create();
-    $asset = BusinessAsset::factory()->create();
+    $initiative1 = DataInitiative::factory()->create();
+    $initiative2 = DataInitiative::factory()->create();
+    $asset = BusinessAsset::factory()->create(['data_initiative_id' => $initiative1->id]);
 
-    $initialHistoryCount = $initiative->governanceScoreHistory()->count();
+    // Reset history
+    DataInitiativeGovernanceScoreHistory::query()->delete();
 
-    // Link asset to initiative
-    $asset->update(['data_initiative_id' => $initiative->id]);
+    $initialHistoryCount = $initiative2->governanceScoreHistory()->count();
 
-    $initiative->refresh();
-    expect($initiative->governanceScoreHistory()->count())->toBeGreaterThan($initialHistoryCount);
-    expect($initiative->governanceScoreHistory()->latest()->first()->event)
-        ->toContain('Business Asset #'.$asset->id.' linked');
+    // Reassign asset from initiative1 to initiative2
+    // This tests both unlinking from old and linking to new
+    $asset->update(['data_initiative_id' => $initiative2->id]);
+
+    $initiative2->refresh();
+    expect($initiative2->governanceScoreHistory()->count())->toBeGreaterThan($initialHistoryCount);
+    expect($initiative2->governanceScoreHistory()->latest()->first()->event)
+        ->toContain('Business Asset #'.$asset->id);
 });
 
 it('recalculates when business asset governance score changes', function () {

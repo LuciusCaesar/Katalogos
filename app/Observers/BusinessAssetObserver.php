@@ -24,10 +24,10 @@ class BusinessAssetObserver
     {
         $changes = ['action' => 'updated', 'changed_fields' => array_keys($businessAsset->getChanges())];
 
-        // If data_initiative_id changed, recalculate BOTH old and new Data Initiative scores
+        // If data_initiative_id changed, recalculate old Data Initiative score
+        // The new initiative will be recalculated by the listener
         if (in_array('data_initiative_id', $changes['changed_fields'], true)) {
             $oldId = $businessAsset->getOriginal('data_initiative_id');
-            $newId = $businessAsset->data_initiative_id;
 
             // Recalculate old Data Initiative (if it exists)
             if ($oldId) {
@@ -40,16 +40,8 @@ class BusinessAssetObserver
                 }
             }
 
-            // Recalculate new Data Initiative (if it exists)
-            if ($newId) {
-                $newInitiative = DataInitiative::find($newId);
-                if ($newInitiative instanceof DataInitiative) {
-                    app(DataInitiativeGovernanceScoreService::class)->calculateAndSave(
-                        $newInitiative,
-                        "Business Asset #{$businessAsset->id} linked"
-                    );
-                }
-            }
+            // Pass old data_initiative_id to listener for proper event message
+            $changes['old_data_initiative_id'] = $oldId;
         }
 
         event(new BusinessAssetChanged($businessAsset, $changes));
