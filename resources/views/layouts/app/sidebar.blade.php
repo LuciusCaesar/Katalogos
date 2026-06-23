@@ -11,30 +11,31 @@
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')" class="grid">
+                <flux:sidebar.group :heading="__('Strategy')" class="grid">
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="briefcase" :href="route('web.business-assets.index')" :current="request()->routeIs('web.business-assets.*')" wire:navigate>
-                        {{ __('Business Assets') }}
+                    <flux:sidebar.item icon="squares-2x2" :href="route('web.domains.index')" :current="request()->routeIs('web.domains.*')" wire:navigate>
+                        {{ __('Domains') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="folder-open" :href="route('web.data-initiatives.index')" :current="request()->routeIs('web.data-initiatives.*')" wire:navigate>
                         {{ __('Data Initiatives') }}
                     </flux:sidebar.item>
+                </flux:sidebar.group>
+                <flux:sidebar.group :heading="__('Glossary')" class="grid">
+                    <flux:sidebar.item icon="book-open" :href="route('web.business-assets.index')" :current="request()->routeIs('web.business-assets.*')" wire:navigate>
+                        {{ __('Business Assets') }}
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
+                <flux:sidebar.group :heading="__('Quality')" class="grid">
                     <flux:sidebar.item icon="document-text" :href="route('web.business-rules.index')" :current="request()->routeIs('web.business-rules.*')" wire:navigate>
                         {{ __('Business Rules') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="folder" :href="route('web.domains.index')" :current="request()->routeIs('web.domains.*')" wire:navigate>
-                        {{ __('Domains') }}
+                    <flux:sidebar.item icon="shield-check" :href="route('web.data-quality-checks.index')" :current="request()->routeIs('web.data-quality-checks.*')" wire:navigate>
+                        {{ __('Data Quality Checks') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="exclamation-triangle" :href="route('web.data-issues.index')" :current="request()->routeIs('web.data-issues.*')" wire:navigate>
                         {{ __('Data Issues') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="archive-box" :href="route('web.data-sources.index')" :current="request()->routeIs('web.data-sources.*')" wire:navigate>
-                        {{ __('Data Sources') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="shield-check" :href="route('web.data-quality-checks.index')" :current="request()->routeIs('web.data-quality-checks.*')" wire:navigate>
-                        {{ __('Data Quality Checks') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="puzzle-piece" :href="route('web.root-causes.index')" :current="request()->routeIs('web.root-causes.*')" wire:navigate>
                         {{ __('Root Causes') }}
@@ -43,16 +44,21 @@
                         {{ __('Solutions') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
+                <flux:sidebar.group :heading="__('Lineage')" class="grid">
+                    <flux:sidebar.item icon="circle-stack" :href="route('web.data-sources.index')" :current="request()->routeIs('web.data-sources.*')" wire:navigate>
+                        {{ __('Data Sources') }}
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:spacer />
 
             <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
+                <flux:sidebar.item icon="folder-git-2" href="https://github.com/LuciusCaesar/Katalogos" target="_blank">
                     {{ __('Repository') }}
                 </flux:sidebar.item>
 
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
+                <flux:sidebar.item icon="book-open-text" href="https://github.com/LuciusCaesar/Katalogos" target="_blank">
                     {{ __('Documentation') }}
                 </flux:sidebar.item>
             </flux:sidebar.nav>
