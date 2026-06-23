@@ -30,6 +30,9 @@
                     <flux:sidebar.item icon="archive-box" :href="route('web.data-sources.index')" :current="request()->routeIs('web.data-sources.*')" wire:navigate>
                         {{ __('Data Sources') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="shield-check" :href="route('web.data-quality-checks.index')" :current="request()->routeIs('web.data-quality-checks.*')" wire:navigate>
+                        {{ __('Data Quality Checks') }}
+                    </flux:sidebar.item>
                     <flux:sidebar.item icon="puzzle-piece" :href="route('web.root-causes.index')" :current="request()->routeIs('web.root-causes.*')" wire:navigate>
                         {{ __('Root Causes') }}
                     </flux:sidebar.item>

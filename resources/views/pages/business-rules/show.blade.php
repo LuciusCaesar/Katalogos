@@ -137,6 +137,59 @@
             @endif
         </div>
 
+        <!-- Data Quality Checks Section -->
+        <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-zinc-700">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    {{ __('Data Quality Checks') }} ({{ $businessRule->dataQualityChecks->count() }})
+                </h2>
+            </div>
+            @if ($businessRule->dataQualityChecks->isEmpty())
+                <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                    {{ __('No data quality checks associated with this business rule.') }}
+                </div>
+            @else
+                <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-zinc-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                {{ __('Name') }}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                {{ __('Description') }}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                {{ __('Data Sources') }}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                {{ __('Created At') }}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-zinc-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        @foreach ($businessRule->dataQualityChecks as $dataQualityCheck)
+                            <tr class="hover:bg-gray-50 dark:hover:bg-zinc-700">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                    <a href="{{ route('web.data-quality-checks.show', $dataQualityCheck) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
+                                        {{ $dataQualityCheck->name }}
+                                    </a>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                    {{ $dataQualityCheck->description ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                    {{ $dataQualityCheck->dataSources->pluck('name')->implode(', ') }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                    {{ $dataQualityCheck->created_at->format('Y-m-d H:i') }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+        </div>
+
         <div class="pt-4">
             <a href="{{ route('web.business-rules.index') }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
                 {{ __('Back to Business Rules') }}

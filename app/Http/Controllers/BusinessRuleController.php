@@ -17,7 +17,7 @@ class BusinessRuleController extends Controller
      */
     public function index(): View
     {
-        $businessRules = BusinessRule::withCount(['businessAssets', 'dataIssues'])
+        $businessRules = BusinessRule::withCount(['businessAssets', 'dataIssues', 'dataQualityChecks'])
             ->latest()
             ->paginate(10);
 
@@ -64,6 +64,7 @@ class BusinessRuleController extends Controller
             'businessAssets.dataInitiative',
             'businessAssets.domain',
             'dataIssues',
+            'dataQualityChecks',
         ]);
 
         return view('pages.business-rules.show', compact('businessRule'));

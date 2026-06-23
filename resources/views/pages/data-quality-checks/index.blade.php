@@ -1,12 +1,12 @@
-<x-layouts::app :title="__('Business Rules')">
+<x-layouts::app :title="__('Data Quality Checks')">
     <div class="space-y-6">
         <!-- Header with New Button -->
         <div class="flex justify-between items-center">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {{ __('Business Rules') }}
+                {{ __('Data Quality Checks') }}
             </h1>
             <a 
-                href="{{ route('web.business-rules.create') }}"
+                href="{{ route('web.data-quality-checks.create') }}"
                 class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-900 uppercase tracking-widest hover:bg-blue-700 dark:hover:bg-blue-600 focus:bg-blue-700 dark:focus:bg-blue-600 active:bg-blue-800 dark:active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition ease-in-out duration-150"
             >
                 {{ __('New') }}
@@ -19,10 +19,10 @@
             </div>
         @endif
 
-        @if ($businessRules->isEmpty())
+        @if ($dataQualityChecks->isEmpty())
             <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-8 text-center">
                 <p class="text-gray-500 dark:text-gray-400">
-                    {{ __('No business rules found. Create one to get started.') }}
+                    {{ __('No data quality checks found. Create one to get started.') }}
                 </p>
             </div>
         @else
@@ -37,13 +37,10 @@
                                 {{ __('Description') }}
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                {{ __('Business Assets') }}
+                                {{ __('Business Rule') }}
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                {{ __('Data Issues') }}
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                {{ __('Data Quality Checks') }}
+                                {{ __('Data Sources') }}
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 {{ __('Created At') }}
@@ -54,44 +51,39 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-zinc-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        @foreach ($businessRules as $businessRule)
+                        @foreach ($dataQualityChecks as $dataQualityCheck)
                             <tr class="hover:bg-gray-50 dark:hover:bg-zinc-700">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                    <a href="{{ route('web.business-rules.show', $businessRule) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
-                                        {{ $businessRule->name }}
+                                    <a href="{{ route('web.data-quality-checks.show', $dataQualityCheck) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
+                                        {{ $dataQualityCheck->name }}
                                     </a>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                    {{ $businessRule->description ?? '-' }}
+                                    {{ $dataQualityCheck->description ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                    <a href="{{ route('web.business-rules.show', $businessRule) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
-                                        {{ $businessRule->business_assets_count }} {{ __('Business Asset', ['count' => $businessRule->business_assets_count]) }}
+                                    <a href="{{ route('web.data-quality-checks.show', $dataQualityCheck) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
+                                        {{ $dataQualityCheck->businessRule->name ?? '-' }}
                                     </a>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                    <a href="{{ route('web.business-rules.show', $businessRule) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
-                                        {{ $businessRule->data_issues_count }} {{ __('Data Issue', ['count' => $businessRule->data_issues_count]) }}
+                                    <a href="{{ route('web.data-quality-checks.show', $dataQualityCheck) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
+                                        {{ $dataQualityCheck->data_sources_count }} {{ __('Data Source', ['count' => $dataQualityCheck->data_sources_count]) }}
                                     </a>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                    <a href="{{ route('web.business-rules.show', $businessRule) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
-                                        {{ $businessRule->data_quality_checks_count }} {{ __('Data Quality Check', ['count' => $businessRule->data_quality_checks_count]) }}
-                                    </a>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                    {{ $businessRule->created_at->format('Y-m-d H:i') }}
+                                    {{ $dataQualityCheck->created_at->format('Y-m-d H:i') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex justify-end space-x-2">
                                         <a 
-                                            href="{{ route('web.business-rules.edit', $businessRule) }}"
+                                            href="{{ route('web.data-quality-checks.edit', $dataQualityCheck) }}"
                                             class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                                             title="{{ __('Edit') }}"
                                         >
                                             {{ __('Edit') }}
                                         </a>
-                                        <form method="POST" action="{{ route('web.business-rules.destroy', $businessRule) }}" onsubmit="return confirm('{{ __('Are you sure you want to delete this business rule?') }}')">
+                                        <form method="POST" action="{{ route('web.data-quality-checks.destroy', $dataQualityCheck) }}" onsubmit="return confirm('{{ __('Are you sure you want to delete this data quality check?') }}')">
                                             @csrf
                                             @method('DELETE')
                                             <button 
@@ -112,7 +104,7 @@
 
             <!-- Pagination -->
             <div class="pt-4">
-                {{ $businessRules->links() }}
+                {{ $dataQualityChecks->links() }}
             </div>
         @endif
     </div>

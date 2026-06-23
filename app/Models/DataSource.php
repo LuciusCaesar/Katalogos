@@ -31,4 +31,19 @@ class DataSource extends Model
             'business_asset_id'
         );
     }
+
+    /**
+     * Get all data quality checks associated with this data source.
+     *
+     * @return BelongsToMany<DataQualityCheck, $this>
+     */
+    public function dataQualityChecks(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            DataQualityCheck::class,
+            'data_quality_check_data_source',
+            'data_source_id',
+            'data_quality_check_id'
+        );
+    }
 }

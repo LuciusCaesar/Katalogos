@@ -3,6 +3,7 @@
 use App\Http\Controllers\BusinessAssetController;
 use App\Http\Controllers\BusinessRuleController;
 use App\Http\Controllers\DataIssueController;
+use App\Http\Controllers\DataQualityCheckController;
 use App\Http\Controllers\DataSourceController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\RootCauseController;
@@ -52,6 +53,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('data-sources/{dataSource}/edit', [DataSourceController::class, 'edit'])->name('web.data-sources.edit');
     Route::put('data-sources/{dataSource}', [DataSourceController::class, 'update'])->name('web.data-sources.update');
     Route::delete('data-sources/{dataSource}', [DataSourceController::class, 'destroy'])->name('web.data-sources.destroy');
+
+    Route::get('data-quality-checks', [DataQualityCheckController::class, 'index'])->name('web.data-quality-checks.index');
+    Route::get('data-quality-checks/create', [DataQualityCheckController::class, 'create'])->name('web.data-quality-checks.create');
+    Route::post('data-quality-checks', [DataQualityCheckController::class, 'store'])->name('web.data-quality-checks.store');
+    Route::get('data-quality-checks/{dataQualityCheck}', [DataQualityCheckController::class, 'show'])->name('web.data-quality-checks.show');
+    Route::get('data-quality-checks/{dataQualityCheck}/edit', [DataQualityCheckController::class, 'edit'])->name('web.data-quality-checks.edit');
+    Route::put('data-quality-checks/{dataQualityCheck}', [DataQualityCheckController::class, 'update'])->name('web.data-quality-checks.update');
+    Route::delete('data-quality-checks/{dataQualityCheck}', [DataQualityCheckController::class, 'destroy'])->name('web.data-quality-checks.destroy');
 
     Route::get('root-causes', [RootCauseController::class, 'index'])->name('web.root-causes.index');
     Route::get('root-causes/create', [RootCauseController::class, 'create'])->name('web.root-causes.create');
