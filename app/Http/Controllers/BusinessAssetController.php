@@ -142,7 +142,9 @@ class BusinessAssetController extends Controller
 
         // Handle Data Steward assignment
         if ($request->filled('data_steward_id')) {
-            $user = User::findOrFail($request->data_steward_id);
+            /** @var int $dataStewardId */
+            $dataStewardId = $request->integer('data_steward_id');
+            $user = User::findOrFail($dataStewardId);
 
             // Check if user already has this role
             $existingSteward = $businessAsset->dataSteward()->first();
@@ -167,7 +169,9 @@ class BusinessAssetController extends Controller
 
         // Handle Data Owner assignment
         if ($request->filled('data_owner_id')) {
-            $user = User::findOrFail($request->data_owner_id);
+            /** @var int $dataOwnerId */
+            $dataOwnerId = $request->integer('data_owner_id');
+            $user = User::findOrFail($dataOwnerId);
 
             // Check if user already has this role
             $existingOwner = $businessAsset->dataOwner()->first();
