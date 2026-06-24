@@ -134,38 +134,103 @@
                             {{ __('No data issues associated with this business asset.') }}
                         </div>
                     @else
-                        <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-zinc-700">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        {{ __('Name') }}
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        {{ __('Description') }}
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        {{ __('Created At') }}
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white dark:bg-zinc-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                @foreach ($businessAsset->dataIssues as $dataIssue)
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-700">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                            @foreach ($businessAsset->dataIssues as $dataIssue)
+                                <div x-data="{ open: false }" class="p-6">
+                                    <div class="flex items-start">
+                                        <button 
+                                            @click="open = !open" 
+                                            class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-zinc-700 hover:bg-gray-200 dark:hover:bg-zinc-600 mr-3 flex-shrink-0 transition-colors"
+                                            aria-label="{{ __('Toggle root causes') }}"
+                                        >
+                                            <svg x-show="!open" class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                            </svg>
+                                            <svg x-show="open" class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"></path>
+                                            </svg>
+                                        </button>
+                                        <div class="flex-1">
                                             <a href="{{ route('web.data-issues.show', $dataIssue) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
-                                                {{ $dataIssue->name }}
+                                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                                    {{ $dataIssue->name }}
+                                                </h3>
                                             </a>
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                            {{ $dataIssue->description ?? '-' }}
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                            {{ $dataIssue->created_at->format('Y-m-d H:i') }}
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                            <span class="ml-3 text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                                                {{ $dataIssue->created_at->format('Y-m-d H:i') }}
+                                            </span>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                                {{ $dataIssue->description ?? '-' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    @if ($dataIssue->rootCauses->isNotEmpty())
+                                        <div x-show="open" x-transition x-collapse class="mt-4 ml-9 space-y-4">
+                                            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                {{ __('Root Causes') }}:
+                                            </h4>
+                                            @foreach ($dataIssue->rootCauses as $rootCause)
+                                                <div class="border-l-4 border-blue-500 pl-4">
+                                                    <div class="flex items-center gap-2">
+                                                        @if ($rootCause->dimension)
+                                                            @php
+                                                                $icon = match ($rootCause->dimension->value) {
+                                                                    'People' => 'user-group',
+                                                                    'Process' => 'cog-6-tooth',
+                                                                    'Tool' => 'wrench-screwdriver',
+                                                                    default => 'puzzle-piece',
+                                                                };
+                                                            @endphp
+                                                            <flux:icon name="{{ $icon }}" variant="outline" class="w-4 h-4 text-blue-500" />
+                                                        @endif
+                                                        <a href="{{ route('web.root-causes.show', $rootCause) }}" class="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                                                            {{ $rootCause->name }}
+                                                        </a>
+                                                    </div>
+                                                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                                                        {{ $rootCause->description ?? '-' }}
+                                                    </p>
+                                                    @if ($rootCause->solutions->isNotEmpty())
+                                                        <h6 class="text-sm font-medium text-gray-700 dark:text-gray-300 mt-4 mb-2">
+                                                            {{ __('Solutions') }}:
+                                                        </h6>
+                                                        <div class="ml-4 space-y-2">
+                                                            @foreach ($rootCause->solutions as $solution)
+                                                                <div class="bg-gray-50 dark:bg-zinc-700 rounded p-3">
+                                                                    <div class="flex items-center gap-2">
+                                                                        @if ($solution->dimension)
+                                                                            @php
+                                                                                $solutionIcon = match ($solution->dimension->value) {
+                                                                                    'People' => 'user-group',
+                                                                                    'Process' => 'cog-6-tooth',
+                                                                                    'Tool' => 'wrench-screwdriver',
+                                                                                    default => 'check-circle',
+                                                                                };
+                                                                            @endphp
+                                                                            <flux:icon name="{{ $solutionIcon }}" variant="outline" class="w-4 h-4 text-green-500" />
+                                                                        @endif
+                                                                        <a href="{{ route('web.solutions.show', $solution) }}" class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                                                                            {{ $solution->name }}
+                                                                        </a>
+                                                                    </div>
+                                                                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                                        {{ $solution->description ?? '-' }}
+                                                                    </p>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    @else
+                                                        <p class="text-sm text-gray-400 dark:text-gray-500 italic">
+                                                            {{ __('No solutions defined for this root cause.') }}
+                                                        </p>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
                     @endif
                 </div>
             </div>

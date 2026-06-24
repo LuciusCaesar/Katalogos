@@ -79,7 +79,11 @@ class BusinessAssetController extends Controller
                     $query->with('latestScore');
                 }]);
             },
-            'dataIssues',
+            'dataIssues' => function ($query) {
+                $query->with(['rootCauses' => function ($query) {
+                    $query->with('solutions');
+                }]);
+            },
             'governanceScore',
             'governanceScores',
         ]);
