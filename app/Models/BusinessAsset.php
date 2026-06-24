@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Services\GovernanceScoreService;
+use App\Traits\Filterable;
+use App\Traits\Searchable;
 use Database\Factories\BusinessAssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,7 +28,7 @@ use Illuminate\Support\Collection;
 class BusinessAsset extends Model
 {
     /** @use HasFactory<BusinessAssetFactory> */
-    use HasFactory;
+    use Filterable, HasFactory, Searchable;
 
     protected $fillable = [
         'name',
@@ -39,6 +41,16 @@ class BusinessAsset extends Model
         'data_initiative_id' => 'integer',
         'domain_id' => 'integer',
     ];
+
+    /**
+     * Get fields that should be searched for Business Assets.
+     *
+     * @return array<string>
+     */
+    public function getSearchableFields(): array
+    {
+        return ['name', 'definition'];
+    }
 
     /**
      * Get the data initiative this asset belongs to.
