@@ -64,4 +64,21 @@ class Role extends Model
             ->wherePivot('roleable_type', BusinessAsset::class)
             ->using(RoleAssignment::class);
     }
+
+    /**
+     * Get the data sources where this role is assigned.
+     *
+     * @return BelongsToMany<DataSource, $this, RoleAssignment>
+     */
+    public function dataSources(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            DataSource::class,
+            'role_assignments',
+            'role_id',
+            'roleable_id'
+        )->withPivot('user_id', 'roleable_type')
+            ->wherePivot('roleable_type', DataSource::class)
+            ->using(RoleAssignment::class);
+    }
 }

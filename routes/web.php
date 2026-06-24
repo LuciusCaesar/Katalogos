@@ -81,6 +81,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('data-sources/{dataSource}', [DataSourceController::class, 'update'])->name('web.data-sources.update');
     Route::delete('data-sources/{dataSource}', [DataSourceController::class, 'destroy'])->name('web.data-sources.destroy');
 
+    // Team management routes
+    Route::get('data-sources/{dataSource}/team', [DataSourceController::class, 'editTeam'])->name('web.data-sources.team');
+    Route::put('data-sources/{dataSource}/team', [DataSourceController::class, 'updateTeam'])->name('web.data-sources.team.update');
+
     Route::get('data-quality-checks', [DataQualityCheckController::class, 'index'])->name('web.data-quality-checks.index');
     Route::get('data-quality-checks/create', [DataQualityCheckController::class, 'create'])->name('web.data-quality-checks.create');
     Route::post('data-quality-checks', [DataQualityCheckController::class, 'store'])->name('web.data-quality-checks.store');

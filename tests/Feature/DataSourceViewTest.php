@@ -4,6 +4,7 @@ use App\Models\BusinessAsset;
 use App\Models\DataInitiative;
 use App\Models\DataSource;
 use App\Models\Domain;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -44,7 +45,7 @@ it('displays data sources in a table', function () {
         ->assertSee(__('Name'))
         ->assertSee(__('Description'))
         ->assertSee(__('Business Assets'))
-        ->assertSee(__('Created At'))
+        ->assertSee(__('Data Custodian'))
         ->assertSee(__('Actions'));
 });
 
@@ -82,6 +83,7 @@ it('displays edit and delete links for each data source', function () {
         ->assertStatus(200)
         ->assertSee(__('Edit'))
         ->assertSee(__('Delete'))
+        ->assertSee(__('Team'))
         ->assertSee(route('web.data-sources.edit', $dataSource));
 });
 
@@ -177,7 +179,17 @@ it('displays edit and delete buttons on show page', function () {
         ->assertStatus(200)
         ->assertSee(__('Edit'))
         ->assertSee(__('Delete'))
+        ->assertSee(__('Manage Team'))
         ->assertSee(route('web.data-sources.edit', $dataSource));
+});
+
+it('displays data custodian section on show page', function () {
+    $dataSource = DataSource::factory()->create();
+
+    $this->actingAs($this->user)
+        ->get(route('web.data-sources.show', $dataSource))
+        ->assertStatus(200)
+        ->assertSee(__('Data Custodian'));
 });
 
 it('displays business assets section on show page', function () {
@@ -324,4 +336,37 @@ it('has data sources link in sidebar menu', function () {
     $this->actingAs($this->user)
         ->get(route('web.data-sources.index'))
         ->assertStatus(200);
+});
+
+// Team Management Tests
+
+it('displays manage team page', function () {
+    $dataSource = DataSource::factory()->create();
+
+    $this->actingAs($this->user)
+        ->get(route('web.data-sources.team', $dataSource))
+        ->assertStatus(200)
+        ->assertViewIs('pages.data-sources.manage-team')
+        ->assertSee(__('Manage Team'))
+        ->assertSee(__('Data Custodian'));
+});
+
+it('can update data custodian for data source', function () {
+    $dataSource = DataSource::factory()->create();
+    $user = User::factory()->create();
+    $dataCustodianRole = Role::where('name', 'Data Custodian')->firstOrFail();
+
+    $this->actingAs($this->user)
+        ->put(route('web.data-sources.team.update', $dataSource), [
+            'data_custodian_id' => $user->id,
+        ])
+        ->assertRedirect(route('web.data-sources.show', $dataSource))
+        ->assertSessionHas('success', __('Team updated successfully.'));
+
+    $this->assertDatabaseHas('role_assignments', [
+        'roleable_id' => $dataSource->id,
+        'roleable_type' => DataSource::class,
+        'user_id' => $user->id,
+        'role_id' => $dataCustodianRole->id,
+    ]);
 });

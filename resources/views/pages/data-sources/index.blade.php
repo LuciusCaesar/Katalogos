@@ -40,7 +40,7 @@
                                 {{ __('Business Assets') }}
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                {{ __('Created At') }}
+                                {{ __('Data Custodian') }}
                             </th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 {{ __('Actions') }}
@@ -64,10 +64,17 @@
                                     </a>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                    {{ $dataSource->created_at->format('Y-m-d H:i') }}
+                                    {{ $dataSource->dataCustodian()->first()?->name ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex justify-end space-x-2">
+                                        <a 
+                                            href="{{ route('web.data-sources.team', $dataSource) }}"
+                                            class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                                            title="{{ __('Manage Team') }}"
+                                        >
+                                            {{ __('Team') }}
+                                        </a>
                                         <a 
                                             href="{{ route('web.data-sources.edit', $dataSource) }}"
                                             class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"

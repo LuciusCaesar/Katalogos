@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\StoreDataSourceRequest;
 use App\Http\Requests\Api\UpdateDataSourceRequest;
+use App\Http\Requests\UpdateDataSourceTeamRequest;
+use App\Http\Resources\DataSourceResource;
 use App\Models\DataSource;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 class DataSourceController extends Controller
 {
@@ -17,35 +20,35 @@ class DataSourceController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
-        return JsonResource::collection(DataSource::all());
+        return DataSourceResource::collection(DataSource::all());
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreDataSourceRequest $request): JsonResource
+    public function store(StoreDataSourceRequest $request): DataSourceResource
     {
         $dataSource = DataSource::create($request->validated());
 
-        return new JsonResource($dataSource);
+        return new DataSourceResource($dataSource);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(DataSource $dataSource): JsonResource
+    public function show(DataSource $dataSource): DataSourceResource
     {
-        return new JsonResource($dataSource);
+        return new DataSourceResource($dataSource);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateDataSourceRequest $request, DataSource $dataSource): JsonResource
+    public function update(UpdateDataSourceRequest $request, DataSource $dataSource): DataSourceResource
     {
         $dataSource->update($request->validated());
 
-        return new JsonResource($dataSource);
+        return new DataSourceResource($dataSource);
     }
 
     /**
@@ -56,5 +59,34 @@ class DataSourceController extends Controller
         $dataSource->delete();
 
         return response()->json(null, 204);
+    }
+
+    /**
+     * Update the team for a data source.
+     */
+    public function updateTeam(UpdateDataSourceTeamRequest $request, DataSource $dataSource): DataSourceResource
+    {
+        $dataCustodianRole = Role::where('name', 'Data Custodian')->firstOrFail();
+
+        if ($request->filled('data_custodian_id')) {
+            $dataCustodianId = $request->integer('data_custodian_id');
+            $user = User::findOrFail($dataCustodianId);
+
+            $existingCustodian = $dataSource->dataCustodian()->first();
+
+            if (! $existingCustodian || $existingCustodian->id !== $user->id) {
+                if ($existingCustodian) {
+                    $dataSource->removeRoleFromUser($existingCustodian, $dataCustodianRole);
+                }
+                $dataSource->assignRoleToUser($user, $dataCustodianRole);
+            }
+        } else {
+            $existingCustodian = $dataSource->dataCustodian()->first();
+            if ($existingCustodian) {
+                $dataSource->removeRoleFromUser($existingCustodian, $dataCustodianRole);
+            }
+        }
+
+        return new DataSourceResource($dataSource);
     }
 }

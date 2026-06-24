@@ -21,6 +21,8 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:60,1'])->group(functi
     Route::apiResource('data-issues', DataIssueController::class);
     Route::apiResource('data-quality-checks', DataQualityCheckController::class);
     Route::apiResource('data-sources', DataSourceController::class);
+    Route::put('data-sources/{dataSource}/team', [DataSourceController::class, 'updateTeam'])
+        ->name('api.data-sources.team.update');
     Route::apiResource('root-causes', RootCauseController::class);
     Route::apiResource('solutions', SolutionController::class);
 

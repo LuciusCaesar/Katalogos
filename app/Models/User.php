@@ -121,6 +121,23 @@ class User extends Authenticatable implements PasskeyUser
     }
 
     /**
+     * Get all DataSources where this user has a role.
+     *
+     * @return BelongsToMany<DataSource, $this, RoleAssignment>
+     */
+    public function dataSources(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            DataSource::class,
+            'role_assignments',
+            'user_id',
+            'roleable_id'
+        )->withPivot('role_id', 'roleable_type')
+            ->wherePivot('roleable_type', DataSource::class)
+            ->using(RoleAssignment::class);
+    }
+
+    /**
      * Check if the user has a specific role on a specific entity.
      */
     public function hasRoleOn(string $roleName, Model $entity): bool
@@ -146,5 +163,13 @@ class User extends Authenticatable implements PasskeyUser
     public function isDataOwnerFor(Model $entity): bool
     {
         return $this->hasRoleOn('Data Owner', $entity);
+    }
+
+    /**
+     * Check if the user is a Data Custodian for the given entity.
+     */
+    public function isDataCustodianFor(Model $entity): bool
+    {
+        return $this->hasRoleOn('Data Custodian', $entity);
     }
 }

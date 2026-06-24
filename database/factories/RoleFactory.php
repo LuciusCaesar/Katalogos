@@ -44,4 +44,15 @@ class RoleFactory extends Factory
             'description' => 'Ultimately accountable for the data within an initiative or asset',
         ]);
     }
+
+    /**
+     * Create a Data Custodian role.
+     */
+    public function dataCustodian(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Data Custodian',
+            'description' => 'Responsible for the safe custody, transport, and storage of data',
+        ]);
+    }
 }
