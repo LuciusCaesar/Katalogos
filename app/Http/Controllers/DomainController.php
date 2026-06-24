@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDomainRequest;
 use App\Http\Requests\UpdateDomainRequest;
+use App\Http\Requests\UpdateDomainTeamRequest;
 use App\Models\Domain;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -16,6 +19,7 @@ class DomainController extends Controller
     public function index(): View
     {
         $domains = Domain::withCount('businessAssets')
+            ->with('domainOwner')
             ->latest()
             ->paginate(10);
 
@@ -47,7 +51,7 @@ class DomainController extends Controller
      */
     public function show(Domain $domain): View
     {
-        $domain->load(['businessAssets.dataInitiative']);
+        $domain->load(['businessAssets.dataInitiative', 'domainOwner']);
 
         return view('pages.domains.show', compact('domain'));
     }
@@ -82,5 +86,53 @@ class DomainController extends Controller
         return redirect()
             ->route('web.domains.index')
             ->with('success', __('Domain deleted successfully.'));
+    }
+
+    /**
+     * Show the form for editing the team for the specified domain.
+     */
+    public function editTeam(Domain $domain): View
+    {
+        $users = User::all();
+
+        return view('pages.domains.manage-team', compact('domain', 'users'));
+    }
+
+    /**
+     * Update the team for the specified domain in storage.
+     */
+    public function updateTeam(UpdateDomainTeamRequest $request, Domain $domain): RedirectResponse
+    {
+        $domainOwnerRole = Role::where('name', 'Domain Owner')->firstOrFail();
+
+        // Handle Domain Owner assignment
+        if ($request->filled('domain_owner_id')) {
+            $domainOwnerId = $request->integer('domain_owner_id');
+            $user = User::findOrFail($domainOwnerId);
+
+            // Check if user already has this role
+            $existingOwner = $domain->domainOwner()->first();
+            $userAlreadyAssigned = $existingOwner && $existingOwner->id === $user->id;
+
+            if (! $userAlreadyAssigned) {
+                // Remove existing Domain Owner if different user
+                if ($existingOwner) {
+                    $domain->removeRoleFromUser($existingOwner, $domainOwnerRole);
+                }
+
+                // Assign new Domain Owner
+                $domain->assignRoleToUser($user, $domainOwnerRole);
+            }
+        } else {
+            // Remove Domain Owner if null selected
+            $existingOwner = $domain->domainOwner()->first();
+            if ($existingOwner) {
+                $domain->removeRoleFromUser($existingOwner, $domainOwnerRole);
+            }
+        }
+
+        return redirect()
+            ->route('web.domains.show', $domain)
+            ->with('success', __('Team updated successfully.'));
     }
 }

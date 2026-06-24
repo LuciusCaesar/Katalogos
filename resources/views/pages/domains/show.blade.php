@@ -13,6 +13,12 @@
             </div>
             <div class="flex space-x-2">
                 <a 
+                    href="{{ route('web.domains.team', $domain) }}"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                    {{ __('Manage Team') }}
+                </a>
+                <a 
                     href="{{ route('web.domains.edit', $domain) }}"
                     class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
                 >
@@ -36,6 +42,12 @@
                 <p class="text-green-800 dark:text-green-200 text-sm">{{ session('success') }}</p>
             </div>
         @endif
+
+        <!-- Domain Owner Section -->
+        <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{{ __('Domain Owner') }}</h2>
+            <p class="text-gray-600 dark:text-gray-400">{{ $domain->domainOwner()->first()?->name ?? '-' }}</p>
+        </div>
 
         <!-- Business Terms Section -->
         <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">

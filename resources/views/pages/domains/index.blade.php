@@ -42,7 +42,7 @@
                                 {{ __('Business Terms') }}
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                {{ __('Created At') }}
+                                {{ __('Domain Owner') }}
                             </th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 {{ __('Actions') }}
@@ -68,9 +68,9 @@
                                         {{ $domain->business_assets_count }} {{ __('Business Term', ['count' => $domain->business_assets_count]) }}
                                     </a>
                                 </td>
-                                <!-- Created At -->
+                                <!-- Domain Owner -->
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                    {{ $domain->created_at->format('Y-m-d H:i') }}
+                                    {{ $domain->domainOwner()->first()?->name ?? '-' }}
                                 </td>
                                 <!-- Actions -->
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

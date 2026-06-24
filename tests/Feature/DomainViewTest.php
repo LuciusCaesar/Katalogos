@@ -3,6 +3,7 @@
 use App\Models\BusinessAsset;
 use App\Models\DataInitiative;
 use App\Models\Domain;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -43,7 +44,7 @@ it('displays domains in a table', function () {
         ->assertSee(__('Name'))
         ->assertSee(__('Description'))
         ->assertSee(__('Business Terms'))
-        ->assertSee(__('Created At'))
+        ->assertSee(__('Domain Owner'))
         ->assertSee(__('Actions'));
 });
 
@@ -375,4 +376,87 @@ it('has domains link in sidebar menu', function () {
         ->assertStatus(200)
         ->assertSee(__('Domains'))
         ->assertSee(route('web.domains.index'));
+});
+
+// Team Management Tests
+
+it('displays domain owner on index page', function () {
+    $domain = Domain::factory()->create();
+    $owner = User::factory()->create();
+    $domainOwnerRole = Role::where('name', 'Domain Owner')->firstOrFail();
+
+    $domain->assignRoleToUser($owner, $domainOwnerRole);
+
+    $this->actingAs($this->user)
+        ->get(route('web.domains.index'))
+        ->assertStatus(200)
+        ->assertSee($owner->name)
+        ->assertSee(__('Domain Owner'));
+});
+
+it('displays domain owner on show page', function () {
+    $domain = Domain::factory()->create();
+    $owner = User::factory()->create();
+    $domainOwnerRole = Role::where('name', 'Domain Owner')->firstOrFail();
+
+    $domain->assignRoleToUser($owner, $domainOwnerRole);
+
+    $this->actingAs($this->user)
+        ->get(route('web.domains.show', $domain))
+        ->assertStatus(200)
+        ->assertSee(__('Domain Owner'))
+        ->assertSee($owner->name);
+});
+
+it('displays manage team button on show page', function () {
+    $domain = Domain::factory()->create();
+
+    $this->actingAs($this->user)
+        ->get(route('web.domains.show', $domain))
+        ->assertStatus(200)
+        ->assertSee(__('Manage Team'))
+        ->assertSee(route('web.domains.team', $domain));
+});
+
+it('displays team management page', function () {
+    $domain = Domain::factory()->create();
+
+    $this->actingAs($this->user)
+        ->get(route('web.domains.team', $domain))
+        ->assertStatus(200)
+        ->assertViewIs('pages.domains.manage-team')
+        ->assertSee(__('Manage Team'))
+        ->assertSee(__('Domain Owner'));
+});
+
+it('can update domain owner via web form', function () {
+    $domain = Domain::factory()->create();
+    $newOwner = User::factory()->create();
+
+    $this->actingAs($this->user)
+        ->put(route('web.domains.team.update', $domain), [
+            'domain_owner_id' => $newOwner->id,
+        ])
+        ->assertRedirect(route('web.domains.show', $domain))
+        ->assertSessionHas('success', __('Team updated successfully.'));
+
+    $this->assertDatabaseHas('role_assignments', [
+        'roleable_id' => $domain->id,
+        'roleable_type' => Domain::class,
+        'user_id' => $newOwner->id,
+    ]);
+});
+
+it('displays current domain owner on team management page', function () {
+    $domain = Domain::factory()->create();
+    $owner = User::factory()->create();
+    $domainOwnerRole = Role::where('name', 'Domain Owner')->firstOrFail();
+
+    $domain->assignRoleToUser($owner, $domainOwnerRole);
+
+    $this->actingAs($this->user)
+        ->get(route('web.domains.team', $domain))
+        ->assertStatus(200)
+        ->assertSee($owner->name)
+        ->assertSee('selected');
 });

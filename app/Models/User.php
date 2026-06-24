@@ -172,4 +172,29 @@ class User extends Authenticatable implements PasskeyUser
     {
         return $this->hasRoleOn('Data Custodian', $entity);
     }
+
+    /**
+     * Get all Domains where this user has a role.
+     *
+     * @return BelongsToMany<Domain, $this, RoleAssignment>
+     */
+    public function domains(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Domain::class,
+            'role_assignments',
+            'user_id',
+            'roleable_id'
+        )->withPivot('role_id', 'roleable_type')
+            ->wherePivot('roleable_type', Domain::class)
+            ->using(RoleAssignment::class);
+    }
+
+    /**
+     * Check if the user is a Domain Owner for the given entity.
+     */
+    public function isDomainOwnerFor(Model $entity): bool
+    {
+        return $this->hasRoleOn('Domain Owner', $entity);
+    }
 }

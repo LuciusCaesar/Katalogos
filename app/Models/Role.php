@@ -81,4 +81,21 @@ class Role extends Model
             ->wherePivot('roleable_type', DataSource::class)
             ->using(RoleAssignment::class);
     }
+
+    /**
+     * Get the domains where this role is assigned.
+     *
+     * @return BelongsToMany<Domain, $this, RoleAssignment>
+     */
+    public function domains(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Domain::class,
+            'role_assignments',
+            'role_id',
+            'roleable_id'
+        )->withPivot('user_id', 'roleable_type')
+            ->wherePivot('roleable_type', Domain::class)
+            ->using(RoleAssignment::class);
+    }
 }

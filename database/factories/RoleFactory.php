@@ -55,4 +55,15 @@ class RoleFactory extends Factory
             'description' => 'Responsible for the safe custody, transport, and storage of data',
         ]);
     }
+
+    /**
+     * Create a Domain Owner role.
+     */
+    public function domainOwner(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Domain Owner',
+            'description' => 'Responsible for overall governance and management of a domain',
+        ]);
+    }
 }

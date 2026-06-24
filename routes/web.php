@@ -65,6 +65,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('domains/{domain}', [DomainController::class, 'update'])->name('web.domains.update');
     Route::delete('domains/{domain}', [DomainController::class, 'destroy'])->name('web.domains.destroy');
 
+    // Team management routes
+    Route::get('domains/{domain}/team', [DomainController::class, 'editTeam'])->name('web.domains.team');
+    Route::put('domains/{domain}/team', [DomainController::class, 'updateTeam'])->name('web.domains.team.update');
+
     Route::get('data-issues', [DataIssueController::class, 'index'])->name('web.data-issues.index');
     Route::get('data-issues/create', [DataIssueController::class, 'create'])->name('web.data-issues.create');
     Route::post('data-issues', [DataIssueController::class, 'store'])->name('web.data-issues.store');

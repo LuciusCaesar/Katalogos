@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\DataIssueController;
 use App\Http\Controllers\Api\DataQualityCheckController;
 use App\Http\Controllers\Api\DataQualityCheckScoreController;
 use App\Http\Controllers\Api\DataSourceController;
+use App\Http\Controllers\Api\DomainController;
 use App\Http\Controllers\Api\RootCauseController;
 use App\Http\Controllers\Api\SolutionController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,9 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:60,1'])->group(functi
     Route::apiResource('data-sources', DataSourceController::class);
     Route::put('data-sources/{dataSource}/team', [DataSourceController::class, 'updateTeam'])
         ->name('api.data-sources.team.update');
+    Route::apiResource('domains', DomainController::class);
+    Route::put('domains/{domain}/team', [DomainController::class, 'updateTeam'])
+        ->name('api.domains.team.update');
     Route::apiResource('root-causes', RootCauseController::class);
     Route::apiResource('solutions', SolutionController::class);
 
