@@ -1,8 +1,11 @@
 <?php
 
 use App\Models\BusinessAsset;
+use App\Models\BusinessRule;
 use App\Models\DataInitiative;
 use App\Models\DataInitiativeGovernanceScoreHistory;
+use App\Models\DataQualityCheck;
+use App\Models\DataQualityCheckScore;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -49,7 +52,8 @@ it('displays data initiatives in a table', function () {
         ->assertSee(__('Business Assets'))
         ->assertSee(__('Data Steward'))
         ->assertSee(__('Data Owner'))
-        ->assertSee(__('Avg Governance Score'));
+        ->assertSee(__('Avg Governance Score'))
+        ->assertSee(__('Avg Data Quality Score'));
 });
 
 it('displays business assets count in table', function () {
@@ -505,4 +509,145 @@ it('has data initiatives link in sidebar menu', function () {
         ->assertStatus(200)
         ->assertSee(__('Data Initiatives'))
         ->assertSee(route('web.data-initiatives.index'));
+});
+
+// Average Data Quality Score Tests
+
+it('displays dash for average data quality score when no business assets exist', function () {
+    $initiative = DataInitiative::factory()->create([
+        'code' => 'NO-ASSETS',
+        'label' => 'No Assets Initiative',
+    ]);
+
+    $this->actingAs($this->user)
+        ->get(route('web.data-initiatives.index'))
+        ->assertStatus(200)
+        ->assertSeeInOrder(['NO-ASSETS', '-']);
+});
+
+it('displays dash for average data quality score when business assets have no data quality checks', function () {
+    $initiative = DataInitiative::factory()->create([
+        'code' => 'NO-CHECKS',
+        'label' => 'No Checks Initiative',
+    ]);
+
+    BusinessAsset::factory()->count(2)->create(['data_initiative_id' => $initiative->id]);
+
+    $this->actingAs($this->user)
+        ->get(route('web.data-initiatives.index'))
+        ->assertStatus(200)
+        ->assertSeeInOrder(['NO-CHECKS', '-']);
+});
+
+it('displays average data quality score when business assets have data quality checks', function () {
+    $initiative = DataInitiative::factory()->create([
+        'code' => 'WITH-SCORES',
+        'label' => 'With Scores Initiative',
+    ]);
+
+    // Create first business asset with score 0.8
+    $asset1 = BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
+    $rule1 = BusinessRule::factory()->create();
+    $asset1->businessRules()->attach($rule1->id);
+    $check1 = DataQualityCheck::factory()->create(['business_rule_id' => $rule1->id]);
+    DataQualityCheckScore::factory()->create([
+        'data_quality_check_id' => $check1->id,
+        'score' => 0.8,
+        'rows_passed' => 80,
+        'rows_failed' => 20,
+        'total_rows' => 100,
+    ]);
+
+    // Create second business asset with score 0.9
+    $asset2 = BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
+    $rule2 = BusinessRule::factory()->create();
+    $asset2->businessRules()->attach($rule2->id);
+    $check2 = DataQualityCheck::factory()->create(['business_rule_id' => $rule2->id]);
+    DataQualityCheckScore::factory()->create([
+        'data_quality_check_id' => $check2->id,
+        'score' => 0.9,
+        'rows_passed' => 90,
+        'rows_failed' => 10,
+        'total_rows' => 100,
+    ]);
+
+    $this->actingAs($this->user)
+        ->get(route('web.data-initiatives.index'))
+        ->assertStatus(200)
+        ->assertSee('85.0%'); // Average of 0.8 and 0.9 is 0.85
+});
+
+it('displays average data quality score with correct color for high scores', function () {
+    $initiative = DataInitiative::factory()->create([
+        'code' => 'HIGH-SCORE',
+        'label' => 'High Score Initiative',
+    ]);
+
+    $asset = BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
+    $rule = BusinessRule::factory()->create();
+    $asset->businessRules()->attach($rule->id);
+    $check = DataQualityCheck::factory()->create(['business_rule_id' => $rule->id]);
+    DataQualityCheckScore::factory()->create([
+        'data_quality_check_id' => $check->id,
+        'score' => 0.95,
+        'rows_passed' => 95,
+        'rows_failed' => 5,
+        'total_rows' => 100,
+    ]);
+
+    $this->actingAs($this->user)
+        ->get(route('web.data-initiatives.index'))
+        ->assertStatus(200)
+        ->assertSee('95.0%')
+        ->assertSee('text-green');
+});
+
+it('displays average data quality score with correct color for medium scores', function () {
+    $initiative = DataInitiative::factory()->create([
+        'code' => 'MEDIUM-SCORE',
+        'label' => 'Medium Score Initiative',
+    ]);
+
+    $asset = BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
+    $rule = BusinessRule::factory()->create();
+    $asset->businessRules()->attach($rule->id);
+    $check = DataQualityCheck::factory()->create(['business_rule_id' => $rule->id]);
+    DataQualityCheckScore::factory()->create([
+        'data_quality_check_id' => $check->id,
+        'score' => 0.75,
+        'rows_passed' => 75,
+        'rows_failed' => 25,
+        'total_rows' => 100,
+    ]);
+
+    $this->actingAs($this->user)
+        ->get(route('web.data-initiatives.index'))
+        ->assertStatus(200)
+        ->assertSee('75.0%')
+        ->assertSee('text-yellow');
+});
+
+it('displays average data quality score with correct color for low scores', function () {
+    $initiative = DataInitiative::factory()->create([
+        'code' => 'LOW-SCORE',
+        'label' => 'Low Score Initiative',
+    ]);
+
+    $asset = BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
+    $rule = BusinessRule::factory()->create();
+    $asset->businessRules()->attach($rule->id);
+    $check = DataQualityCheck::factory()->create(['business_rule_id' => $rule->id]);
+    DataQualityCheckScore::factory()->create([
+        'data_quality_check_id' => $check->id,
+        'score' => 0.60,
+        'rows_passed' => 60,
+        'rows_failed' => 40,
+        'total_rows' => 100,
+    ]);
+
+    $this->actingAs($this->user)
+        ->get(route('web.data-initiatives.index'))
+        ->assertStatus(200)
+        ->assertSee('60.0%')
+        ->assertSee('text-red');
 });

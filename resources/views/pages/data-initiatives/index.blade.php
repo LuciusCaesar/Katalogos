@@ -51,6 +51,9 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 {{ __('Avg Governance Score') }}
                             </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                {{ __('Avg Data Quality Score') }}
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-zinc-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -82,6 +85,17 @@
                                             @elseif($initiative->average_governance_score >= 0.5) text-yellow-600 dark:text-yellow-400
                                             @else text-red-600 dark:text-red-400 @endif font-medium">
                                             {{ number_format($initiative->average_governance_score * 100, 1) }}%
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400 dark:text-gray-500">-</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-sm">
+                                    @if($initiative->avg_data_quality_check_score !== null)
+                                        <span class="@if($initiative->avg_data_quality_check_score >= 0.9) text-green-600 dark:text-green-400
+                                            @elseif($initiative->avg_data_quality_check_score >= 0.7) text-yellow-600 dark:text-yellow-400
+                                            @else text-red-600 dark:text-red-400 @endif font-medium">
+                                            {{ number_format($initiative->avg_data_quality_check_score * 100, 1) }}%
                                         </span>
                                     @else
                                         <span class="text-gray-400 dark:text-gray-500">-</span>

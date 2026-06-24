@@ -22,7 +22,13 @@ class DataInitiativeController extends Controller
     public function index(Request $request): View
     {
         $dataInitiatives = DataInitiative::with([
-            'businessAssets',
+            'businessAssets' => function ($query) {
+                $query->with(['businessRules' => function ($query) {
+                    $query->with(['dataQualityChecks' => function ($query) {
+                        $query->with('latestScore');
+                    }]);
+                }]);
+            },
             'dataSteward',
             'dataOwner',
             'governanceScoreHistory',

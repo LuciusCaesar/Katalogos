@@ -130,4 +130,20 @@ class DataInitiative extends Model
         return $this->hasMany(DataInitiativeGovernanceScoreHistory::class)
             ->orderBy('calculated_at', 'desc');
     }
+
+    /**
+     * Get the average data quality check score from all business assets.
+     */
+    public function getAvgDataQualityCheckScoreAttribute(): ?float
+    {
+        $scores = $this->businessAssets
+            ->pluck('avg_data_quality_check_score')
+            ->filter(fn ($score) => $score !== null);
+
+        if ($scores->isEmpty()) {
+            return null;
+        }
+
+        return $scores->avg();
+    }
 }
