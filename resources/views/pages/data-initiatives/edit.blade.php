@@ -9,7 +9,11 @@
 
         <!-- Form -->
         <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
-            <x-data-initiatives.form :dataInitiative="$dataInitiative" />
+            <x-data-initiatives.form 
+                :dataInitiative="$dataInitiative" 
+                :businessObjectives="$businessObjectives" 
+                :selectedBusinessObjectiveIds="$selectedBusinessObjectiveIds" 
+            />
         </div>
 
         <!-- Back Link -->

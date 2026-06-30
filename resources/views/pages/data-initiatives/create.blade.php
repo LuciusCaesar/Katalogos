@@ -9,7 +9,7 @@
 
         <!-- Form -->
         <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
-            <x-data-initiatives.form />
+            <x-data-initiatives.form :businessObjectives="$businessObjectives" />
         </div>
 
         <!-- Back Link -->

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreDataInitiativeRequest;
 use App\Http\Requests\UpdateDataInitiativeRequest;
 use App\Http\Requests\UpdateDataInitiativeTeamRequest;
+use App\Models\BusinessObjective;
 use App\Models\DataInitiative;
 use App\Models\DataInitiativeGovernanceScoreHistory;
 use App\Models\Role;
@@ -29,6 +30,7 @@ class DataInitiativeController extends Controller
                     }]);
                 }]);
             },
+            'businessObjectives',
             'dataSteward',
             'dataOwner',
             'governanceScoreHistory',
@@ -44,7 +46,9 @@ class DataInitiativeController extends Controller
      */
     public function create(): View
     {
-        return view('pages.data-initiatives.create');
+        $businessObjectives = BusinessObjective::orderBy('name')->get();
+
+        return view('pages.data-initiatives.create', compact('businessObjectives'));
     }
 
     /**
@@ -52,7 +56,11 @@ class DataInitiativeController extends Controller
      */
     public function store(StoreDataInitiativeRequest $request): RedirectResponse
     {
-        DataInitiative::create($request->validated());
+        $dataInitiative = DataInitiative::create($request->validated());
+
+        if ($request->filled('business_objective_ids')) {
+            $dataInitiative->businessObjectives()->sync($request->input('business_objective_ids'));
+        }
 
         return redirect()
             ->route('web.data-initiatives.index')
@@ -66,6 +74,7 @@ class DataInitiativeController extends Controller
     {
         $dataInitiative->load([
             'businessAssets',
+            'businessObjectives',
             'dataSteward',
             'dataOwner',
             'governanceScoreHistory' => fn ($query) => $query->orderBy('calculated_at', 'desc'),
@@ -79,7 +88,10 @@ class DataInitiativeController extends Controller
      */
     public function edit(DataInitiative $dataInitiative): View
     {
-        return view('pages.data-initiatives.edit', compact('dataInitiative'));
+        $businessObjectives = BusinessObjective::orderBy('name')->get();
+        $selectedBusinessObjectiveIds = $dataInitiative->businessObjectives()->pluck('business_objectives.id')->toArray();
+
+        return view('pages.data-initiatives.edit', compact('dataInitiative', 'businessObjectives', 'selectedBusinessObjectiveIds'));
     }
 
     /**
@@ -88,6 +100,12 @@ class DataInitiativeController extends Controller
     public function update(UpdateDataInitiativeRequest $request, DataInitiative $dataInitiative): RedirectResponse
     {
         $dataInitiative->update($request->validated());
+
+        if ($request->filled('business_objective_ids')) {
+            $dataInitiative->businessObjectives()->sync($request->input('business_objective_ids'));
+        } else {
+            $dataInitiative->businessObjectives()->detach();
+        }
 
         return redirect()
             ->route('web.data-initiatives.index')

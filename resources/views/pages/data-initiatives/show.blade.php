@@ -179,6 +179,26 @@
                         </div>
                     </dl>
                 </div>
+
+                <!-- Business Objectives Card -->
+                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{{ __('Business Objectives') }}</h3>
+                    @if ($dataInitiative->businessObjectives->isNotEmpty())
+                        <ul class="space-y-2">
+                            @foreach ($dataInitiative->businessObjectives as $businessObjective)
+                                <li class="text-sm text-gray-900 dark:text-gray-100">
+                                    <a href="{{ route('web.business-objectives.show', $businessObjective) }}" 
+                                       class="hover:text-blue-600 dark:hover:text-blue-400"
+                                    >
+                                        {{ $businessObjective->name }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="text-sm text-gray-400 dark:text-gray-500">-</p>
+                    @endif
+                </div>
             </div>
         </div>
 

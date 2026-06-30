@@ -26,6 +26,8 @@ class StoreDataInitiativeRequest extends FormRequest
             'code' => ['required', 'string', 'max:255', 'unique:data_initiatives,code'],
             'label' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'business_objective_ids' => ['nullable', 'array'],
+            'business_objective_ids.*' => ['integer', 'exists:business_objectives,id'],
         ];
     }
 
@@ -45,6 +47,9 @@ class StoreDataInitiativeRequest extends FormRequest
             'label.string' => __('The label must be a string.'),
             'label.max' => __('The label may not be greater than 255 characters.'),
             'description.string' => __('The description must be a string.'),
+            'business_objective_ids.array' => __('The business objectives must be an array.'),
+            'business_objective_ids.*.integer' => __('The business objective ID must be an integer.'),
+            'business_objective_ids.*.exists' => __('The selected business objective does not exist.'),
         ];
     }
 }

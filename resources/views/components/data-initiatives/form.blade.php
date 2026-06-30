@@ -1,5 +1,7 @@
 @props([
     'dataInitiative' => null,
+    'businessObjectives' => null,
+    'selectedBusinessObjectiveIds' => [],
 ])
 
 <form method="POST" action="{{ $dataInitiative ? route('web.data-initiatives.update', $dataInitiative) : route('web.data-initiatives.store') }}" class="space-y-6">
@@ -60,6 +62,36 @@
             <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
         @enderror
     </div>
+
+    <!-- Business Objectives Field -->
+    @if($businessObjectives && $businessObjectives->isNotEmpty())
+        <div>
+            <label for="business_objective_ids" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                {{ __('Business Objectives') }}
+            </label>
+            <select 
+                id="business_objective_ids"
+                name="business_objective_ids[]"
+                multiple
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('business_objective_ids') border-red-500 dark:border-red-500 @enderror"
+                size="5"
+            >
+                @foreach($businessObjectives as $businessObjective)
+                    <option value="{{ $businessObjective->id }}" 
+                        @if(in_array($businessObjective->id, old('business_objective_ids', $selectedBusinessObjectiveIds ?? []))) selected @endif
+                    >
+                        {{ $businessObjective->name }}
+                    </option>
+                @endforeach
+            </select>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {{ __('Hold Ctrl/Cmd to select multiple business objectives') }}
+            </p>
+            @error('business_objective_ids')
+                <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+            @enderror
+        </div>
+    @endif
 
     <!-- Submit Button -->
     <div class="flex justify-end">

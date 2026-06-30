@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\BusinessAsset;
+use App\Models\BusinessObjective;
 use App\Models\BusinessRule;
 use App\Models\DataInitiative;
 use App\Models\DataInitiativeGovernanceScoreHistory;
@@ -650,4 +651,143 @@ it('displays average data quality score with correct color for low scores', func
         ->assertStatus(200)
         ->assertSee('60.0%')
         ->assertSee('text-red');
+});
+
+// Business Objectives Tests
+
+it('displays business objectives multi-select on create page', function () {
+    $businessObjective = BusinessObjective::factory()->create(['name' => 'Test Objective']);
+
+    $this->actingAs($this->user)
+        ->get(route('web.data-initiatives.create'))
+        ->assertStatus(200)
+        ->assertSee(__('Business Objectives'))
+        ->assertSee('Test Objective');
+});
+
+it('displays business objectives multi-select on edit page', function () {
+    $businessObjective = BusinessObjective::factory()->create(['name' => 'Test Objective']);
+    $initiative = DataInitiative::factory()->create();
+
+    $this->actingAs($this->user)
+        ->get(route('web.data-initiatives.edit', $initiative))
+        ->assertStatus(200)
+        ->assertSee(__('Business Objectives'))
+        ->assertSee('Test Objective');
+});
+
+it('can create data initiative with business objectives', function () {
+    $businessObjective1 = BusinessObjective::factory()->create();
+    $businessObjective2 = BusinessObjective::factory()->create();
+
+    $this->actingAs($this->user)
+        ->post(route('web.data-initiatives.store'), [
+            'code' => 'BO-TEST-001',
+            'label' => 'Business Objectives Test',
+            'description' => 'Test with BO',
+            'business_objective_ids' => [$businessObjective1->id, $businessObjective2->id],
+        ])
+        ->assertRedirect(route('web.data-initiatives.index'))
+        ->assertSessionHas('success', __('Data Initiative created successfully.'));
+
+    $initiative = DataInitiative::where('code', 'BO-TEST-001')->first();
+    $this->assertCount(2, $initiative->businessObjectives);
+    $this->assertTrue($initiative->businessObjectives->contains($businessObjective1));
+    $this->assertTrue($initiative->businessObjectives->contains($businessObjective2));
+});
+
+it('can update data initiative with business objectives', function () {
+    $initiative = DataInitiative::factory()->create();
+    $businessObjective1 = BusinessObjective::factory()->create();
+    $businessObjective2 = BusinessObjective::factory()->create();
+
+    $this->actingAs($this->user)
+        ->put(route('web.data-initiatives.update', $initiative), [
+            'code' => $initiative->code,
+            'label' => $initiative->label,
+            'description' => $initiative->description,
+            'business_objective_ids' => [$businessObjective1->id, $businessObjective2->id],
+        ])
+        ->assertRedirect(route('web.data-initiatives.index'))
+        ->assertSessionHas('success', __('Data Initiative updated successfully.'));
+
+    $initiative->refresh();
+    $this->assertCount(2, $initiative->businessObjectives);
+});
+
+it('can remove business objectives from data initiative', function () {
+    $businessObjective1 = BusinessObjective::factory()->create();
+    $businessObjective2 = BusinessObjective::factory()->create();
+    $initiative = DataInitiative::factory()->create();
+    $initiative->businessObjectives()->attach([$businessObjective1->id, $businessObjective2->id]);
+
+    $this->actingAs($this->user)
+        ->put(route('web.data-initiatives.update', $initiative), [
+            'code' => $initiative->code,
+            'label' => $initiative->label,
+            'description' => $initiative->description,
+            'business_objective_ids' => [$businessObjective1->id],
+        ])
+        ->assertRedirect(route('web.data-initiatives.index'))
+        ->assertSessionHas('success', __('Data Initiative updated successfully.'));
+
+    $initiative->refresh();
+    $this->assertCount(1, $initiative->businessObjectives);
+    $this->assertTrue($initiative->businessObjectives->contains($businessObjective1));
+});
+
+it('validates business objective ids when storing', function () {
+    $this->actingAs($this->user)
+        ->post(route('web.data-initiatives.store'), [
+            'code' => 'VALID-TEST',
+            'label' => 'Validation Test',
+            'business_objective_ids' => [999999], // Non-existent ID
+        ])
+        ->assertSessionHasErrors('business_objective_ids.0');
+});
+
+it('displays business objectives count in index table', function () {
+    $initiative = DataInitiative::factory()->create();
+    $businessObjective1 = BusinessObjective::factory()->create();
+    $businessObjective2 = BusinessObjective::factory()->create();
+    $initiative->businessObjectives()->attach([$businessObjective1->id, $businessObjective2->id]);
+
+    $this->actingAs($this->user)
+        ->get(route('web.data-initiatives.index'))
+        ->assertStatus(200)
+        ->assertSee(__('Business Objectives'))
+        ->assertSee('2');
+});
+
+it('displays business objectives in show page sidebar', function () {
+    $initiative = DataInitiative::factory()->create();
+    $businessObjective = BusinessObjective::factory()->create(['name' => 'Side Objective']);
+    $initiative->businessObjectives()->attach($businessObjective->id);
+
+    $this->actingAs($this->user)
+        ->get(route('web.data-initiatives.show', $initiative))
+        ->assertStatus(200)
+        ->assertSee(__('Business Objectives'))
+        ->assertSee('Side Objective');
+});
+
+it('shows dash when no business objectives assigned', function () {
+    $initiative = DataInitiative::factory()->create();
+
+    $this->actingAs($this->user)
+        ->get(route('web.data-initiatives.show', $initiative))
+        ->assertStatus(200)
+        ->assertSee(__('Business Objectives'))
+        ->assertSee('-');
+});
+
+it('shows pre-selected business objectives on edit page', function () {
+    $initiative = DataInitiative::factory()->create();
+    $businessObjective = BusinessObjective::factory()->create(['name' => 'Pre Selected']);
+    $initiative->businessObjectives()->attach($businessObjective->id);
+
+    $this->actingAs($this->user)
+        ->get(route('web.data-initiatives.edit', $initiative))
+        ->assertStatus(200)
+        ->assertSee('selected');
 });
