@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BusinessAssetController;
+use App\Http\Controllers\BusinessObjectiveController;
 use App\Http\Controllers\BusinessRuleController;
 use App\Http\Controllers\DataInitiativeController;
 use App\Http\Controllers\DataIssueController;
@@ -48,6 +49,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Governance Score History routes for Data Initiatives
     Route::get('data-initiatives/{dataInitiative}/governance-score/history', [DataInitiativeController::class, 'showGovernanceScoreHistory'])->name('web.data-initiatives.governance-score.history');
     Route::get('data-initiatives/{dataInitiative}/governance-score/{history}', [DataInitiativeController::class, 'showSpecificGovernanceScore'])->name('web.data-initiatives.governance-score.show');
+
+    Route::get('business-objectives', [BusinessObjectiveController::class, 'index'])->name('web.business-objectives.index');
+    Route::get('business-objectives/create', [BusinessObjectiveController::class, 'create'])->name('web.business-objectives.create');
+    Route::post('business-objectives', [BusinessObjectiveController::class, 'store'])->name('web.business-objectives.store');
+    Route::get('business-objectives/{businessObjective}', [BusinessObjectiveController::class, 'show'])->name('web.business-objectives.show');
+    Route::get('business-objectives/{businessObjective}/edit', [BusinessObjectiveController::class, 'edit'])->name('web.business-objectives.edit');
+    Route::put('business-objectives/{businessObjective}', [BusinessObjectiveController::class, 'update'])->name('web.business-objectives.update');
+    Route::delete('business-objectives/{businessObjective}', [BusinessObjectiveController::class, 'destroy'])->name('web.business-objectives.destroy');
 
     Route::get('business-rules', [BusinessRuleController::class, 'index'])->name('web.business-rules.index');
     Route::get('business-rules/create', [BusinessRuleController::class, 'create'])->name('web.business-rules.create');

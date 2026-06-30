@@ -132,6 +132,16 @@ class DataInitiative extends Model
     }
 
     /**
+     * Get all business objectives associated with this data initiative.
+     *
+     * @return BelongsToMany<BusinessObjective, $this>
+     */
+    public function businessObjectives(): BelongsToMany
+    {
+        return $this->belongsToMany(BusinessObjective::class, 'business_objective_data_initiative');
+    }
+
+    /**
      * Get the average data quality check score from all business assets.
      */
     public function getAvgDataQualityCheckScoreAttribute(): ?float

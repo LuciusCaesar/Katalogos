@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\BusinessAssetController;
+use App\Http\Controllers\Api\BusinessObjectiveController;
 use App\Http\Controllers\Api\BusinessRuleController;
 use App\Http\Controllers\Api\DataInitiativeController;
 use App\Http\Controllers\Api\DataIssueController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Api\SolutionController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+    Route::apiResource('business-objectives', BusinessObjectiveController::class);
     Route::apiResource('business-rules', BusinessRuleController::class);
     Route::apiResource('data-initiatives', DataInitiativeController::class);
     Route::get('data-initiatives/{dataInitiative}/governance-score-history',
