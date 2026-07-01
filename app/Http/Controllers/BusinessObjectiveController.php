@@ -16,7 +16,7 @@ class BusinessObjectiveController extends Controller
      */
     public function index(Request $request): View
     {
-        $businessObjectives = BusinessObjective::with(['dataInitiatives'])
+        $businessObjectives = BusinessObjective::with(['dataInitiatives', 'kpis'])
             ->latest()
             ->paginate(10);
 
@@ -48,7 +48,7 @@ class BusinessObjectiveController extends Controller
      */
     public function show(BusinessObjective $businessObjective): View
     {
-        $businessObjective->load(['dataInitiatives']);
+        $businessObjective->load(['dataInitiatives', 'kpis']);
 
         return view('pages.business-objectives.show', compact('businessObjective'));
     }

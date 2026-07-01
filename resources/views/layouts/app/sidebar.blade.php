@@ -24,6 +24,9 @@
                     <flux:sidebar.item icon="flag" :href="route('web.business-objectives.index')" :current="request()->routeIs('web.business-objectives.*')" wire:navigate>
                         {{ __('Business Objectives') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="chart-bar" :href="route('web.kpis.index')" :current="request()->routeIs('web.kpis.*')" wire:navigate>
+                        {{ __('KPIs') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
                 <flux:sidebar.group :heading="__('Glossary')" class="grid">
                     <flux:sidebar.item icon="book-open" :href="route('web.business-assets.index')" :current="request()->routeIs('web.business-assets.*')" wire:navigate>

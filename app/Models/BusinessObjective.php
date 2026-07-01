@@ -6,6 +6,7 @@ use Database\Factories\BusinessObjectiveFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BusinessObjective extends Model
 {
@@ -22,5 +23,15 @@ class BusinessObjective extends Model
     public function dataInitiatives(): BelongsToMany
     {
         return $this->belongsToMany(DataInitiative::class, 'business_objective_data_initiative');
+    }
+
+    /**
+     * Get all KPIs associated with this business objective.
+     *
+     * @return HasMany<KPI, $this>
+     */
+    public function kpis(): HasMany
+    {
+        return $this->hasMany(KPI::class);
     }
 }

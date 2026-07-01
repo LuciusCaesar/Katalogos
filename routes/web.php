@@ -9,6 +9,7 @@ use App\Http\Controllers\DataQualityCheckController;
 use App\Http\Controllers\DataQualityCheckScoreController;
 use App\Http\Controllers\DataSourceController;
 use App\Http\Controllers\DomainController;
+use App\Http\Controllers\KPIController;
 use App\Http\Controllers\RootCauseController;
 use App\Http\Controllers\SolutionController;
 use Illuminate\Support\Facades\Route;
@@ -57,6 +58,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('business-objectives/{businessObjective}/edit', [BusinessObjectiveController::class, 'edit'])->name('web.business-objectives.edit');
     Route::put('business-objectives/{businessObjective}', [BusinessObjectiveController::class, 'update'])->name('web.business-objectives.update');
     Route::delete('business-objectives/{businessObjective}', [BusinessObjectiveController::class, 'destroy'])->name('web.business-objectives.destroy');
+
+    Route::get('kpis', [KPIController::class, 'index'])->name('web.kpis.index');
+    Route::get('kpis/create', [KPIController::class, 'create'])->name('web.kpis.create');
+    Route::post('kpis', [KPIController::class, 'store'])->name('web.kpis.store');
+    Route::get('kpis/{kpi}', [KPIController::class, 'show'])->name('web.kpis.show');
+    Route::get('kpis/{kpi}/edit', [KPIController::class, 'edit'])->name('web.kpis.edit');
+    Route::put('kpis/{kpi}', [KPIController::class, 'update'])->name('web.kpis.update');
+    Route::delete('kpis/{kpi}', [KPIController::class, 'destroy'])->name('web.kpis.destroy');
 
     Route::get('business-rules', [BusinessRuleController::class, 'index'])->name('web.business-rules.index');
     Route::get('business-rules/create', [BusinessRuleController::class, 'create'])->name('web.business-rules.create');

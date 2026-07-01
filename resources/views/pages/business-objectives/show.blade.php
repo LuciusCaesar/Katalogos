@@ -83,6 +83,48 @@
                         </table>
                     @endif
                 </div>
+
+                <!-- KPIs Section -->
+                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-zinc-700">
+                        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                            {{ __('KPIs') }} ({{ $businessObjective->kpis->count() }})
+                        </h2>
+                    </div>
+                    @if ($businessObjective->kpis->isEmpty())
+                        <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                            {{ __('No KPIs associated with this business objective.') }}
+                        </div>
+                    @else
+                        <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-zinc-700">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        {{ __('Name') }}
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        {{ __('Description') }}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-zinc-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                @foreach ($businessObjective->kpis as $kpi)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-700">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <a href="{{ route('web.kpis.show', $kpi) }}" 
+                                               class="text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400">
+                                                {{ $kpi->name }}
+                                            </a>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                            {{ Str::limit($kpi->description ?? '-', 50) }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @endif
+                </div>
             </div>
 
             <!-- Right column (1/3 width) - sidebar info -->
