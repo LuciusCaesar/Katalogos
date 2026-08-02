@@ -61,6 +61,14 @@ classDiagram
         +roleAssignments()
         +dataSteward()
         +dataOwner()
+        +businessProcesses()
+    }
+
+    class BusinessProcess {
+        +id
+        +name
+        +description
+        +businessAssets()
     }
 
     User "1" -- "0..*" RoleAssignment : assigns
@@ -74,6 +82,8 @@ classDiagram
     
     RoleAssignment --|> DataInitiative : roleable
     RoleAssignment --|> BusinessAsset : roleable
+    
+    BusinessProcess "*" -- "*" BusinessAsset : related
 ```
 
 ### Key Relationships
@@ -81,6 +91,7 @@ classDiagram
 - **User ↔ RoleAssignment ↔ Roleable (polymorphic)**: Users are assigned roles on entities via the polymorphic `role_assignments` pivot table
 - **DataInitiative → BusinessAsset**: A DataInitiative contains many BusinessAssets (one-to-many)
 - **Polymorphic Roles**: The same Role model can be assigned to any entity type (currently DataInitiative and BusinessAsset)
+- **BusinessProcess ↔ BusinessAsset**: A many-to-many relationship allowing business processes to be associated with multiple business assets and vice versa
 
 ## Getting Started
 

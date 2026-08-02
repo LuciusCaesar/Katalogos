@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BusinessAssetController;
 use App\Http\Controllers\BusinessObjectiveController;
+use App\Http\Controllers\BusinessProcessController;
 use App\Http\Controllers\BusinessRuleController;
 use App\Http\Controllers\DataInitiativeController;
 use App\Http\Controllers\DataIssueController;
@@ -58,6 +59,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('business-objectives/{businessObjective}/edit', [BusinessObjectiveController::class, 'edit'])->name('web.business-objectives.edit');
     Route::put('business-objectives/{businessObjective}', [BusinessObjectiveController::class, 'update'])->name('web.business-objectives.update');
     Route::delete('business-objectives/{businessObjective}', [BusinessObjectiveController::class, 'destroy'])->name('web.business-objectives.destroy');
+
+    Route::get('business-processes', [BusinessProcessController::class, 'index'])->name('web.business-processes.index');
+    Route::get('business-processes/create', [BusinessProcessController::class, 'create'])->name('web.business-processes.create');
+    Route::post('business-processes', [BusinessProcessController::class, 'store'])->name('web.business-processes.store');
+    Route::get('business-processes/{businessProcess}', [BusinessProcessController::class, 'show'])->name('web.business-processes.show');
+    Route::get('business-processes/{businessProcess}/edit', [BusinessProcessController::class, 'edit'])->name('web.business-processes.edit');
+    Route::put('business-processes/{businessProcess}', [BusinessProcessController::class, 'update'])->name('web.business-processes.update');
+    Route::delete('business-processes/{businessProcess}', [BusinessProcessController::class, 'destroy'])->name('web.business-processes.destroy');
 
     Route::get('kpis', [KPIController::class, 'index'])->name('web.kpis.index');
     Route::get('kpis/create', [KPIController::class, 'create'])->name('web.kpis.create');

@@ -54,6 +54,9 @@
                     <flux:sidebar.item icon="circle-stack" :href="route('web.data-sources.index')" :current="request()->routeIs('web.data-sources.*')" wire:navigate>
                         {{ __('Data Sources') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="cog" :href="route('web.business-processes.index')" :current="request()->routeIs('web.business-processes.*')" wire:navigate>
+                        {{ __('Business Processes') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

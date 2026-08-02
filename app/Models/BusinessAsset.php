@@ -197,6 +197,21 @@ class BusinessAsset extends Model
     }
 
     /**
+     * Get all business processes associated with this business asset.
+     *
+     * @return BelongsToMany<BusinessProcess, $this>
+     */
+    public function businessProcesses(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            BusinessProcess::class,
+            'business_asset_business_process',
+            'business_asset_id',
+            'business_process_id'
+        );
+    }
+
+    /**
      * Remove a role assignment from a user for this business asset.
      */
     public function removeRoleFromUser(User $user, Role $role): bool
