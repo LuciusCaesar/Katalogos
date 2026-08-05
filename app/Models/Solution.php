@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\SolutionDimension;
+use App\Enums\SolutionImplementationStatus;
 use Database\Factories\SolutionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,10 +18,12 @@ class Solution extends Model
         'name',
         'description',
         'dimension',
+        'implementation_status',
     ];
 
     protected $casts = [
         'dimension' => SolutionDimension::class,
+        'implementation_status' => SolutionImplementationStatus::class,
     ];
 
     /**

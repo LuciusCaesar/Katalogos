@@ -26,6 +26,7 @@ class StoreSolutionRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'dimension' => ['required', 'string', 'in:Process,People,Tool'],
+            'implementation_status' => ['nullable', 'string', 'in:Identified for later stage,Study,To be approved,Planned for implementation,Refused,Implemented,Ongoing'],
         ];
     }
 }

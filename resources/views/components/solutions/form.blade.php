@@ -3,6 +3,10 @@
     'rootCauses',
 ])
 
+@php
+    use App\Enums\SolutionImplementationStatus;
+@endphp
+
 <form method="POST" action="{{ $solution ? route('web.solutions.update', $solution) : route('web.solutions.store') }}" class="space-y-6">
     @csrf
     @if ($solution)
@@ -69,6 +73,30 @@
             </option>
         </select>
         @error('dimension')
+            <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+        @enderror
+    </div>
+
+    <!-- Implementation Status Field -->
+    <div>
+        <label for="implementation_status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            {{ __('Implementation Status') }}
+        </label>
+        <select 
+            id="implementation_status"
+            name="implementation_status"
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('implementation_status') border-red-500 dark:border-red-500 @enderror"
+        >
+            <option value="" {{ old('implementation_status', $solution?->implementation_status) ? '' : 'selected' }}>
+                {{ __('Select Status') }}
+            </option>
+            @foreach (SolutionImplementationStatus::options() as $value => $label)
+                <option value="{{ $value }}" {{ old('implementation_status', $solution?->implementation_status?->value) === $value ? 'selected' : '' }}>
+                    {{ $label }}
+                </option>
+            @endforeach
+        </select>
+        @error('implementation_status')
             <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
         @enderror
     </div>

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\SolutionImplementationStatus;
 use App\Models\Solution;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -21,6 +22,7 @@ class SolutionFactory extends Factory
             'name' => $this->faker->word(),
             'description' => $this->faker->sentence(),
             'dimension' => $this->faker->randomElement(['Process', 'People', 'Tool']),
+            'implementation_status' => $this->faker->randomElement(SolutionImplementationStatus::values()),
         ];
     }
 }

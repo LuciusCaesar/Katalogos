@@ -5,11 +5,16 @@
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     {{ $solution->name }}
                 </h1>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">
+                <div class="flex gap-2">
                     <span class="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 rounded text-blue-800 dark:text-blue-200 text-xs">
                         {{ $solution->dimension->value }}
                     </span>
-                </p>
+                    @if ($solution->implementation_status)
+                        <span class="inline-block px-2 py-1 bg-purple-100 dark:bg-purple-900/30 rounded text-purple-800 dark:text-purple-200 text-xs">
+                            {{ $solution->implementation_status->value }}
+                        </span>
+                    @endif
+                </div>
                 @if ($solution->description)
                     <p class="mt-4 text-gray-600 dark:text-gray-400">
                         {{ $solution->description }}

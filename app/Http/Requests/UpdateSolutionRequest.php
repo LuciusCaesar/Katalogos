@@ -26,6 +26,7 @@ class UpdateSolutionRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'dimension' => ['required', 'string', 'in:Process,People,Tool'],
+            'implementation_status' => ['nullable', 'string', 'in:Identified for later stage,Study,To be approved,Planned for implementation,Refused,Implemented,Ongoing'],
             'root_cause_ids' => ['nullable', 'array'],
             'root_cause_ids.*' => ['exists:root_causes,id'],
         ];
@@ -45,6 +46,7 @@ class UpdateSolutionRequest extends FormRequest
             'description.string' => __('The description must be a string.'),
             'dimension.required' => __('The dimension is required.'),
             'dimension.in' => __('The dimension must be one of: Process, People, Tool.'),
+            'implementation_status.in' => __('The implementation status must be one of: Identified for later stage, Study, To be approved, Planned for implementation, Refused, Implemented, Ongoing.'),
             'root_cause_ids.*.exists' => __('One or more selected root causes are invalid.'),
         ];
     }

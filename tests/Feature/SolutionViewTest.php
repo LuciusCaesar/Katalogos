@@ -44,6 +44,7 @@ it('displays solutions in a table', function () {
         ->assertSee(__('Name'))
         ->assertSee(__('Description'))
         ->assertSee(__('Dimension'))
+        ->assertSee(__('Implementation Status'))
         ->assertSee(__('Root Causes'))
         ->assertSee(__('Created At'))
         ->assertSee(__('Actions'));
@@ -103,6 +104,7 @@ it('displays solution form with root causes on create page', function () {
         ->assertSee(__('Solution Name'))
         ->assertSee(__('Description'))
         ->assertSee(__('Dimension'))
+        ->assertSee(__('Implementation Status'))
         ->assertSee(__('Root Causes'))
         ->assertSee($rootCause->name);
 });
@@ -129,6 +131,22 @@ it('can store a new solution', function () {
     $this->assertDatabaseHas('solutions', $data);
 });
 
+it('can store a solution with implementation status', function () {
+    $data = [
+        'name' => 'New Solution',
+        'description' => 'New Description',
+        'dimension' => 'Tool',
+        'implementation_status' => 'Implemented',
+    ];
+
+    $this->actingAs($this->user)
+        ->post(route('web.solutions.store'), $data)
+        ->assertRedirect(route('web.solutions.index'))
+        ->assertSessionHas('success', __('Solution created successfully.'));
+
+    $this->assertDatabaseHas('solutions', $data);
+});
+
 it('validates name is required when storing', function () {
     $this->actingAs($this->user)
         ->post(route('web.solutions.store'), ['description' => 'Test', 'dimension' => 'Process'])
@@ -145,6 +163,12 @@ it('validates dimension is one of allowed values when storing', function () {
     $this->actingAs($this->user)
         ->post(route('web.solutions.store'), ['name' => 'Test', 'dimension' => 'Invalid'])
         ->assertSessionHasErrors('dimension');
+});
+
+it('validates implementation status is one of allowed values when storing', function () {
+    $this->actingAs($this->user)
+        ->post(route('web.solutions.store'), ['name' => 'Test', 'dimension' => 'Process', 'implementation_status' => 'Invalid Status'])
+        ->assertSessionHasErrors('implementation_status');
 });
 
 // Show Page Tests
@@ -184,6 +208,15 @@ it('displays solution dimension', function () {
         ->get(route('web.solutions.show', $solution))
         ->assertStatus(200)
         ->assertSee('People');
+});
+
+it('displays solution implementation status', function () {
+    $solution = Solution::factory()->create(['implementation_status' => 'Planned for implementation']);
+
+    $this->actingAs($this->user)
+        ->get(route('web.solutions.show', $solution))
+        ->assertStatus(200)
+        ->assertSee('Planned for implementation');
 });
 
 it('displays edit and delete buttons on show page', function () {
@@ -286,6 +319,24 @@ it('can update a solution', function () {
         'name' => 'Updated Solution',
         'description' => 'Updated Description',
         'dimension' => 'People',
+    ];
+
+    $this->actingAs($this->user)
+        ->put(route('web.solutions.update', $solution), $data)
+        ->assertRedirect(route('web.solutions.index'))
+        ->assertSessionHas('success', __('Solution updated successfully.'));
+
+    $this->assertDatabaseHas('solutions', $data);
+});
+
+it('can update solution with implementation status', function () {
+    $solution = Solution::factory()->create();
+
+    $data = [
+        'name' => 'Updated Solution',
+        'description' => 'Updated Description',
+        'dimension' => 'People',
+        'implementation_status' => 'Ongoing',
     ];
 
     $this->actingAs($this->user)

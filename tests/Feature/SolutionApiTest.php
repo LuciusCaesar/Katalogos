@@ -39,6 +39,24 @@ it('creates a solution', function () {
     $this->assertDatabaseHas('solutions', $data);
 });
 
+it('creates a solution with implementation status', function () {
+    Sanctum::actingAs($this->user);
+
+    $data = [
+        'name' => 'Test Solution',
+        'description' => 'Test Description',
+        'dimension' => 'Process',
+        'implementation_status' => 'Study',
+    ];
+
+    $response = $this->postJson('/api/v1/solutions', $data);
+
+    $response->assertStatus(201)
+        ->assertJson(['data' => $data]);
+
+    $this->assertDatabaseHas('solutions', $data);
+});
+
 it('validates create request', function () {
     Sanctum::actingAs($this->user);
 
@@ -58,6 +76,19 @@ it('validates dimension is one of allowed values', function () {
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['dimension']);
+});
+
+it('validates implementation status is one of allowed values', function () {
+    Sanctum::actingAs($this->user);
+
+    $response = $this->postJson('/api/v1/solutions', [
+        'name' => 'Test',
+        'dimension' => 'Process',
+        'implementation_status' => 'Invalid Status',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['implementation_status']);
 });
 
 it('shows a solution', function () {
@@ -80,6 +111,26 @@ it('updates a solution', function () {
         'name' => 'Updated Name',
         'description' => 'Updated Description',
         'dimension' => 'People',
+    ];
+
+    $response = $this->putJson('/api/v1/solutions/'.$solution->id, $data);
+
+    $response->assertStatus(200)
+        ->assertJson(['data' => $data]);
+
+    $this->assertDatabaseHas('solutions', $data);
+});
+
+it('updates a solution with implementation status', function () {
+    Sanctum::actingAs($this->user);
+
+    $solution = Solution::factory()->create();
+
+    $data = [
+        'name' => 'Updated Name',
+        'description' => 'Updated Description',
+        'dimension' => 'People',
+        'implementation_status' => 'Refused',
     ];
 
     $response = $this->putJson('/api/v1/solutions/'.$solution->id, $data);
