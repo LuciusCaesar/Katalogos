@@ -26,6 +26,9 @@ class UpdateBusinessAssetRequest extends FormRequest
             'name' => ['sometimes', 'string', 'max:255'],
             'definition' => ['sometimes', 'string'],
             'data_initiative_id' => ['sometimes', 'exists:data_initiatives,id'],
+            'consistency' => ['sometimes', 'nullable', 'in:low,middle,high'],
+            'integrity' => ['sometimes', 'nullable', 'in:low,middle,high'],
+            'availability' => ['sometimes', 'nullable', 'in:low,middle,high'],
         ];
     }
 }

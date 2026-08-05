@@ -26,6 +26,9 @@ class StoreBusinessAssetRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'definition' => ['required', 'string'],
             'data_initiative_id' => ['required', 'exists:data_initiatives,id'],
+            'consistency' => ['nullable', 'in:low,middle,high'],
+            'integrity' => ['nullable', 'in:low,middle,high'],
+            'availability' => ['nullable', 'in:low,middle,high'],
         ];
     }
 }

@@ -277,6 +277,39 @@
                     </p>
                 </div>
 
+                <!-- Categorization Level Card -->
+                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        {{ __('Categorization Level') }}
+                    </h3>
+                    <div class="mt-2 grid grid-cols-3 gap-2">
+                        <div class="text-center">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                {{ __('Consistency') }}
+                            </p>
+                            <p class="mt-1 font-medium text-gray-900 dark:text-gray-100">
+                                {{ ucfirst($businessAsset->consistency ?? '-') }}
+                            </p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                {{ __('Integrity') }}
+                            </p>
+                            <p class="mt-1 font-medium text-gray-900 dark:text-gray-100">
+                                {{ ucfirst($businessAsset->integrity ?? '-') }}
+                            </p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                {{ __('Availability') }}
+                            </p>
+                            <p class="mt-1 font-medium text-gray-900 dark:text-gray-100">
+                                {{ ucfirst($businessAsset->availability ?? '-') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Governance Score Card -->
                 <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
                     <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">

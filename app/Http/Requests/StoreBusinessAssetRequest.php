@@ -27,6 +27,9 @@ class StoreBusinessAssetRequest extends FormRequest
             'definition' => ['required', 'string'],
             'data_initiative_id' => ['required', 'exists:data_initiatives,id'],
             'domain_id' => ['required', 'exists:domains,id'],
+            'consistency' => ['nullable', 'in:low,middle,high'],
+            'integrity' => ['nullable', 'in:low,middle,high'],
+            'availability' => ['nullable', 'in:low,middle,high'],
         ];
     }
 
@@ -47,6 +50,9 @@ class StoreBusinessAssetRequest extends FormRequest
             'data_initiative_id.exists' => __('The selected data initiative is invalid.'),
             'domain_id.required' => __('The domain is required.'),
             'domain_id.exists' => __('The selected domain is invalid.'),
+            'consistency.in' => __('The consistency level must be low, middle, or high.'),
+            'integrity.in' => __('The integrity level must be low, middle, or high.'),
+            'availability.in' => __('The availability level must be low, middle, or high.'),
         ];
     }
 }

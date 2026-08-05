@@ -99,3 +99,135 @@ it('requires authentication', function () {
 
     $response->assertStatus(401);
 });
+
+// Categorization API Tests
+
+it('creates a business asset with categorization', function () {
+    Sanctum::actingAs($this->user);
+
+    $dataInitiative = DataInitiative::factory()->create();
+
+    $data = [
+        'name' => 'Categorized Asset',
+        'definition' => 'Test Definition',
+        'data_initiative_id' => $dataInitiative->id,
+        'consistency' => 'high',
+        'integrity' => 'middle',
+        'availability' => 'low',
+    ];
+
+    $response = $this->postJson('/api/v1/business-assets', $data);
+
+    $response->assertStatus(201)
+        ->assertJson(['data' => $data]);
+
+    $this->assertDatabaseHas('business_assets', $data);
+});
+
+it('updates business asset categorization via api', function () {
+    Sanctum::actingAs($this->user);
+
+    $businessAsset = BusinessAsset::factory()->create([
+        'consistency' => 'low',
+        'integrity' => 'low',
+        'availability' => 'low',
+    ]);
+
+    $updatedData = [
+        'name' => 'Updated Asset',
+        'definition' => 'Updated Definition',
+        'consistency' => 'high',
+        'integrity' => 'high',
+        'availability' => 'high',
+    ];
+
+    $response = $this->putJson('/api/v1/business-assets/'.$businessAsset->id, $updatedData);
+
+    $response->assertStatus(200)
+        ->assertJson(['data' => $updatedData]);
+
+    $this->assertDatabaseHas('business_assets', [
+        'id' => $businessAsset->id,
+        'consistency' => 'high',
+        'integrity' => 'high',
+        'availability' => 'high',
+    ]);
+});
+
+it('returns categorization in business asset response', function () {
+    Sanctum::actingAs($this->user);
+
+    $businessAsset = BusinessAsset::factory()->create([
+        'name' => 'Categorized Asset',
+        'consistency' => 'high',
+        'integrity' => 'middle',
+        'availability' => 'low',
+    ]);
+
+    $response = $this->getJson('/api/v1/business-assets/'.$businessAsset->id);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'data' => [
+                'id' => $businessAsset->id,
+                'name' => 'Categorized Asset',
+                'consistency' => 'high',
+                'integrity' => 'middle',
+                'availability' => 'low',
+            ],
+        ]);
+});
+
+it('validates categorization values on create', function () {
+    Sanctum::actingAs($this->user);
+
+    $dataInitiative = DataInitiative::factory()->create();
+
+    $response = $this->postJson('/api/v1/business-assets', [
+        'name' => 'Test Asset',
+        'definition' => 'Test Definition',
+        'data_initiative_id' => $dataInitiative->id,
+        'consistency' => 'invalid',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['consistency']);
+});
+
+it('validates categorization values on update', function () {
+    Sanctum::actingAs($this->user);
+
+    $businessAsset = BusinessAsset::factory()->create();
+
+    $response = $this->putJson('/api/v1/business-assets/'.$businessAsset->id, [
+        'integrity' => 'invalid',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['integrity']);
+});
+
+it('can set categorization to null', function () {
+    Sanctum::actingAs($this->user);
+
+    $businessAsset = BusinessAsset::factory()->create([
+        'consistency' => 'high',
+        'integrity' => 'middle',
+        'availability' => 'low',
+    ]);
+
+    $response = $this->putJson('/api/v1/business-assets/'.$businessAsset->id, [
+        'consistency' => null,
+        'integrity' => null,
+        'availability' => null,
+    ]);
+
+    $response->assertStatus(200);
+
+    $this->assertDatabaseHas('business_assets', [
+        'id' => $businessAsset->id,
+        'consistency' => null,
+        'integrity' => null,
+        'availability' => null,
+    ]);
+});

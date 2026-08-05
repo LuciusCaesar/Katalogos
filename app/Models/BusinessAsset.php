@@ -35,6 +35,9 @@ class BusinessAsset extends Model
         'definition',
         'data_initiative_id',
         'domain_id',
+        'consistency',
+        'integrity',
+        'availability',
     ];
 
     protected $casts = [

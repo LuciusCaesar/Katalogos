@@ -254,6 +254,51 @@ it('displays domain in right column card', function () {
         ->assertSee('Test Domain');
 });
 
+it('displays categorization level on show page', function () {
+    $domain = Domain::factory()->create();
+    $dataInitiative = DataInitiative::factory()->create();
+    $asset = BusinessAsset::factory()->create([
+        'name' => 'Categorized Asset',
+        'definition' => 'Test Definition',
+        'domain_id' => $domain->id,
+        'data_initiative_id' => $dataInitiative->id,
+        'consistency' => 'high',
+        'integrity' => 'middle',
+        'availability' => 'low',
+    ]);
+
+    $this->actingAs($this->user)
+        ->get(route('web.business-assets.show', $asset))
+        ->assertStatus(200)
+        ->assertSee(__('Categorization Level'))
+        ->assertSee(__('Consistency'))
+        ->assertSee(__('Integrity'))
+        ->assertSee(__('Availability'))
+        ->assertSee('High')
+        ->assertSee('Middle')
+        ->assertSee('Low');
+});
+
+it('displays dash for null categorization values on show page', function () {
+    $domain = Domain::factory()->create();
+    $dataInitiative = DataInitiative::factory()->create();
+    $asset = BusinessAsset::factory()->create([
+        'name' => 'Uncategorized Asset',
+        'definition' => 'Test Definition',
+        'domain_id' => $domain->id,
+        'data_initiative_id' => $dataInitiative->id,
+    ]);
+
+    $this->actingAs($this->user)
+        ->get(route('web.business-assets.show', $asset))
+        ->assertStatus(200)
+        ->assertSee(__('Categorization Level'))
+        ->assertSee(__('Consistency'))
+        ->assertSee(__('Integrity'))
+        ->assertSee(__('Availability'))
+        ->assertSee('-');
+});
+
 it('displays dash when data steward not assigned', function () {
     $dataInitiative = DataInitiative::factory()->create();
     $asset = BusinessAsset::factory()->create([
@@ -623,4 +668,152 @@ it('requires authentication to access edit business asset page', function () {
 
     $this->get(route('web.business-assets.edit', $businessAsset))
         ->assertRedirect(route('login'));
+});
+
+// Categorization Tests
+
+it('displays categorization fields on create form', function () {
+    $this->actingAs($this->user)
+        ->get(route('web.business-assets.create'))
+        ->assertStatus(200)
+        ->assertSee(__('Categorization Level'))
+        ->assertSee(__('Consistency'))
+        ->assertSee(__('Integrity'))
+        ->assertSee(__('Availability'))
+        ->assertSee(__('Low'))
+        ->assertSee(__('Middle'))
+        ->assertSee(__('High'));
+});
+
+it('displays categorization fields on edit form', function () {
+    $domain = Domain::factory()->create();
+    $dataInitiative = DataInitiative::factory()->create();
+
+    $businessAsset = BusinessAsset::factory()->create([
+        'name' => 'Test Asset',
+        'definition' => 'Test Definition',
+        'domain_id' => $domain->id,
+        'data_initiative_id' => $dataInitiative->id,
+        'consistency' => 'high',
+        'integrity' => 'middle',
+        'availability' => 'low',
+    ]);
+
+    $response = $this->actingAs($this->user)
+        ->get(route('web.business-assets.edit', $businessAsset));
+
+    $response->assertStatus(200)
+        ->assertSee(__('Categorization Level'))
+        ->assertSee(__('Consistency'))
+        ->assertSee(__('Integrity'))
+        ->assertSee(__('Availability'));
+
+    $response->assertSee('value="high" selected', false);
+    $response->assertSee('value="middle" selected', false);
+    $response->assertSee('value="low" selected', false);
+});
+
+it('can store business asset with categorization', function () {
+    $domain = Domain::factory()->create();
+    $dataInitiative = DataInitiative::factory()->create();
+
+    $this->actingAs($this->user)
+        ->post(route('web.business-assets.store'), [
+            'name' => 'Categorized Asset',
+            'definition' => 'Test Definition',
+            'data_initiative_id' => $dataInitiative->id,
+            'domain_id' => $domain->id,
+            'consistency' => 'high',
+            'integrity' => 'middle',
+            'availability' => 'low',
+        ])
+        ->assertRedirect(route('web.business-assets.index'))
+        ->assertSessionHas('success', __('Business Asset created successfully.'));
+
+    $this->assertDatabaseHas('business_assets', [
+        'name' => 'Categorized Asset',
+        'consistency' => 'high',
+        'integrity' => 'middle',
+        'availability' => 'low',
+    ]);
+});
+
+it('can update business asset categorization', function () {
+    $domain = Domain::factory()->create();
+    $dataInitiative = DataInitiative::factory()->create();
+
+    $businessAsset = BusinessAsset::factory()->create([
+        'name' => 'Test Asset',
+        'definition' => 'Test Definition',
+        'domain_id' => $domain->id,
+        'data_initiative_id' => $dataInitiative->id,
+        'consistency' => 'low',
+        'integrity' => 'low',
+        'availability' => 'low',
+    ]);
+
+    $this->actingAs($this->user)
+        ->put(route('web.business-assets.update', $businessAsset), [
+            'name' => 'Updated Asset',
+            'definition' => 'Updated Definition',
+            'data_initiative_id' => $dataInitiative->id,
+            'domain_id' => $domain->id,
+            'consistency' => 'high',
+            'integrity' => 'high',
+            'availability' => 'high',
+        ])
+        ->assertRedirect(route('web.business-assets.index'))
+        ->assertSessionHas('success', __('Business Asset updated successfully.'));
+
+    $this->assertDatabaseHas('business_assets', [
+        'id' => $businessAsset->id,
+        'consistency' => 'high',
+        'integrity' => 'high',
+        'availability' => 'high',
+    ]);
+});
+
+it('validates consistency is valid value when storing', function () {
+    $domain = Domain::factory()->create();
+    $dataInitiative = DataInitiative::factory()->create();
+
+    $this->actingAs($this->user)
+        ->post(route('web.business-assets.store'), [
+            'name' => 'Test Asset',
+            'definition' => 'Test Definition',
+            'data_initiative_id' => $dataInitiative->id,
+            'domain_id' => $domain->id,
+            'consistency' => 'invalid',
+        ])
+        ->assertSessionHasErrors('consistency');
+});
+
+it('validates integrity is valid value when storing', function () {
+    $domain = Domain::factory()->create();
+    $dataInitiative = DataInitiative::factory()->create();
+
+    $this->actingAs($this->user)
+        ->post(route('web.business-assets.store'), [
+            'name' => 'Test Asset',
+            'definition' => 'Test Definition',
+            'data_initiative_id' => $dataInitiative->id,
+            'domain_id' => $domain->id,
+            'integrity' => 'invalid',
+        ])
+        ->assertSessionHasErrors('integrity');
+});
+
+it('validates availability is valid value when storing', function () {
+    $domain = Domain::factory()->create();
+    $dataInitiative = DataInitiative::factory()->create();
+
+    $this->actingAs($this->user)
+        ->post(route('web.business-assets.store'), [
+            'name' => 'Test Asset',
+            'definition' => 'Test Definition',
+            'data_initiative_id' => $dataInitiative->id,
+            'domain_id' => $domain->id,
+            'availability' => 'invalid',
+        ])
+        ->assertSessionHasErrors('availability');
 });
