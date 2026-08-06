@@ -63,5 +63,10 @@ jobs:
       - name: Run Type Analysis
         run: composer types:check
 
-      - name: Run Tests
-        run: php artisan test
+      - name: Run Tests with Coverage
+        run: php artisan test --coverage --coverage-clover=coverage.xml
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v7
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
