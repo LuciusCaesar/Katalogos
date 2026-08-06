@@ -6,17 +6,9 @@ use App\Models\GovernanceCriterion;
 use App\Models\GovernanceScore;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Carbon;
 
 /**
- * @property int $id
- * @property string $name
- * @property string|null $definition
- * @property int|null $data_initiative_id
- * @property int|null $domain_id
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property GovernanceScore|null $governanceScore
+ * @mixin \App\Models\BusinessAsset
  */
 class BusinessAssetResource extends JsonResource
 {

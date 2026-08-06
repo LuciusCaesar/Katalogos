@@ -22,6 +22,9 @@ use Illuminate\Support\Collection;
  * @property string|null $definition
  * @property int|null $data_initiative_id
  * @property int|null $domain_id
+ * @property float|null $consistency
+ * @property float|null $integrity
+ * @property float|null $availability
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */

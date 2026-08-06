@@ -2,8 +2,12 @@
 
 namespace App\Http\Resources;
 
+use App\Models\DataSource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin DataSource
+ */
 class DataSourceResource extends JsonResource
 {
     /**

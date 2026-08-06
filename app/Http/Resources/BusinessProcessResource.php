@@ -4,15 +4,9 @@ namespace App\Http\Resources;
 
 use App\Models\BusinessProcess;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Carbon;
 
 /**
- * @property int $id
- * @property string $name
- * @property string|null $description
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property BusinessProcess $resource
+ * @mixin BusinessProcess
  */
 class BusinessProcessResource extends JsonResource
 {

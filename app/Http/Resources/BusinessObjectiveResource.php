@@ -7,12 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 
 /**
- * @property int $id
- * @property string $name
- * @property string|null $description
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property BusinessObjective $resource
+ * @mixin BusinessObjective
  */
 class BusinessObjectiveResource extends JsonResource
 {

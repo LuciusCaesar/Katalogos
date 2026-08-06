@@ -3,16 +3,9 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Carbon;
 
 /**
- * @property int $id
- * @property int $data_initiative_id
- * @property float $score
- * @property string $event
- * @property Carbon $calculated_at
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @mixin \App\Models\DataInitiativeGovernanceScoreHistory
  */
 class DataInitiativeGovernanceScoreHistoryResource extends JsonResource
 {

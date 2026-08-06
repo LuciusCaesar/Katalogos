@@ -4,17 +4,10 @@ namespace App\Http\Resources;
 
 use App\Models\KPI;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Carbon;
 
 /**
- * @property int $id
- * @property string $name
- * @property string|null $description
- * @property int|null $business_objective_id
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property KPI $resource
- */
+ * @mixin KPI
+*/
 class KPIResource extends JsonResource
 {
     /**

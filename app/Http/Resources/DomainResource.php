@@ -2,8 +2,12 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Domain;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin Domain
+ */
 class DomainResource extends JsonResource
 {
     /**
