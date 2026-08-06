@@ -34,7 +34,7 @@ class CalculateGovernanceScore
         // 2. Trigger Data Initiative recalculation if it has one
         if ($asset->data_initiative_id) {
             // Load the initiative directly to avoid relationship caching issues
-            $initiative = DataInitiative::find($asset->data_initiative_id);
+            $initiative = DataInitiative::find($asset->data_initiative_id, 'id');
 
             if ($initiative instanceof DataInitiative) {
                 $eventMessage = $this->buildEventMessage($asset, $event->changes);

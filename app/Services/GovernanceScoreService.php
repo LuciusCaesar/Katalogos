@@ -19,7 +19,7 @@ class GovernanceScoreService
         // Load all active criteria
         $criteria = GovernanceCriterion::query()
             ->where('is_active', true)
-            ->orderBy('order')
+            ->orderBy('order', 'asc')
             ->get();
 
         // Calculate criteria results
