@@ -32,6 +32,9 @@
                     <flux:sidebar.item icon="book-open" :href="route('web.business-assets.index')" :current="request()->routeIs('web.business-assets.*')" wire:navigate>
                         {{ __('Business Assets') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="document-duplicate" :href="route('web.regulations.index')" :current="request()->routeIs('web.regulations.*')" wire:navigate>
+                        {{ __('Regulations') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
                 <flux:sidebar.group :heading="__('Quality')" class="grid">
                     <flux:sidebar.item icon="document-text" :href="route('web.business-rules.index')" :current="request()->routeIs('web.business-rules.*')" wire:navigate>

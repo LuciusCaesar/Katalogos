@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\DataQualityCheckScoreController;
 use App\Http\Controllers\Api\DataSourceController;
 use App\Http\Controllers\Api\DomainController;
 use App\Http\Controllers\Api\KPIController;
+use App\Http\Controllers\Api\RegulationController;
 use App\Http\Controllers\Api\RootCauseController;
 use App\Http\Controllers\Api\SolutionController;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,7 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:60,1'])->group(functi
     Route::apiResource('business-objectives', BusinessObjectiveController::class);
     Route::apiResource('business-processes', BusinessProcessController::class);
     Route::apiResource('kpis', KPIController::class);
+    Route::apiResource('regulations', RegulationController::class);
     Route::apiResource('business-rules', BusinessRuleController::class);
     Route::apiResource('data-initiatives', DataInitiativeController::class);
     Route::get('data-initiatives/{dataInitiative}/governance-score-history',

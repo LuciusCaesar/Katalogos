@@ -218,6 +218,21 @@ class BusinessAsset extends Model
     }
 
     /**
+     * Get all regulations associated with this business asset.
+     *
+     * @return BelongsToMany<Regulation, $this>
+     */
+    public function regulations(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Regulation::class,
+            'business_asset_regulation',
+            'business_asset_id',
+            'regulation_id'
+        );
+    }
+
+    /**
      * Remove a role assignment from a user for this business asset.
      */
     public function removeRoleFromUser(User $user, Role $role): bool

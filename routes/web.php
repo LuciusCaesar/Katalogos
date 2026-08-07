@@ -11,6 +11,7 @@ use App\Http\Controllers\DataQualityCheckScoreController;
 use App\Http\Controllers\DataSourceController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\KPIController;
+use App\Http\Controllers\RegulationController;
 use App\Http\Controllers\RootCauseController;
 use App\Http\Controllers\SolutionController;
 use Illuminate\Support\Facades\Route;
@@ -67,6 +68,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('business-processes/{businessProcess}/edit', [BusinessProcessController::class, 'edit'])->name('web.business-processes.edit');
     Route::put('business-processes/{businessProcess}', [BusinessProcessController::class, 'update'])->name('web.business-processes.update');
     Route::delete('business-processes/{businessProcess}', [BusinessProcessController::class, 'destroy'])->name('web.business-processes.destroy');
+
+    Route::get('regulations', [RegulationController::class, 'index'])->name('web.regulations.index');
+    Route::get('regulations/create', [RegulationController::class, 'create'])->name('web.regulations.create');
+    Route::post('regulations', [RegulationController::class, 'store'])->name('web.regulations.store');
+    Route::get('regulations/{regulation}', [RegulationController::class, 'show'])->name('web.regulations.show');
+    Route::get('regulations/{regulation}/edit', [RegulationController::class, 'edit'])->name('web.regulations.edit');
+    Route::put('regulations/{regulation}', [RegulationController::class, 'update'])->name('web.regulations.update');
+    Route::delete('regulations/{regulation}', [RegulationController::class, 'destroy'])->name('web.regulations.destroy');
 
     Route::get('kpis', [KPIController::class, 'index'])->name('web.kpis.index');
     Route::get('kpis/create', [KPIController::class, 'create'])->name('web.kpis.create');
