@@ -25,6 +25,7 @@ class UpdateBusinessRuleRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'dimension' => ['required', 'string', 'in:availability,consistency,timeliness,validity'],
             'business_asset_ids' => ['nullable', 'array'],
             'business_asset_ids.*' => ['exists:business_assets,id'],
             'data_issue_ids' => ['nullable', 'array'],
@@ -44,6 +45,8 @@ class UpdateBusinessRuleRequest extends FormRequest
             'name.string' => __('The name must be a string.'),
             'name.max' => __('The name may not be greater than 255 characters.'),
             'description.string' => __('The description must be a string.'),
+            'dimension.required' => __('The dimension is required.'),
+            'dimension.in' => __('The dimension must be one of: availability, consistency, timeliness, validity.'),
             'business_asset_ids.*.exists' => __('One or more selected business assets are invalid.'),
             'data_issue_ids.*.exists' => __('One or more selected data issues are invalid.'),
         ];

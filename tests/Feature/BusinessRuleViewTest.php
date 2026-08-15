@@ -37,6 +37,7 @@ it('displays business rules in a table', function () {
     BusinessRule::factory()->create([
         'name' => 'Test Business Rule',
         'description' => 'Test Description',
+        'dimension' => 'validity',
     ]);
 
     $this->actingAs($this->user)
@@ -44,8 +45,10 @@ it('displays business rules in a table', function () {
         ->assertStatus(200)
         ->assertSee('Test Business Rule')
         ->assertSee('Test Description')
+        ->assertSee('validity')
         ->assertSee(__('Name'))
         ->assertSee(__('Description'))
+        ->assertSee(__('Dimension'))
         ->assertSee(__('Business Assets'))
         ->assertSee(__('Data Issues'))
         ->assertSee(__('Data Quality Checks'))
@@ -143,6 +146,7 @@ it('displays business rule form with business assets and data issues on create p
         ->assertStatus(200)
         ->assertSee(__('Business Rule Name'))
         ->assertSee(__('Description'))
+        ->assertSee(__('Dimension'))
         ->assertSee(__('Business Assets'))
         ->assertSee(__('Data Issues'))
         ->assertSee($businessAsset->name)
@@ -160,6 +164,7 @@ it('can store a new business rule', function () {
     $data = [
         'name' => 'New Business Rule',
         'description' => 'New Description',
+        'dimension' => 'availability',
     ];
 
     $this->actingAs($this->user)
@@ -174,6 +179,18 @@ it('validates name is required when storing', function () {
     $this->actingAs($this->user)
         ->post(route('web.business-rules.store'), ['description' => 'Test'])
         ->assertSessionHasErrors('name');
+});
+
+it('validates dimension is required when storing', function () {
+    $this->actingAs($this->user)
+        ->post(route('web.business-rules.store'), ['name' => 'Test'])
+        ->assertSessionHasErrors('dimension');
+});
+
+it('validates dimension is valid when storing', function () {
+    $this->actingAs($this->user)
+        ->post(route('web.business-rules.store'), ['name' => 'Test', 'dimension' => 'invalid'])
+        ->assertSessionHasErrors('dimension');
 });
 
 // Show Page Tests
@@ -204,6 +221,15 @@ it('displays business rule description', function () {
         ->get(route('web.business-rules.show', $businessRule))
         ->assertStatus(200)
         ->assertSee('Test Description');
+});
+
+it('displays business rule dimension on show page', function () {
+    $businessRule = BusinessRule::factory()->create(['dimension' => 'availability']);
+
+    $this->actingAs($this->user)
+        ->get(route('web.business-rules.show', $businessRule))
+        ->assertStatus(200)
+        ->assertSee('availability');
 });
 
 it('displays edit and delete buttons on show page', function () {
@@ -349,6 +375,7 @@ it('can update a business rule', function () {
     $data = [
         'name' => 'Updated Business Rule',
         'description' => 'Updated Description',
+        'dimension' => 'consistency',
     ];
 
     $this->actingAs($this->user)
@@ -365,6 +392,22 @@ it('validates name is required when updating', function () {
     $this->actingAs($this->user)
         ->put(route('web.business-rules.update', $businessRule), ['description' => 'Test'])
         ->assertSessionHasErrors('name');
+});
+
+it('validates dimension is required when updating', function () {
+    $businessRule = BusinessRule::factory()->create();
+
+    $this->actingAs($this->user)
+        ->put(route('web.business-rules.update', $businessRule), ['name' => 'Test'])
+        ->assertSessionHasErrors('dimension');
+});
+
+it('validates dimension is valid when updating', function () {
+    $businessRule = BusinessRule::factory()->create();
+
+    $this->actingAs($this->user)
+        ->put(route('web.business-rules.update', $businessRule), ['name' => 'Test', 'dimension' => 'invalid'])
+        ->assertSessionHasErrors('dimension');
 });
 
 // Delete Tests

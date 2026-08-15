@@ -25,6 +25,7 @@ class StoreBusinessRuleRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'dimension' => ['required', 'string', 'in:availability,consistency,timeliness,validity'],
         ];
     }
 }

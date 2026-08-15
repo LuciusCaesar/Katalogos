@@ -5,8 +5,13 @@
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     {{ $businessRule->name }}
                 </h1>
+                <div class="flex gap-2 mt-2">
+                    <span class="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 rounded text-blue-800 dark:text-blue-200 text-xs">
+                        {{ $businessRule->dimension->value }}
+                    </span>
+                </div>
                 @if ($businessRule->description)
-                    <p class="mt-2 text-gray-600 dark:text-gray-400">
+                    <p class="mt-4 text-gray-600 dark:text-gray-400">
                         {{ $businessRule->description }}
                     </p>
                 @endif

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BusinessRuleDimension;
 use Database\Factories\BusinessRuleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,11 @@ class BusinessRule extends Model
     protected $fillable = [
         'name',
         'description',
+        'dimension',
+    ];
+
+    protected $casts = [
+        'dimension' => BusinessRuleDimension::class,
     ];
 
     /**

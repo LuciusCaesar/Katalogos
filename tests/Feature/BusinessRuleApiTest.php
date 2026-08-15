@@ -28,6 +28,7 @@ it('creates a business rule', function () {
     $data = [
         'name' => 'Test Business Rule',
         'description' => 'Test Description',
+        'dimension' => 'availability',
     ];
 
     $response = $this->postJson('/api/v1/business-rules', $data);
@@ -44,7 +45,19 @@ it('validates create request', function () {
     $response = $this->postJson('/api/v1/business-rules', []);
 
     $response->assertStatus(422)
-        ->assertJsonValidationErrors(['name']);
+        ->assertJsonValidationErrors(['name', 'dimension']);
+});
+
+it('validates dimension on create request', function () {
+    Sanctum::actingAs($this->user);
+
+    $response = $this->postJson('/api/v1/business-rules', [
+        'name' => 'Test',
+        'dimension' => 'invalid',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['dimension']);
 });
 
 it('shows a business rule', function () {
@@ -66,6 +79,7 @@ it('updates a business rule', function () {
     $data = [
         'name' => 'Updated Name',
         'description' => 'Updated Description',
+        'dimension' => 'consistency',
     ];
 
     $response = $this->putJson('/api/v1/business-rules/'.$businessRule->id, $data);
@@ -84,7 +98,21 @@ it('validates update request', function () {
     $response = $this->putJson('/api/v1/business-rules/'.$businessRule->id, ['name' => '']);
 
     $response->assertStatus(422)
-        ->assertJsonValidationErrors(['name']);
+        ->assertJsonValidationErrors(['name', 'dimension']);
+});
+
+it('validates dimension on update request', function () {
+    Sanctum::actingAs($this->user);
+
+    $businessRule = BusinessRule::factory()->create();
+
+    $response = $this->putJson('/api/v1/business-rules/'.$businessRule->id, [
+        'name' => 'Test',
+        'dimension' => 'invalid',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['dimension']);
 });
 
 it('deletes a business rule', function () {

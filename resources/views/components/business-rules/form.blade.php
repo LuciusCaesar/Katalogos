@@ -4,6 +4,10 @@
     'dataIssues',
 ])
 
+@php
+    use App\Enums\BusinessRuleDimension;
+@endphp
+
 <form method="POST" action="{{ $businessRule ? route('web.business-rules.update', $businessRule) : route('web.business-rules.store') }}" class="space-y-6">
     @csrf
     @if ($businessRule)
@@ -41,6 +45,31 @@
             class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('description') border-red-500 dark:border-red-500 @enderror"
         >{{ old('description', $businessRule?->description) }}</textarea>
         @error('description')
+            <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+        @enderror
+    </div>
+
+    <!-- Dimension Field -->
+    <div>
+        <label for="dimension" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            {{ __('Dimension') }}
+        </label>
+        <select 
+            id="dimension"
+            name="dimension"
+            required
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('dimension') border-red-500 dark:border-red-500 @enderror"
+        >
+            <option value="" disabled {{ old('dimension', $businessRule?->dimension) ? '' : 'selected' }}>
+                {{ __('Select Dimension') }}
+            </option>
+            @foreach (BusinessRuleDimension::options() as $value => $label)
+                <option value="{{ $value }}" {{ old('dimension', $businessRule?->dimension?->value) === $value ? 'selected' : '' }}>
+                    {{ $label }}
+                </option>
+            @endforeach
+        </select>
+        @error('dimension')
             <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
         @enderror
     </div>

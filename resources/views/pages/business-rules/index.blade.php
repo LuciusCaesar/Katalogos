@@ -37,6 +37,9 @@
                                 {{ __('Description') }}
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                {{ __('Dimension') }}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 {{ __('Business Assets') }}
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -66,6 +69,9 @@
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                     {{ $businessRule->description ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                    {{ $businessRule->dimension->value }}
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                     <a href="{{ route('web.business-rules.show', $businessRule) }}" class="hover:text-blue-600 dark:hover:text-blue-400">

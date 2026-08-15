@@ -20,6 +20,7 @@ class BusinessRuleFactory extends Factory
         return [
             'name' => $this->faker->word(),
             'description' => $this->faker->sentence(),
+            'dimension' => $this->faker->randomElement(['availability', 'consistency', 'timeliness', 'validity']),
         ];
     }
 }
