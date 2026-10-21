@@ -164,9 +164,6 @@ class BusinessAssetController extends Controller
      */
     public function updateTeam(UpdateBusinessAssetTeamRequest $request, BusinessAsset $businessAsset): RedirectResponse
     {
-        $dataStewardRole = Role::where('name', 'Data Steward')->firstOrFail();
-        $dataOwnerRole = Role::where('name', 'Data Owner')->firstOrFail();
-
         // Handle Data Steward assignment
         if ($request->filled('data_steward_id')) {
             /** @var int $dataStewardId */
@@ -180,17 +177,17 @@ class BusinessAssetController extends Controller
             if (! $userAlreadyAssigned) {
                 // Remove existing Data Steward if different user
                 if ($existingSteward) {
-                    $businessAsset->removeRoleFromUser($existingSteward, $dataStewardRole);
+                    $businessAsset->removeDataSteward();
                 }
 
                 // Assign new Data Steward
-                $businessAsset->assignRoleToUser($user, $dataStewardRole);
+                $businessAsset->assignDataSteward($user);
             }
         } else {
             // Remove Data Steward if null selected
             $existingSteward = $businessAsset->dataSteward()->first();
             if ($existingSteward) {
-                $businessAsset->removeRoleFromUser($existingSteward, $dataStewardRole);
+                $businessAsset->removeDataSteward();
             }
         }
 
@@ -207,17 +204,17 @@ class BusinessAssetController extends Controller
             if (! $userAlreadyAssigned) {
                 // Remove existing Data Owner if different user
                 if ($existingOwner) {
-                    $businessAsset->removeRoleFromUser($existingOwner, $dataOwnerRole);
+                    $businessAsset->removeDataOwner();
                 }
 
                 // Assign new Data Owner
-                $businessAsset->assignRoleToUser($user, $dataOwnerRole);
+                $businessAsset->assignDataOwner($user);
             }
         } else {
             // Remove Data Owner if null selected
             $existingOwner = $businessAsset->dataOwner()->first();
             if ($existingOwner) {
-                $businessAsset->removeRoleFromUser($existingOwner, $dataOwnerRole);
+                $businessAsset->removeDataOwner();
             }
         }
 

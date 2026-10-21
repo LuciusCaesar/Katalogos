@@ -45,8 +45,8 @@ it('displays current data steward and owner on manage team page', function () {
         'domain_id' => $this->domain->id,
     ]);
 
-    $businessAsset->assignRoleToUser($steward, $this->stewardRole);
-    $businessAsset->assignRoleToUser($owner, $this->ownerRole);
+    $businessAsset->assignDataSteward($steward);
+    $businessAsset->assignDataOwner($owner);
 
     $this->actingAs($this->user)
         ->get(route('web.business-assets.team', $businessAsset))
@@ -113,7 +113,7 @@ it('can change data steward for business asset', function () {
         'domain_id' => $this->domain->id,
     ]);
 
-    $businessAsset->assignRoleToUser($oldSteward, $this->stewardRole);
+    $businessAsset->assignDataSteward($oldSteward);
 
     $this->actingAs($this->user)
         ->put(route('web.business-assets.team.update', $businessAsset), [
@@ -145,7 +145,7 @@ it('can remove data steward from business asset', function () {
         'domain_id' => $this->domain->id,
     ]);
 
-    $businessAsset->assignRoleToUser($steward, $this->stewardRole);
+    $businessAsset->assignDataSteward($steward);
 
     $this->actingAs($this->user)
         ->put(route('web.business-assets.team.update', $businessAsset), [
@@ -234,8 +234,8 @@ it('does not create duplicate assignment when same user is submitted', function 
     ]);
 
     // Assign initial roles
-    $businessAsset->assignRoleToUser($steward, $this->stewardRole);
-    $businessAsset->assignRoleToUser($owner, $this->ownerRole);
+    $businessAsset->assignDataSteward($steward);
+    $businessAsset->assignDataOwner($owner);
 
     // Submit the same users again - should not create duplicates
     $this->actingAs($this->user)
@@ -277,10 +277,10 @@ it('does not show user as data owner when only assigned as data steward on this 
     ]);
 
     // Assign steward as Data Steward on Asset 1
-    $businessAsset1->assignRoleToUser($steward, $this->stewardRole);
+    $businessAsset1->assignDataSteward($steward);
 
     // Assign same user as Data Owner on Asset 2
-    $businessAsset2->assignRoleToUser($steward, $this->ownerRole);
+    $businessAsset2->assignDataOwner($steward);
 
     // Verify Asset 1 only shows steward, not owner
     expect($businessAsset1->dataSteward()->first()?->id)->toBe($steward->id);
@@ -307,10 +307,10 @@ it('does not show user as data steward when only assigned as data owner on this 
     ]);
 
     // Assign owner as Data Owner on Asset 1
-    $businessAsset1->assignRoleToUser($owner, $this->ownerRole);
+    $businessAsset1->assignDataOwner($owner);
 
     // Assign same user as Data Steward on Asset 2
-    $businessAsset2->assignRoleToUser($owner, $this->stewardRole);
+    $businessAsset2->assignDataSteward($owner);
 
     // Verify Asset 1 only shows owner, not steward
     expect($businessAsset1->dataOwner()->first()?->id)->toBe($owner->id);
@@ -390,7 +390,7 @@ it('triggers governance score recalculation when removing data steward', functio
     ]);
 
     // Assign initial steward and create initial governance score
-    $businessAsset->assignRoleToUser($steward, $this->stewardRole);
+    $businessAsset->assignDataSteward($steward);
     $businessAsset->calculateGovernanceScore(['initial' => true]);
 
     $initialScoreCount = $businessAsset->governanceScores()->count();

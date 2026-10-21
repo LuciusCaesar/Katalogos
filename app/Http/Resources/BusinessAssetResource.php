@@ -2,13 +2,14 @@
 
 namespace App\Http\Resources;
 
+use App\Models\BusinessAsset;
 use App\Models\GovernanceCriterion;
 use App\Models\GovernanceScore;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\BusinessAsset
+ * @mixin BusinessAsset
  */
 class BusinessAssetResource extends JsonResource
 {

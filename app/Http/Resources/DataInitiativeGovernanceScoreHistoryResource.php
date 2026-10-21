@@ -2,10 +2,11 @@
 
 namespace App\Http\Resources;
 
+use App\Models\DataInitiativeGovernanceScoreHistory;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\DataInitiativeGovernanceScoreHistory
+ * @mixin DataInitiativeGovernanceScoreHistory
  */
 class DataInitiativeGovernanceScoreHistoryResource extends JsonResource
 {

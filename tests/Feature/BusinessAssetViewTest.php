@@ -81,8 +81,8 @@ it('displays data steward and data owner when assigned', function () {
     $stewardRole = Role::factory()->dataSteward()->create();
     $ownerRole = Role::factory()->dataOwner()->create();
 
-    $asset->assignRoleToUser($steward, $stewardRole);
-    $asset->assignRoleToUser($owner, $ownerRole);
+    $asset->assignDataSteward($steward);
+    $asset->assignDataOwner($owner);
 
     $this->actingAs($this->user)
         ->get(route('web.business-assets.index'))
@@ -197,7 +197,7 @@ it('displays data steward in right column card', function () {
     ]);
 
     $stewardRole = Role::factory()->dataSteward()->create();
-    $asset->assignRoleToUser($steward, $stewardRole);
+    $asset->assignDataSteward($steward);
 
     $this->actingAs($this->user)
         ->get(route('web.business-assets.show', $asset))
@@ -215,7 +215,7 @@ it('displays data owner in right column card', function () {
     ]);
 
     $ownerRole = Role::factory()->dataOwner()->create();
-    $asset->assignRoleToUser($owner, $ownerRole);
+    $asset->assignDataOwner($owner);
 
     $this->actingAs($this->user)
         ->get(route('web.business-assets.show', $asset))
@@ -396,10 +396,10 @@ it('does not show user as data owner when only assigned as data steward on diffe
     $ownerRole = Role::factory()->dataOwner()->create();
 
     // Assign steward as Data Steward on Asset 1
-    $asset1->assignRoleToUser($steward, $stewardRole);
+    $asset1->assignDataSteward($steward);
 
     // Assign same user as Data Owner on Asset 2
-    $asset2->assignRoleToUser($steward, $ownerRole);
+    $asset2->assignDataOwner($steward);
 
     // Verify show page for Asset 1 only shows steward, not owner
     $this->actingAs($this->user)

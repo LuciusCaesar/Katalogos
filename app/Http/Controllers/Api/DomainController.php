@@ -8,7 +8,6 @@ use App\Http\Requests\Api\UpdateDomainRequest;
 use App\Http\Requests\UpdateDomainTeamRequest;
 use App\Http\Resources\DomainResource;
 use App\Models\Domain;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -66,8 +65,6 @@ class DomainController extends Controller
      */
     public function updateTeam(UpdateDomainTeamRequest $request, Domain $domain): DomainResource
     {
-        $domainOwnerRole = Role::where('name', 'Domain Owner')->firstOrFail();
-
         if ($request->filled('domain_owner_id')) {
             $domainOwnerId = $request->integer('domain_owner_id');
             $user = User::findOrFail($domainOwnerId);
@@ -76,14 +73,14 @@ class DomainController extends Controller
 
             if (! $existingOwner || $existingOwner->id !== $user->id) {
                 if ($existingOwner) {
-                    $domain->removeRoleFromUser($existingOwner, $domainOwnerRole);
+                    $domain->removeDomainOwner();
                 }
-                $domain->assignRoleToUser($user, $domainOwnerRole);
+                $domain->assignDomainOwner($user);
             }
         } else {
             $existingOwner = $domain->domainOwner()->first();
             if ($existingOwner) {
-                $domain->removeRoleFromUser($existingOwner, $domainOwnerRole);
+                $domain->removeDomainOwner();
             }
         }
 

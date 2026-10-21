@@ -29,7 +29,7 @@ it('can assign role to user for data initiative', function () {
     $initiative = DataInitiative::factory()->create();
     $stewardRole = Role::factory()->dataSteward()->create();
 
-    $assignment = $initiative->assignRoleToUser($user, $stewardRole);
+    $assignment = $initiative->assignDataSteward($user);
 
     expect($assignment)->toBeInstanceOf(RoleAssignment::class);
     expect($assignment->user_id)->toBe($user->id);
@@ -43,7 +43,7 @@ it('can assign role to user for business asset', function () {
     $asset = BusinessAsset::factory()->create();
     $ownerRole = Role::factory()->dataOwner()->create();
 
-    $assignment = $asset->assignRoleToUser($user, $ownerRole);
+    $assignment = $asset->assignDataOwner($user);
 
     expect($assignment)->toBeInstanceOf(RoleAssignment::class);
     expect($assignment->user_id)->toBe($user->id);
@@ -59,8 +59,8 @@ it('can get users with specific role on data initiative', function () {
     $stewardRole = Role::factory()->dataSteward()->create();
     $ownerRole = Role::factory()->dataOwner()->create();
 
-    $initiative->assignRoleToUser($user1, $stewardRole);
-    $initiative->assignRoleToUser($user2, $ownerRole);
+    $initiative->assignDataSteward($user1);
+    $initiative->assignDataOwner($user2);
 
     $steward = $initiative->dataSteward()->first();
     $owner = $initiative->dataOwner()->first();
@@ -76,8 +76,8 @@ it('can get users with specific role on business asset', function () {
     $stewardRole = Role::factory()->dataSteward()->create();
     $ownerRole = Role::factory()->dataOwner()->create();
 
-    $asset->assignRoleToUser($user1, $stewardRole);
-    $asset->assignRoleToUser($user2, $ownerRole);
+    $asset->assignDataSteward($user1);
+    $asset->assignDataOwner($user2);
 
     $steward = $asset->dataSteward()->first();
     $owner = $asset->dataOwner()->first();
@@ -92,8 +92,8 @@ it('user can check if they have role on entity', function () {
     $stewardRole = Role::factory()->dataSteward()->create();
     $ownerRole = Role::factory()->dataOwner()->create();
 
-    $initiative->assignRoleToUser($user, $stewardRole);
-    $initiative->assignRoleToUser($user, $ownerRole);
+    $initiative->assignDataSteward($user);
+    $initiative->assignDataOwner($user);
 
     expect($user->isDataStewardFor($initiative))->toBeTrue();
     expect($user->isDataOwnerFor($initiative))->toBeTrue();
@@ -119,8 +119,8 @@ it('can get all users with roles on data initiative', function () {
     $ownerRole = Role::factory()->dataOwner()->create();
 
     // User1 has steward role, User2 has owner role - each role has only one user
-    $initiative->assignRoleToUser($user1, $stewardRole);
-    $initiative->assignRoleToUser($user2, $ownerRole);
+    $initiative->assignDataSteward($user1);
+    $initiative->assignDataOwner($user2);
 
     $users = $initiative->users()->get();
 
@@ -133,8 +133,8 @@ it('can get all roles assigned to data initiative', function () {
     $stewardRole = Role::factory()->dataSteward()->create();
     $ownerRole = Role::factory()->dataOwner()->create();
 
-    $initiative->assignRoleToUser($user, $stewardRole);
-    $initiative->assignRoleToUser($user, $ownerRole);
+    $initiative->assignDataSteward($user);
+    $initiative->assignDataOwner($user);
 
     $roles = $initiative->roles()->get();
 
@@ -148,10 +148,10 @@ it('can remove role assignment from data initiative', function () {
     $initiative = DataInitiative::factory()->create();
     $stewardRole = Role::factory()->dataSteward()->create();
 
-    $initiative->assignRoleToUser($user, $stewardRole);
+    $initiative->assignDataSteward($user);
     expect($initiative->users()->count())->toBe(1);
 
-    $removed = $initiative->removeRoleFromUser($user, $stewardRole);
+    $removed = $initiative->removeDataSteward();
     expect($removed)->toBeTrue();
     expect($initiative->fresh()->users()->count())->toBe(0);
 });
@@ -161,10 +161,10 @@ it('can remove role assignment from business asset', function () {
     $asset = BusinessAsset::factory()->create();
     $ownerRole = Role::factory()->dataOwner()->create();
 
-    $asset->assignRoleToUser($user, $ownerRole);
+    $asset->assignDataOwner($user);
     expect($asset->users()->count())->toBe(1);
 
-    $removed = $asset->removeRoleFromUser($user, $ownerRole);
+    $removed = $asset->removeDataOwner();
     expect($removed)->toBeTrue();
     expect($asset->fresh()->users()->count())->toBe(0);
 });
@@ -175,11 +175,11 @@ it('prevents duplicate role assignments', function () {
     $stewardRole = Role::factory()->dataSteward()->create();
 
     // First assignment should succeed
-    $initiative->assignRoleToUser($user, $stewardRole);
+    $initiative->assignDataSteward($user);
     expect($initiative->roleAssignments()->count())->toBe(1);
 
     // Second assignment of same role to same user should fail due to unique constraint
-    expect(fn () => $initiative->assignRoleToUser($user, $stewardRole))
+    expect(fn () => $initiative->assignDataSteward($user))
         ->toThrow(QueryException::class);
 });
 
@@ -190,8 +190,8 @@ it('user can have different roles on different entities', function () {
     $stewardRole = Role::factory()->dataSteward()->create();
     $ownerRole = Role::factory()->dataOwner()->create();
 
-    $initiative1->assignRoleToUser($user, $stewardRole);
-    $initiative2->assignRoleToUser($user, $ownerRole);
+    $initiative1->assignDataSteward($user);
+    $initiative2->assignDataOwner($user);
 
     expect($user->isDataStewardFor($initiative1))->toBeTrue();
     expect($user->isDataOwnerFor($initiative1))->toBeFalse();
@@ -205,8 +205,8 @@ it('can get user data initiatives with roles', function () {
     $initiative2 = DataInitiative::factory()->create(['code' => 'INIT-002']);
     $stewardRole = Role::factory()->dataSteward()->create();
 
-    $initiative1->assignRoleToUser($user, $stewardRole);
-    $initiative2->assignRoleToUser($user, $stewardRole);
+    $initiative1->assignDataSteward($user);
+    $initiative2->assignDataSteward($user);
 
     $initiatives = $user->dataInitiatives()->get();
 
@@ -221,8 +221,8 @@ it('can get user business assets with roles', function () {
     $asset2 = BusinessAsset::factory()->create(['name' => 'Asset 2']);
     $ownerRole = Role::factory()->dataOwner()->create();
 
-    $asset1->assignRoleToUser($user, $ownerRole);
-    $asset2->assignRoleToUser($user, $ownerRole);
+    $asset1->assignDataOwner($user);
+    $asset2->assignDataOwner($user);
 
     $assets = $user->businessAssets()->get();
 
@@ -236,7 +236,7 @@ it('role assignment has pivot data', function () {
     $initiative = DataInitiative::factory()->create();
     $stewardRole = Role::factory()->dataSteward()->create();
 
-    $assignment = $initiative->assignRoleToUser($user, $stewardRole);
+    $assignment = $initiative->assignDataSteward($user);
 
     // Access via user relationship
     $users = $initiative->users()->withPivot('role_id')->get();
@@ -254,11 +254,11 @@ it('prevents multiple users from having the same role on data initiative', funct
     $stewardRole = Role::factory()->dataSteward()->create();
 
     // First assignment should succeed
-    $initiative->assignRoleToUser($user1, $stewardRole);
+    $initiative->assignDataSteward($user1);
     expect($initiative->roleAssignments()->count())->toBe(1);
 
     // Second assignment of same role to different user should fail
-    expect(fn () => $initiative->assignRoleToUser($user2, $stewardRole))
+    expect(fn () => $initiative->assignDataSteward($user2))
         ->toThrow(QueryException::class);
 });
 
@@ -269,11 +269,11 @@ it('prevents multiple users from having the same role on business asset', functi
     $ownerRole = Role::factory()->dataOwner()->create();
 
     // First assignment should succeed
-    $asset->assignRoleToUser($user1, $ownerRole);
+    $asset->assignDataOwner($user1);
     expect($asset->roleAssignments()->count())->toBe(1);
 
     // Second assignment of same role to different user should fail
-    expect(fn () => $asset->assignRoleToUser($user2, $ownerRole))
+    expect(fn () => $asset->assignDataOwner($user2))
         ->toThrow(QueryException::class);
 });
 
@@ -284,14 +284,14 @@ it('ensures only one data steward per business asset', function () {
     $stewardRole = Role::factory()->dataSteward()->create();
 
     // Assign first steward
-    $asset->assignRoleToUser($user1, $stewardRole);
+    $asset->assignDataSteward($user1);
 
     // Verify only one steward
     expect($asset->dataSteward()->count())->toBe(1);
     expect($asset->dataSteward()->first()?->name)->toBe('Steward 1');
 
     // Try to assign second steward - should fail
-    expect(fn () => $asset->assignRoleToUser($user2, $stewardRole))
+    expect(fn () => $asset->assignDataSteward($user2))
         ->toThrow(QueryException::class);
 
     // Still only one steward
@@ -306,14 +306,14 @@ it('ensures only one data owner per business asset', function () {
     $ownerRole = Role::factory()->dataOwner()->create();
 
     // Assign first owner
-    $asset->assignRoleToUser($user1, $ownerRole);
+    $asset->assignDataOwner($user1);
 
     // Verify only one owner
     expect($asset->dataOwner()->count())->toBe(1);
     expect($asset->dataOwner()->first()?->name)->toBe('Owner 1');
 
     // Try to assign second owner - should fail
-    expect(fn () => $asset->assignRoleToUser($user2, $ownerRole))
+    expect(fn () => $asset->assignDataOwner($user2))
         ->toThrow(QueryException::class);
 
     // Still only one owner
@@ -328,14 +328,14 @@ it('ensures only one data steward per data initiative', function () {
     $stewardRole = Role::factory()->dataSteward()->create();
 
     // Assign first steward
-    $initiative->assignRoleToUser($user1, $stewardRole);
+    $initiative->assignDataSteward($user1);
 
     // Verify only one steward
     expect($initiative->dataSteward()->count())->toBe(1);
     expect($initiative->dataSteward()->first()?->name)->toBe('Steward 1');
 
     // Try to assign second steward - should fail
-    expect(fn () => $initiative->assignRoleToUser($user2, $stewardRole))
+    expect(fn () => $initiative->assignDataSteward($user2))
         ->toThrow(QueryException::class);
 
     // Still only one steward
@@ -350,14 +350,14 @@ it('ensures only one data owner per data initiative', function () {
     $ownerRole = Role::factory()->dataOwner()->create();
 
     // Assign first owner
-    $initiative->assignRoleToUser($user1, $ownerRole);
+    $initiative->assignDataOwner($user1);
 
     // Verify only one owner
     expect($initiative->dataOwner()->count())->toBe(1);
     expect($initiative->dataOwner()->first()?->name)->toBe('Owner 1');
 
     // Try to assign second owner - should fail
-    expect(fn () => $initiative->assignRoleToUser($user2, $ownerRole))
+    expect(fn () => $initiative->assignDataOwner($user2))
         ->toThrow(QueryException::class);
 
     // Still only one owner
@@ -372,8 +372,8 @@ it('allows a user to have both steward and owner roles on same entity', function
     $ownerRole = Role::factory()->dataOwner()->create();
 
     // User can have both roles
-    $asset->assignRoleToUser($user, $stewardRole);
-    $asset->assignRoleToUser($user, $ownerRole);
+    $asset->assignDataSteward($user);
+    $asset->assignDataOwner($user);
 
     expect($asset->roleAssignments()->count())->toBe(2);
     expect($asset->dataSteward()->first()?->id)->toBe($user->id);

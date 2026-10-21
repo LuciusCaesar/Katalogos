@@ -15,6 +15,10 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create();
+
+    // Ensure roles exist for role assignment methods
+    Role::firstOrCreate(['name' => 'Data Steward'], ['description' => 'Data Steward']);
+    Role::firstOrCreate(['name' => 'Data Owner'], ['description' => 'Data Owner']);
 });
 
 // Index Page Tests
@@ -162,8 +166,7 @@ it('displays data steward in right column card', function () {
     $steward = User::factory()->create(['name' => 'Alice Steward']);
     $initiative = DataInitiative::factory()->create();
 
-    $stewardRole = Role::factory()->dataSteward()->create();
-    $initiative->assignRoleToUser($steward, $stewardRole);
+    $initiative->assignDataSteward($steward);
 
     $this->actingAs($this->user)
         ->get(route('web.data-initiatives.show', $initiative))
@@ -177,8 +180,7 @@ it('displays data owner in right column card', function () {
     $owner = User::factory()->create(['name' => 'Bob Owner']);
     $initiative = DataInitiative::factory()->create();
 
-    $ownerRole = Role::factory()->dataOwner()->create();
-    $initiative->assignRoleToUser($owner, $ownerRole);
+    $initiative->assignDataOwner($owner);
 
     $this->actingAs($this->user)
         ->get(route('web.data-initiatives.show', $initiative))
@@ -252,14 +254,11 @@ it('does not show user as data owner when only assigned as data steward on diffe
         'label' => 'Initiative Two',
     ]);
 
-    $stewardRole = Role::factory()->dataSteward()->create();
-    $ownerRole = Role::factory()->dataOwner()->create();
-
     // Assign steward as Data Steward on Initiative 1
-    $initiative1->assignRoleToUser($steward, $stewardRole);
+    $initiative1->assignDataSteward($steward);
 
     // Assign same user as Data Owner on Initiative 2
-    $initiative2->assignRoleToUser($steward, $ownerRole);
+    $initiative2->assignDataOwner($steward);
 
     // Verify show page for Initiative 1 only shows steward, not owner
     $this->actingAs($this->user)

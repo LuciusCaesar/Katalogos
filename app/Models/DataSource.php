@@ -105,10 +105,12 @@ class DataSource extends Model
     }
 
     /**
-     * Assign a role to a user for this data source.
+     * Assign the Data Custodian role to a user for this data source.
      */
-    public function assignRoleToUser(User $user, Role $role): RoleAssignment
+    public function assignDataCustodian(User $user): RoleAssignment
     {
+        $role = Role::where('name', 'Data Custodian')->firstOrFail();
+
         return $this->roleAssignments()->create([
             'user_id' => $user->id,
             'role_id' => $role->id,
@@ -116,12 +118,13 @@ class DataSource extends Model
     }
 
     /**
-     * Remove a role assignment from a user for this data source.
+     * Remove the Data Custodian role assignment from this data source.
      */
-    public function removeRoleFromUser(User $user, Role $role): bool
+    public function removeDataCustodian(): bool
     {
+        $role = Role::where('name', 'Data Custodian')->firstOrFail();
+
         return $this->roleAssignments()
-            ->where('user_id', $user->id)
             ->where('role_id', $role->id)
             ->delete() > 0;
     }

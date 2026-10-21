@@ -97,8 +97,8 @@ it('can filter business assets by data steward', function () {
     $asset1 = BusinessAsset::factory()->create(['name' => 'Steward 1 Asset']);
     $asset2 = BusinessAsset::factory()->create(['name' => 'Steward 2 Asset']);
 
-    $asset1->assignRoleToUser($steward1, $dataStewardRole);
-    $asset2->assignRoleToUser($steward2, $dataStewardRole);
+    $asset1->assignDataSteward($steward1);
+    $asset2->assignDataSteward($steward2);
 
     $this->actingAs($this->user)
         ->get(route('web.business-assets.index', ['data_steward_id' => $steward1->id]))
@@ -117,8 +117,8 @@ it('can filter business assets by data owner', function () {
     $asset1 = BusinessAsset::factory()->create(['name' => 'Owner 1 Asset']);
     $asset2 = BusinessAsset::factory()->create(['name' => 'Owner 2 Asset']);
 
-    $asset1->assignRoleToUser($owner1, $dataOwnerRole);
-    $asset2->assignRoleToUser($owner2, $dataOwnerRole);
+    $asset1->assignDataOwner($owner1);
+    $asset2->assignDataOwner($owner2);
 
     $this->actingAs($this->user)
         ->get(route('web.business-assets.index', ['data_owner_id' => $owner1->id]))

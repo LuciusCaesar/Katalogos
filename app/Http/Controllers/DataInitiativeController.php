@@ -139,9 +139,6 @@ class DataInitiativeController extends Controller
      */
     public function updateTeam(UpdateDataInitiativeTeamRequest $request, DataInitiative $dataInitiative): RedirectResponse
     {
-        $dataStewardRole = Role::where('name', 'Data Steward')->firstOrFail();
-        $dataOwnerRole = Role::where('name', 'Data Owner')->firstOrFail();
-
         // Handle Data Steward assignment
         if ($request->filled('data_steward_id')) {
             /** @var int $dataStewardId */
@@ -155,17 +152,17 @@ class DataInitiativeController extends Controller
             if (! $userAlreadyAssigned) {
                 // Remove existing Data Steward if different user
                 if ($existingSteward) {
-                    $dataInitiative->removeRoleFromUser($existingSteward, $dataStewardRole);
+                    $dataInitiative->removeDataSteward();
                 }
 
                 // Assign new Data Steward
-                $dataInitiative->assignRoleToUser($user, $dataStewardRole);
+                $dataInitiative->assignDataSteward($user);
             }
         } else {
             // Remove Data Steward if null selected
             $existingSteward = $dataInitiative->dataSteward()->first();
             if ($existingSteward) {
-                $dataInitiative->removeRoleFromUser($existingSteward, $dataStewardRole);
+                $dataInitiative->removeDataSteward();
             }
         }
 
@@ -182,17 +179,17 @@ class DataInitiativeController extends Controller
             if (! $userAlreadyAssigned) {
                 // Remove existing Data Owner if different user
                 if ($existingOwner) {
-                    $dataInitiative->removeRoleFromUser($existingOwner, $dataOwnerRole);
+                    $dataInitiative->removeDataOwner();
                 }
 
                 // Assign new Data Owner
-                $dataInitiative->assignRoleToUser($user, $dataOwnerRole);
+                $dataInitiative->assignDataOwner($user);
             }
         } else {
             // Remove Data Owner if null selected
             $existingOwner = $dataInitiative->dataOwner()->first();
             if ($existingOwner) {
-                $dataInitiative->removeRoleFromUser($existingOwner, $dataOwnerRole);
+                $dataInitiative->removeDataOwner();
             }
         }
 

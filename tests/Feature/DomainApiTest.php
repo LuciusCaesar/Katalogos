@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Domain;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -127,9 +126,8 @@ it('returns domain owner information in domain response', function () {
 
     $domain = Domain::factory()->create();
     $owner = User::factory()->create();
-    $domainOwnerRole = Role::where('name', 'Domain Owner')->firstOrFail();
 
-    $domain->assignRoleToUser($owner, $domainOwnerRole);
+    $domain->assignDomainOwner($owner);
 
     $response = $this->getJson('/api/v1/domains/'.$domain->id);
 
@@ -165,9 +163,8 @@ it('removes domain owner via api when null is provided', function () {
 
     $domain = Domain::factory()->create();
     $oldOwner = User::factory()->create();
-    $domainOwnerRole = Role::where('name', 'Domain Owner')->firstOrFail();
 
-    $domain->assignRoleToUser($oldOwner, $domainOwnerRole);
+    $domain->assignDomainOwner($oldOwner);
 
     $response = $this->putJson(
         '/api/v1/domains/'.$domain->id.'/team',

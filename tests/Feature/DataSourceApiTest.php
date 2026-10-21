@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\DataSource;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -113,9 +112,8 @@ it('returns data custodian information in data source response', function () {
 
     $dataSource = DataSource::factory()->create();
     $custodian = User::factory()->create();
-    $dataCustodianRole = Role::where('name', 'Data Custodian')->firstOrFail();
 
-    $dataSource->assignRoleToUser($custodian, $dataCustodianRole);
+    $dataSource->assignDataCustodian($custodian);
 
     $response = $this->getJson('/api/v1/data-sources/'.$dataSource->id);
 
@@ -151,9 +149,8 @@ it('removes data custodian via api when null is provided', function () {
 
     $dataSource = DataSource::factory()->create();
     $oldCustodian = User::factory()->create();
-    $dataCustodianRole = Role::where('name', 'Data Custodian')->firstOrFail();
 
-    $dataSource->assignRoleToUser($oldCustodian, $dataCustodianRole);
+    $dataSource->assignDataCustodian($oldCustodian);
 
     $response = $this->putJson(
         '/api/v1/data-sources/'.$dataSource->id.'/team',

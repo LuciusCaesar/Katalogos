@@ -83,10 +83,12 @@ class Domain extends Model
     }
 
     /**
-     * Assign a role to a user for this domain.
+     * Assign the Domain Owner role to a user for this domain.
      */
-    public function assignRoleToUser(User $user, Role $role): RoleAssignment
+    public function assignDomainOwner(User $user): RoleAssignment
     {
+        $role = Role::where('name', 'Domain Owner')->firstOrFail();
+
         return $this->roleAssignments()->create([
             'user_id' => $user->id,
             'role_id' => $role->id,
@@ -94,12 +96,13 @@ class Domain extends Model
     }
 
     /**
-     * Remove a role assignment from a user for this domain.
+     * Remove the Domain Owner role assignment from this domain.
      */
-    public function removeRoleFromUser(User $user, Role $role): bool
+    public function removeDomainOwner(): bool
     {
+        $role = Role::where('name', 'Domain Owner')->firstOrFail();
+
         return $this->roleAssignments()
-            ->where('user_id', $user->id)
             ->where('role_id', $role->id)
             ->delete() > 0;
     }

@@ -41,8 +41,8 @@ it('displays current data steward and owner on manage team page', function () {
         'label' => 'Test Initiative',
     ]);
 
-    $dataInitiative->assignRoleToUser($steward, $this->stewardRole);
-    $dataInitiative->assignRoleToUser($owner, $this->ownerRole);
+    $dataInitiative->assignDataSteward($steward);
+    $dataInitiative->assignDataOwner($owner);
 
     $this->actingAs($this->user)
         ->get(route('web.data-initiatives.team', $dataInitiative))
@@ -106,7 +106,7 @@ it('can change data steward for data initiative', function () {
         'label' => 'Test Initiative',
     ]);
 
-    $dataInitiative->assignRoleToUser($oldSteward, $this->stewardRole);
+    $dataInitiative->assignDataSteward($oldSteward);
 
     $this->actingAs($this->user)
         ->put(route('web.data-initiatives.team.update', $dataInitiative), [
@@ -137,7 +137,7 @@ it('can remove data steward from data initiative', function () {
         'label' => 'Test Initiative',
     ]);
 
-    $dataInitiative->assignRoleToUser($steward, $this->stewardRole);
+    $dataInitiative->assignDataSteward($steward);
 
     $this->actingAs($this->user)
         ->put(route('web.data-initiatives.team.update', $dataInitiative), [
@@ -222,8 +222,8 @@ it('does not create duplicate assignment when same user is submitted', function 
     ]);
 
     // Assign initial roles
-    $dataInitiative->assignRoleToUser($steward, $this->stewardRole);
-    $dataInitiative->assignRoleToUser($owner, $this->ownerRole);
+    $dataInitiative->assignDataSteward($steward);
+    $dataInitiative->assignDataOwner($owner);
 
     // Submit the same users again - should not create duplicates
     $this->actingAs($this->user)
@@ -263,10 +263,10 @@ it('does not show user as data owner when only assigned as data steward on this 
     ]);
 
     // Assign steward as Data Steward on Initiative 1
-    $initiative1->assignRoleToUser($steward, $this->stewardRole);
+    $initiative1->assignDataSteward($steward);
 
     // Assign same user as Data Owner on Initiative 2
-    $initiative2->assignRoleToUser($steward, $this->ownerRole);
+    $initiative2->assignDataOwner($steward);
 
     // Verify Initiative 1 only shows steward, not owner
     expect($initiative1->dataSteward()->first()?->id)->toBe($steward->id);
@@ -291,10 +291,10 @@ it('does not show user as data steward when only assigned as data owner on this 
     ]);
 
     // Assign owner as Data Owner on Initiative 1
-    $initiative1->assignRoleToUser($owner, $this->ownerRole);
+    $initiative1->assignDataOwner($owner);
 
     // Assign same user as Data Steward on Initiative 2
-    $initiative2->assignRoleToUser($owner, $this->stewardRole);
+    $initiative2->assignDataSteward($owner);
 
     // Verify Initiative 1 only shows owner, not steward
     expect($initiative1->dataOwner()->first()?->id)->toBe($owner->id);
@@ -400,7 +400,7 @@ it('triggers governance score recalculation when removing data steward', functio
     ]);
 
     // Assign initial steward
-    $dataInitiative->assignRoleToUser($steward, $this->stewardRole);
+    $dataInitiative->assignDataSteward($steward);
 
     // Trigger initial score calculation
     app(DataInitiativeGovernanceScoreService::class)->calculateAndSave(

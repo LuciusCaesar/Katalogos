@@ -8,7 +8,6 @@ use App\Http\Requests\Api\UpdateDataSourceRequest;
 use App\Http\Requests\UpdateDataSourceTeamRequest;
 use App\Http\Resources\DataSourceResource;
 use App\Models\DataSource;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -66,8 +65,6 @@ class DataSourceController extends Controller
      */
     public function updateTeam(UpdateDataSourceTeamRequest $request, DataSource $dataSource): DataSourceResource
     {
-        $dataCustodianRole = Role::where('name', 'Data Custodian')->firstOrFail();
-
         if ($request->filled('data_custodian_id')) {
             $dataCustodianId = $request->integer('data_custodian_id');
             $user = User::findOrFail($dataCustodianId);
@@ -76,14 +73,14 @@ class DataSourceController extends Controller
 
             if (! $existingCustodian || $existingCustodian->id !== $user->id) {
                 if ($existingCustodian) {
-                    $dataSource->removeRoleFromUser($existingCustodian, $dataCustodianRole);
+                    $dataSource->removeDataCustodian();
                 }
-                $dataSource->assignRoleToUser($user, $dataCustodianRole);
+                $dataSource->assignDataCustodian($user);
             }
         } else {
             $existingCustodian = $dataSource->dataCustodian()->first();
             if ($existingCustodian) {
-                $dataSource->removeRoleFromUser($existingCustodian, $dataCustodianRole);
+                $dataSource->removeDataCustodian();
             }
         }
 

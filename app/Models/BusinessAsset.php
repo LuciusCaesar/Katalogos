@@ -147,10 +147,25 @@ class BusinessAsset extends Model
     }
 
     /**
-     * Assign a role to a user for this business asset.
+     * Assign the Data Steward role to a user for this business asset.
      */
-    public function assignRoleToUser(User $user, Role $role): RoleAssignment
+    public function assignDataSteward(User $user): RoleAssignment
     {
+        $role = Role::where('name', 'Data Steward')->firstOrFail();
+
+        return $this->roleAssignments()->create([
+            'user_id' => $user->id,
+            'role_id' => $role->id,
+        ]);
+    }
+
+    /**
+     * Assign the Data Owner role to a user for this business asset.
+     */
+    public function assignDataOwner(User $user): RoleAssignment
+    {
+        $role = Role::where('name', 'Data Owner')->firstOrFail();
+
         return $this->roleAssignments()->create([
             'user_id' => $user->id,
             'role_id' => $role->id,
@@ -233,12 +248,25 @@ class BusinessAsset extends Model
     }
 
     /**
-     * Remove a role assignment from a user for this business asset.
+     * Remove the Data Steward role assignment from this business asset.
      */
-    public function removeRoleFromUser(User $user, Role $role): bool
+    public function removeDataSteward(): bool
     {
+        $role = Role::where('name', 'Data Steward')->firstOrFail();
+
         return $this->roleAssignments()
-            ->where('user_id', $user->id)
+            ->where('role_id', $role->id)
+            ->delete() > 0;
+    }
+
+    /**
+     * Remove the Data Owner role assignment from this business asset.
+     */
+    public function removeDataOwner(): bool
+    {
+        $role = Role::where('name', 'Data Owner')->firstOrFail();
+
+        return $this->roleAssignments()
             ->where('role_id', $role->id)
             ->delete() > 0;
     }

@@ -3,7 +3,6 @@
 use App\Models\BusinessAsset;
 use App\Models\DataInitiative;
 use App\Models\Domain;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -383,9 +382,8 @@ it('has domains link in sidebar menu', function () {
 it('displays domain owner on index page', function () {
     $domain = Domain::factory()->create();
     $owner = User::factory()->create();
-    $domainOwnerRole = Role::where('name', 'Domain Owner')->firstOrFail();
 
-    $domain->assignRoleToUser($owner, $domainOwnerRole);
+    $domain->assignDomainOwner($owner);
 
     $this->actingAs($this->user)
         ->get(route('web.domains.index'))
@@ -397,9 +395,8 @@ it('displays domain owner on index page', function () {
 it('displays domain owner on show page', function () {
     $domain = Domain::factory()->create();
     $owner = User::factory()->create();
-    $domainOwnerRole = Role::where('name', 'Domain Owner')->firstOrFail();
 
-    $domain->assignRoleToUser($owner, $domainOwnerRole);
+    $domain->assignDomainOwner($owner);
 
     $this->actingAs($this->user)
         ->get(route('web.domains.show', $domain))
@@ -450,9 +447,8 @@ it('can update domain owner via web form', function () {
 it('displays current domain owner on team management page', function () {
     $domain = Domain::factory()->create();
     $owner = User::factory()->create();
-    $domainOwnerRole = Role::where('name', 'Domain Owner')->firstOrFail();
 
-    $domain->assignRoleToUser($owner, $domainOwnerRole);
+    $domain->assignDomainOwner($owner);
 
     $this->actingAs($this->user)
         ->get(route('web.domains.team', $domain))

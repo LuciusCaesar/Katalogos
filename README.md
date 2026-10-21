@@ -68,8 +68,10 @@ classDiagram
         +businessObjectives()
         +dataSteward()
         +dataOwner()
-        +assignRoleToUser()
-        +removeRoleFromUser()
+        +assignDataSteward()
+        +assignDataOwner()
+        +removeDataSteward()
+        +removeDataOwner()
         +getAvgDataQualityCheckScoreAttribute()
     }
 
@@ -96,8 +98,10 @@ classDiagram
         +governanceScore()
         +dataSteward()
         +dataOwner()
-        +assignRoleToUser()
-        +removeRoleFromUser()
+        +assignDataSteward()
+        +assignDataOwner()
+        +removeDataSteward()
+        +removeDataOwner()
         +calculateGovernanceScore()
         +getMinDataQualityCheckScoreAttribute()
         +getMaxDataQualityCheckScoreAttribute()
@@ -113,8 +117,8 @@ classDiagram
         +users()
         +roles()
         +domainOwner()
-        +assignRoleToUser()
-        +removeRoleFromUser()
+        +assignDomainOwner()
+        +removeDomainOwner()
     }
 
     class BusinessProcess {
@@ -134,8 +138,8 @@ classDiagram
         +users()
         +roles()
         +dataCustodian()
-        +assignRoleToUser()
-        +removeRoleFromUser()
+        +assignDataCustodian()
+        +removeDataCustodian()
     }
 
     class BusinessRule {
@@ -401,29 +405,34 @@ classDiagram
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/your-org/katalogos.git
    cd katalogos
    ```
 
 2. Install dependencies:
+
    ```bash
    composer install
    npm install
    ```
 
 3. Set up environment:
+
    ```bash
    cp .env.example .env
    php artisan key:generate
    ```
 
 4. Run migrations and seeders:
+
    ```bash
    php artisan migrate --seed
    ```
 
 5. Build frontend assets:
+
    ```bash
    npm run build
    ```
@@ -431,12 +440,15 @@ classDiagram
 ### Running the Application
 
 #### Development
+
 Start the development server with all services:
+
 ```bash
 composer run dev
 ```
 
 This starts:
+
 - Laravel development server
 - Queue listener
 - Log viewer (Pail)
@@ -445,7 +457,9 @@ This starts:
 Access the application at `http://localhost:8000`
 
 #### Production
+
 For production, ensure you have:
+
 - Proper `.env` configuration
 - Database connection configured
 - Queue worker running
@@ -467,6 +481,7 @@ php artisan test --coverage
 ```
 
 The test suite includes:
+
 - Feature tests for API endpoints
 - Feature tests for role assignments
 - Authentication tests

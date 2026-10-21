@@ -103,8 +103,6 @@ class DomainController extends Controller
      */
     public function updateTeam(UpdateDomainTeamRequest $request, Domain $domain): RedirectResponse
     {
-        $domainOwnerRole = Role::where('name', 'Domain Owner')->firstOrFail();
-
         // Handle Domain Owner assignment
         if ($request->filled('domain_owner_id')) {
             $domainOwnerId = $request->integer('domain_owner_id');
@@ -117,17 +115,17 @@ class DomainController extends Controller
             if (! $userAlreadyAssigned) {
                 // Remove existing Domain Owner if different user
                 if ($existingOwner) {
-                    $domain->removeRoleFromUser($existingOwner, $domainOwnerRole);
+                    $domain->removeDomainOwner();
                 }
 
                 // Assign new Domain Owner
-                $domain->assignRoleToUser($user, $domainOwnerRole);
+                $domain->assignDomainOwner($user);
             }
         } else {
             // Remove Domain Owner if null selected
             $existingOwner = $domain->domainOwner()->first();
             if ($existingOwner) {
-                $domain->removeRoleFromUser($existingOwner, $domainOwnerRole);
+                $domain->removeDomainOwner();
             }
         }
 

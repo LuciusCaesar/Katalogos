@@ -7,7 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin KPI
-*/
+ */
 class KPIResource extends JsonResource
 {
     /**

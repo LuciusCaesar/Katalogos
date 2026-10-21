@@ -116,8 +116,6 @@ class DataSourceController extends Controller
      */
     public function updateTeam(UpdateDataSourceTeamRequest $request, DataSource $dataSource): RedirectResponse
     {
-        $dataCustodianRole = Role::where('name', 'Data Custodian')->firstOrFail();
-
         // Handle Data Custodian assignment
         if ($request->filled('data_custodian_id')) {
             $dataCustodianId = $request->integer('data_custodian_id');
@@ -130,17 +128,17 @@ class DataSourceController extends Controller
             if (! $userAlreadyAssigned) {
                 // Remove existing Data Custodian if different user
                 if ($existingCustodian) {
-                    $dataSource->removeRoleFromUser($existingCustodian, $dataCustodianRole);
+                    $dataSource->removeDataCustodian();
                 }
 
                 // Assign new Data Custodian
-                $dataSource->assignRoleToUser($user, $dataCustodianRole);
+                $dataSource->assignDataCustodian($user);
             }
         } else {
             // Remove Data Custodian if null selected
             $existingCustodian = $dataSource->dataCustodian()->first();
             if ($existingCustodian) {
-                $dataSource->removeRoleFromUser($existingCustodian, $dataCustodianRole);
+                $dataSource->removeDataCustodian();
             }
         }
 
