@@ -83,35 +83,28 @@
                         </template>
 
                         {{-- Edges (SVG layer under the cards) --}}
+                        {{-- NOTE: <template x-for> cannot be used inside <svg> (SVG-namespace --}}
+                        {{-- templates have no .content), so markers are static and arcs are --}}
+                        {{-- rendered via the x-html markup string built by the component. --}}
                         <svg class="absolute z-[5]" :width="canvasSize.width" :height="canvasSize.height" style="pointer-events: none;">
                             <defs>
-                                <template x-for="rel in relsList" :key="'mk-' + rel.key">
-                                    <marker :id="rel.marker" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
-                                        <path d="M0,0 L10,5 L0,10 z" :fill="rel.color"></path>
-                                    </marker>
-                                </template>
+                                <marker id="m-conform" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"></path>
+                                </marker>
+                                <marker id="m-contained" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="#059669"></path>
+                                </marker>
+                                <marker id="m-checked" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="#d97706"></path>
+                                </marker>
+                                <marker id="m-applies" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="#f43f5e"></path>
+                                </marker>
                                 <marker id="m-dim" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
                                     <path d="M0,0 L10,5 L0,10 z" fill="#cbd5e1"></path>
                                 </marker>
                             </defs>
-                            <template x-for="arc in currentArcs" :key="view + '-' + arc.key + '-' + (sel ?? 'none')">
-                                <g>
-                                    <path :d="arc.d" fill="none" :stroke="arc.stroke" :stroke-opacity="arc.opacity" :stroke-width="arc.strokeWidth" stroke-linecap="round" :marker-end="`url(#${arc.marker})`"></path>
-                                    <text
-                                        :x="arc.lx"
-                                        :y="arc.ly"
-                                        text-anchor="middle"
-                                        font-size="9.5"
-                                        font-weight="600"
-                                        :fill="arc.labelColor"
-                                        stroke="#ffffff"
-                                        stroke-width="4"
-                                        paint-order="stroke"
-                                        stroke-linejoin="round"
-                                        x-text="arc.labelText"
-                                    ></text>
-                                </g>
-                            </template>
+                            <g x-html="arcsMarkup"></g>
                         </svg>
 
                         {{-- Cards --}}

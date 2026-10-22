@@ -258,6 +258,24 @@ window.impactDiagram = (graph) => ({
         return this.view === 'blocks' ? this.blockArcs : this.graphArcs;
     },
 
+    /**
+     * SVG markup for the current arcs, injected via x-html on a <g>.
+     * (Alpine <template x-for> cannot be used inside <svg>: SVG-namespace
+     * templates have no .content, so the arcs are built as a string.)
+     */
+    get arcsMarkup() {
+        return this.currentArcs
+            .map((arc) => {
+                const label = String(arc.labelText)
+                    .replaceAll('&', '&amp;')
+                    .replaceAll('<', '&lt;');
+
+                return `<path d="${arc.d}" fill="none" stroke="${arc.stroke}" stroke-opacity="${arc.opacity}" stroke-width="${arc.strokeWidth}" stroke-linecap="round" marker-end="url(#${arc.marker})"></path>`
+                    + `<text x="${arc.lx}" y="${arc.ly}" text-anchor="middle" font-size="9.5" font-weight="600" fill="${arc.labelColor}" stroke="#ffffff" stroke-width="4" paint-order="stroke" stroke-linejoin="round">${label}</text>`;
+            })
+            .join('');
+    },
+
     geomOf(id) {
         const type = this.nodeById[id].type;
         if (this.view === 'blocks') {
