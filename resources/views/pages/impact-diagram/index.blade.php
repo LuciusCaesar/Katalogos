@@ -61,10 +61,10 @@
                         @pointermove="moveDrag($event)"
                         @pointerup="endDrag()"
                         @pointercancel="endDrag()"
-                        @wheel.prevent="panBy($event.deltaX, $event.deltaY)"
+                        @wheel.prevent="onWheel($event)"
                         @click="backgroundClick($event)"
                     >
-                        <div class="absolute inset-0" :style="`transform: translate(${pan.x}px, ${pan.y}px);`" @click="backgroundClick($event)">
+                        <div class="absolute inset-0" :style="`transform: translate(${pan.x}px, ${pan.y}px) scale(${zoom}); transform-origin: 0 0;`" @click="backgroundClick($event)">
                             <div class="relative" :style="`width: ${canvasSize.width}px; height: ${canvasSize.height}px;`">
                                 {{-- Floating type blocks (blocks view, snowflake layout) --}}
                                 <template x-if="view === 'blocks'">
@@ -177,6 +177,38 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- Zoom controls --}}
+                    <div class="absolute bottom-4 right-4 z-30 flex items-center gap-1 rounded-xl border border-slate-200 bg-white/90 backdrop-blur p-1 shadow-sm">
+                        <button
+                            type="button"
+                            @click="zoomBy(1 / 1.25)"
+                            :disabled="zoom <= minZoom"
+                            class="w-8 h-8 rounded-lg text-lg font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-default transition-colors"
+                            title="{{ __('Zoom out') }}"
+                            aria-label="{{ __('Zoom out') }}"
+                        >
+                            −
+                        </button>
+                        <button
+                            type="button"
+                            @click="resetView()"
+                            class="px-2 h-8 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                            :title="zoom === 1 ? '{{ __('Reset zoom and pan') }}' : '{{ __('Reset to 100%') }}'"
+                        >
+                            <span x-text="Math.round(zoom * 100) + '%'"></span>
+                        </button>
+                        <button
+                            type="button"
+                            @click="zoomBy(1.25)"
+                            :disabled="zoom >= maxZoom"
+                            class="w-8 h-8 rounded-lg text-lg font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-default transition-colors"
+                            title="{{ __('Zoom in') }}"
+                            aria-label="{{ __('Zoom in') }}"
+                        >
+                            +
+                        </button>
+                    </div>
                 </div>
 
                 {{-- Detail panel --}}
@@ -269,7 +301,7 @@
         </div>
 
         <p class="text-xs text-slate-400">
-            {{ __('Tips: initially only the direct relationships of the entry point are shown. The ⚡ badge counts the hidden relations of an element — click it to extend the graph from there (new elements appear next to it). Click an element to highlight it with its direct neighbors. Drag the background or scroll with the mouse to move around; in the blocks view, drag a block to reposition it and an element to reorder it within its block; in the graph view, drag elements freely.') }}
+            {{ __('Tips: initially only the direct relationships of the entry point are shown. The ⚡ badge counts the hidden relations of an element — click it to extend the graph from there (new elements appear next to it). Click an element to highlight it with its direct neighbors. Drag the background or scroll to move around; zoom with ctrl+scroll (⌘+scroll on Mac, pinch on trackpads) or the +/− buttons, and click the percentage to reset the view. In the blocks view, drag a block to reposition it and an element to reorder it within its block; in the graph view, drag elements freely.') }}
         </p>
     </div>
 </x-layouts::app>

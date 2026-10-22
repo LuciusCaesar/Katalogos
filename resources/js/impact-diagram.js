@@ -87,6 +87,9 @@ window.impactDiagram = (graph) => ({
     blockDrag: null,
     panDrag: null,
     pan: { x: 0, y: 0 },
+    zoom: 1,
+    minZoom: 0.25,
+    maxZoom: 3,
     suppressClick: false,
 
     rootId: graph.rootId,
@@ -598,7 +601,64 @@ window.impactDiagram = (graph) => ({
     pointerPos(event) {
         const rect = this.$refs.area.getBoundingClientRect();
 
-        return { x: event.clientX - rect.left - this.pan.x, y: event.clientY - rect.top - this.pan.y };
+        // Canvas coordinates: the wrapper transform is
+        // translate(pan) scale(zoom), so screen = pan + zoom * canvas.
+        return {
+            x: (event.clientX - rect.left - this.pan.x) / this.zoom,
+            y: (event.clientY - rect.top - this.pan.y) / this.zoom,
+        };
+    },
+
+    /**
+     * Wheel handling — standard canvas gestures: plain wheel/trackpad pans,
+     * ctrl/cmd+wheel zooms (also matches trackpad pinch gestures on Mac).
+     */
+    onWheel(event) {
+        if (event.ctrlKey || event.metaKey) {
+            const factor = Math.max(0.8, Math.min(1.25, Math.exp(-event.deltaY * 0.01)));
+            this.zoomAt(event.clientX, event.clientY, factor);
+
+            return;
+        }
+
+        this.panBy(event.deltaX, event.deltaY);
+    },
+
+    /**
+     * Zoom keeping the canvas point under the given screen position fixed
+     * (zoom-to-cursor, the standard behavior).
+     */
+    zoomAt(clientX, clientY, factor) {
+        const rect = this.$refs.area.getBoundingClientRect();
+        const cx = clientX - rect.left;
+        const cy = clientY - rect.top;
+        const newZoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.zoom * factor));
+
+        if (newZoom === this.zoom) {
+            return;
+        }
+
+        // Canvas point under the cursor, kept fixed by adjusting the pan.
+        const px = (cx - this.pan.x) / this.zoom;
+        const py = (cy - this.pan.y) / this.zoom;
+        this.pan = { x: cx - newZoom * px, y: cy - newZoom * py };
+        this.zoom = newZoom;
+    },
+
+    /**
+     * Zoom in/out from the buttons, centered on the viewport.
+     */
+    zoomBy(factor) {
+        const rect = this.$refs.area.getBoundingClientRect();
+        this.zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, factor);
+    },
+
+    /**
+     * Reset zoom and pan to the initial view.
+     */
+    resetView() {
+        this.zoom = 1;
+        this.pan = { x: 0, y: 0 };
     },
 
     startDrag(event, id) {
