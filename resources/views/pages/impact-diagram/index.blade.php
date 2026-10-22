@@ -32,8 +32,8 @@
         </div>
 
         <p class="text-sm text-slate-500" x-text="view === 'blocks'
-            ? '{{ __('One floating block per entity type, arranged as a snowflake around the entry point at the center — new blocks appear next to the element they are extended from. Drag the background or scroll to move around, drag a block to reposition it.') }}'
-            : '{{ __('Each element is a free, draggable node arranged as a snowflake around the entry point, with always-visible relationship labels. Drag the background or scroll to move around.') }}'">
+            ? '{{ __('One floating block per entity type, dynamically balanced around the entry point at the center — related blocks stay close and new blocks appear next to the element they are extended from. Drag the background or scroll to move around, drag a block to reposition it.') }}'
+            : '{{ __('Each element is a free, draggable node in a dynamically balanced layout around the entry point, with always-visible relationship labels. Drag the background or scroll to move around.') }}'">
         </p>
 
         {{-- Legend --}}
@@ -66,7 +66,7 @@
                     >
                         <div class="absolute inset-0" :style="`transform: translate(${pan.x}px, ${pan.y}px) scale(${zoom}); transform-origin: 0 0;`" @click="backgroundClick($event)">
                             <div class="relative" :style="`width: ${canvasSize.width}px; height: ${canvasSize.height}px;`">
-                                {{-- Floating type blocks (blocks view, snowflake layout) --}}
+                                {{-- Floating type blocks (blocks view, force-balanced layout) --}}
                                 <template x-if="view === 'blocks'">
                                     <div>
                                         <template x-for="type in visibleTypes" :key="'bg-' + type">

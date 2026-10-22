@@ -5,12 +5,13 @@
  * (.tmp/prototypes-diagramme-de-relations-métier.tsx) to Alpine.js, without
  * any graph library: absolute positions, SVG edges, Pointer Events.
  *
- * Layout — snowflake / radial tree: the root element (blocks view: its type
- * block) sits at the center of the canvas. Every other block or node is
- * placed on the branch of the BFS tree through which it is discovered:
- * close to its parent, in the parent's angular sector, at a radius growing
- * with its distance from the root. Newly revealed elements therefore always
- * appear next to the element they were extended from.
+ * Layout — dynamically balanced force relaxation: springs pull related
+ * bodies (blocks in the blocks view, elements in the free graph view)
+ * toward a short target distance, size-aware repulsion keeps the bodies
+ * apart, and a light gravity keeps the graph centered on the entry point.
+ * Freshly revealed bodies start AT their revealer, so they always appear
+ * next to the element they are extended from. Previously placed bodies
+ * keep their position (continuity); manual drags are pinned.
  *
  * Navigation — the canvas is bigger than the viewport: drag the background
  * or scroll with the mouse wheel / trackpad to pan in all directions.
@@ -64,10 +65,9 @@ const BLOCK_ORDER = ['process', 'objective', 'initiative', 'domain', 'asset', 's
 const CW = 190, H = 52, VGAP = 18, PAD = 14, GW = 170;
 // Block interior: header height above the first card.
 const HEAD = 62;
-// Snowflake geometry: ring radii for the type blocks (blocks view) and the
-// node rings (free graph view), growing with the distance from the root.
-const BLOCK_RING_GAP = 520, BLOCK_RING_BASE = 430;
-const NODE_RING_GAP = 320;
+// Force-balanced layout: target distance between related bodies.
+const NODE_REST = 220;
+const BLOCK_REST = 440;
 
 window.impactDiagram = (graph) => ({
     // ---- static data -----------------------------------------------------
@@ -81,7 +81,6 @@ window.impactDiagram = (graph) => ({
     expanded: [],
     order: {},
     blockPos: {},
-    graphPos: {},
     defaultBlockPos: {},
     drag: null,
     blockDrag: null,
@@ -93,12 +92,19 @@ window.impactDiagram = (graph) => ({
     suppressClick: false,
 
     rootId: graph.rootId,
+    rootType: '',
     nodes: graph.nodes,
     edges: graph.edges,
     nodeById: {},
+    nodeIndex: new Map(),
+    defaultBlockPos: {},
+    defaultNodePos: {},
+    manualNodePos: {},
 
     init() {
         this.nodeById = Object.fromEntries(graph.nodes.map((node) => [node.id, node]));
+        this.nodeIndex = new Map(graph.nodes.map((node, index) => [node.id, index]));
+        this.rootType = this.nodeById[this.rootId].type;
 
         // Initial order inside each block follows the payload order
         // (sorted by depth, then type, then id by the backend).
@@ -106,125 +112,380 @@ window.impactDiagram = (graph) => ({
             this.order[type] = graph.nodes.filter((node) => node.type === type).map((node) => node.id);
         });
 
-        // ---- Snowflake layout: radial BFS trees --------------------------
-        // Blocks view: a tree over the entity TYPES (derived from the actual
-        // relations), rooted at the root's type.
-        const rootType = this.nodeById[this.rootId].type;
-        const typeAdjacency = new Map();
-        graph.edges.forEach((edge) => {
-            const ft = this.nodeById[edge.from].type;
-            const tt = this.nodeById[edge.to].type;
-            if (!typeAdjacency.has(ft)) {
-                typeAdjacency.set(ft, new Set());
-            }
-            if (!typeAdjacency.has(tt)) {
-                typeAdjacency.set(tt, new Set());
-            }
-            typeAdjacency.get(ft).add(tt);
-            typeAdjacency.get(tt).add(ft);
-        });
-
-        const typeLayout = this.radialTree(
-            rootType,
-            (type) => [...(typeAdjacency.get(type) || [])].sort(
-                (a, b) => BLOCK_ORDER.indexOf(a) - BLOCK_ORDER.indexOf(b),
-            ),
-            (ring) => (ring === 0 ? 0 : BLOCK_RING_BASE + (ring - 1) * BLOCK_RING_GAP),
-        );
-        BLOCK_ORDER.forEach((type) => {
-            this.defaultBlockPos[type] = typeLayout.positions[type] || { x: 0, y: 0 };
-        });
-
-        // Free graph view: a tree over the ELEMENTS, rooted at the root node.
-        const nodeIndex = new Map(graph.nodes.map((node, index) => [node.id, index]));
-        const nodeAdjacency = new Map();
-        graph.edges.forEach((edge) => {
-            if (!nodeAdjacency.has(edge.from)) {
-                nodeAdjacency.set(edge.from, new Set());
-            }
-            if (!nodeAdjacency.has(edge.to)) {
-                nodeAdjacency.set(edge.to, new Set());
-            }
-            nodeAdjacency.get(edge.from).add(edge.to);
-            nodeAdjacency.get(edge.to).add(edge.from);
-        });
-
-        const nodeLayout = this.radialTree(
-            this.rootId,
-            (id) => [...(nodeAdjacency.get(id) || [])].sort((a, b) => (nodeIndex.get(a) ?? 0) - (nodeIndex.get(b) ?? 0)),
-            (ring) => ring * NODE_RING_GAP,
-        );
-        graph.nodes.forEach((node) => {
-            this.graphPos[node.id] = nodeLayout.positions[node.id] || { x: 0, y: 0 };
-        });
+        // Snowflake layout driven by the current visibility / extension state.
+        this.rebuildLayout();
     },
 
     /**
-     * Radial (snowflake) tree layout: the root sits at the center, each
-     * child is placed in its parent's angular sector, at a radius given by
-     * its BFS depth. Deterministic; newly revealed items therefore always
-     * appear close to the element they were extended from.
-     *
-     * @param {string} root
-     * @param {(key: string) => string[]} childrenOf deterministic children accessor
-     * @param {(ring: number) => number} radiusOf BFS depth to radius
-     * @return {{positions: Object<string, {x: number, y: number}>}}
+     * Parent of a visible element in the layout tree — derived from the
+     * current state so retraction is handled automatically:
+     * - first-degree elements hang under the root;
+     * - a never-expanded element hangs under its most recently expanded
+     *   neighbour (the element the user extended FROM);
+     * - an EXPANDED element hangs under the most recent expansion that is
+     *   strictly EARLIER than its own. Parent pointers therefore always
+     *   descend in expansion order, which makes cycles impossible — without
+     *   this guard, two mutually-related expanded elements could parent each
+     *   other and both fall back to the center position (overlapping boxes).
      */
-    radialTree(root, childrenOf, radiusOf) {
-        const children = new Map();
-        const ring = new Map([[root, 0]]);
-        let frontier = [root];
-        let depth = 0;
-        while (frontier.length > 0) {
-            depth += 1;
-            const next = [];
-            frontier.forEach((key) => {
-                const kids = childrenOf(key).filter((child) => !ring.has(child));
-                kids.forEach((child) => {
-                    ring.set(child, depth);
-                    next.push(child);
-                });
-                children.set(key, kids);
-            });
-            frontier = next;
+    revealParent(id) {
+        const node = this.nodeById[id];
+        if (node.depth <= 1) {
+            return this.rootId;
         }
 
-        const leafCount = (key, seen = new Set()) => {
-            const kids = children.get(key) || [];
-            if (kids.length === 0) {
-                return 1;
+        const ownIndex = this.expanded.indexOf(id);
+        for (let i = this.expanded.length - 1; i >= 0; i -= 1) {
+            if (ownIndex !== -1 && i >= ownIndex) {
+                continue; // an expanded element hangs under an earlier expansion only
             }
-            seen.add(key);
-            let total = 0;
-            kids.forEach((kid) => {
-                if (!seen.has(kid)) {
-                    total += leafCount(kid, seen);
-                }
-            });
+            const expandedId = this.expanded[i];
+            if (this.adjacent(expandedId, id)) {
+                return expandedId;
+            }
+        }
 
-            return Math.max(1, total);
-        };
+        return this.rootId;
+    },
 
-        const positions = { [root]: { x: 0, y: 0 } };
-        const place = (key, centerAngle, sectorWidth) => {
-            const kids = children.get(key) || [];
-            if (kids.length === 0) {
+    /**
+     * Whether two elements are directly related.
+     */
+    adjacent(a, b) {
+        return this.edges.some((edge) => (edge.from === a && edge.to === b) || (edge.to === a && edge.from === b));
+    },
+
+    /**
+     * Recompute the layout from the CURRENT visible graph, balancing it
+     * dynamically (force relaxation): springs pull related bodies toward a
+     * short target distance, bodies repel each other (size-aware, so blocks
+     * do not overlap), and a light gravity keeps the graph centered on the
+     * entry point. Previously placed bodies keep their position as the
+     * starting point of the relaxation (continuity); freshly revealed
+     * bodies start AT their revealer so they appear right next to it.
+     * Manual drags (blockPos / manualNodePos) are pinned.
+     */
+    rebuildLayout() {
+        // ---- element level (free graph view) ----
+        const nodeLinks = [];
+        const seenPair = new Set();
+        this.visibleEdges.forEach((edge) => {
+            const key = edge.from < edge.to ? `${edge.from}|${edge.to}` : `${edge.to}|${edge.from}`;
+            if (!seenPair.has(key)) {
+                seenPair.add(key);
+                nodeLinks.push({ a: edge.from, b: edge.to });
+            }
+        });
+
+        const seedNodes = { [this.rootId]: { x: 0, y: 0 } };
+        const freshNodesByParent = new Map();
+        this.visibleNodeIds.forEach((id) => {
+            if (id === this.rootId) {
                 return;
             }
-            const totalLeaves = kids.reduce((sum, kid) => sum + leafCount(kid), 0);
-            let acc = centerAngle - sectorWidth / 2;
-            kids.forEach((kid) => {
-                const width = (sectorWidth * leafCount(kid)) / totalLeaves;
-                const angle = acc + width / 2;
-                const radius = radiusOf(ring.get(kid) ?? 1);
-                positions[kid] = { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
-                place(kid, angle, width);
-                acc += width;
-            });
-        };
-        place(root, 0, 2 * Math.PI);
+            const previous = this.defaultNodePos[id];
+            if (previous) {
+                seedNodes[id] = { x: previous.x, y: previous.y };
 
-        return { positions };
+                return;
+            }
+            const parent = this.revealParent(id);
+            if (!freshNodesByParent.has(parent)) {
+                freshNodesByParent.set(parent, []);
+            }
+            freshNodesByParent.get(parent).push(id);
+        });
+        freshNodesByParent.forEach((ids, parent) => {
+            const anchor = seedNodes[parent] || { x: 0, y: 0 };
+            ids.forEach((id, index) => {
+                const angle = (2 * Math.PI * (index + 0.25)) / ids.length;
+                seedNodes[id] = { x: anchor.x + Math.cos(angle) * 120, y: anchor.y + Math.sin(angle) * 120 };
+            });
+        });
+
+        const nodePins = new Set([this.rootId, ...Object.keys(this.manualNodePos)]);
+        const nodeIterations = this.visibleNodeIds.length > 150 ? 80 : 200;
+        const nodeSize = () => ({ a: GW / 2 + 5, b: H / 2 + 5 });
+        this.defaultNodePos = this.relax(seedNodes, nodePins, nodeLinks, NODE_REST, nodeIterations, nodeSize);
+        this.resolveOverlaps(this.defaultNodePos, nodePins, nodeSize);
+
+        // ---- block level ----
+        // Each visible type hangs under the type of the revealer of its most
+        // recently revealed element, so fresh blocks anchor next to the
+        // block they were extended from.
+        const typeParent = new Map();
+        this.visibleNodeIds.forEach((id) => {
+            if (id === this.rootId) {
+                return;
+            }
+            const childType = this.nodeById[id].type;
+            if (childType === this.rootType) {
+                return;
+            }
+            const parent = this.revealParent(id);
+            const parentType = this.nodeById[parent].type;
+            if (parentType === childType) {
+                return;
+            }
+            const recency = this.expanded.indexOf(parent);
+            const current = typeParent.get(childType);
+            if (!current || recency > current.recency) {
+                typeParent.set(childType, { recency, parentType });
+            }
+        });
+
+        // The node-level parents are acyclic by construction, but the TYPE
+        // level can still loop (e.g. a rule revealed from an issue and
+        // another issue revealed from a rule). Any type whose parent chain
+        // does not reach the root type is re-attached to the root.
+        typeParent.forEach((entry, childType) => {
+            let current = childType;
+            const seen = new Set();
+            while (current !== this.rootType && !seen.has(current)) {
+                seen.add(current);
+                const next = typeParent.get(current);
+                if (!next) {
+                    return;
+                }
+                current = next.parentType;
+            }
+            if (current !== this.rootType) {
+                typeParent.set(childType, { recency: entry.recency, parentType: this.rootType });
+            }
+        });
+
+        const blockLinks = [];
+        const seenTypePair = new Set();
+        this.visibleEdges.forEach((edge) => {
+            const ft = this.nodeById[edge.from].type;
+            const tt = this.nodeById[edge.to].type;
+            if (ft === tt) {
+                return;
+            }
+            const key = ft < tt ? `${ft}|${tt}` : `${tt}|${ft}`;
+            if (!seenTypePair.has(key)) {
+                seenTypePair.add(key);
+                blockLinks.push({ a: ft, b: tt });
+            }
+        });
+
+        // Half-extents of a type block (rectangle body for the layout forces).
+        const blockSize = (type) => {
+            const count = this.visibleIdsOf(type).length;
+            const height = HEAD + count * (H + VGAP) - VGAP + 16;
+
+            return { a: (CW + 2 * PAD) / 2, b: height / 2 };
+        };
+
+        const seedBlocks = { [this.rootType]: { x: 0, y: 0 } };
+        const freshTypes = [];
+        this.visibleTypes.forEach((type) => {
+            if (type === this.rootType) {
+                return;
+            }
+            const previous = this.defaultBlockPos[type];
+            if (previous) {
+                seedBlocks[type] = { x: previous.x, y: previous.y };
+            } else {
+                freshTypes.push(type);
+            }
+        });
+        freshTypes.forEach((type, index) => {
+            const parentType = (typeParent.get(type) || {}).parentType || this.rootType;
+            const anchor = seedBlocks[parentType] || { x: 0, y: 0 };
+            const angle = (2 * Math.PI * (index + 0.125)) / Math.max(1, freshTypes.length);
+            seedBlocks[type] = { x: anchor.x + Math.cos(angle) * 200, y: anchor.y + Math.sin(angle) * 200 };
+        });
+
+        const blockPins = new Set([this.rootType, ...Object.keys(this.blockPos)]);
+        this.defaultBlockPos = this.relax(seedBlocks, blockPins, blockLinks, BLOCK_REST, 150, blockSize);
+        this.resolveOverlaps(this.defaultBlockPos, blockPins, blockSize);
+    },
+
+    /**
+     * Deterministic positional pass guaranteeing that no two bodies
+     * overlap: overlapping pairs are pushed apart along their center axis
+     * until their RECTANGLE projections on that axis no longer intersect
+     * (pinned bodies never move; the free body takes the full correction).
+     * Runs after the force relaxation, which alone may leave small overlaps.
+     */
+    resolveOverlaps(positions, pinned, bodySize) {
+        const keys = Object.keys(positions);
+        const pinnedSet = pinned instanceof Set ? pinned : new Set(pinned);
+
+        for (let pass = 0; pass < 30; pass += 1) {
+            let moved = false;
+
+            for (let i = 0; i < keys.length; i += 1) {
+                for (let j = i + 1; j < keys.length; j += 1) {
+                    const a = keys[i];
+                    const b = keys[j];
+                    let dx = positions[b].x - positions[a].x;
+                    let dy = positions[b].y - positions[a].y;
+                    let d = Math.hypot(dx, dy);
+                    if (d < 1) {
+                        dx = 1;
+                        dy = 0;
+                        d = 1;
+                    }
+                    const ux = dx / d;
+                    const uy = dy / d;
+                    // Rectangle projection on the center axis: exact
+                    // separation condition along that axis.
+                    const sa = bodySize(a);
+                    const sb = bodySize(b);
+                    const minDist = sa.a * Math.abs(ux) + sa.b * Math.abs(uy)
+                        + sb.a * Math.abs(ux) + sb.b * Math.abs(uy) + 20;
+                    if (d >= minDist) {
+                        continue;
+                    }
+                    const correction = (minDist - d) / d;
+                    const uxCorrection = dx * correction;
+                    const uyCorrection = dy * correction;
+
+                    const aPinned = pinnedSet.has(a);
+                    const bPinned = pinnedSet.has(b);
+                    if (aPinned && bPinned) {
+                        continue;
+                    }
+                    if (aPinned) {
+                        positions[b].x += uxCorrection;
+                        positions[b].y += uyCorrection;
+                    } else if (bPinned) {
+                        positions[a].x -= uxCorrection;
+                        positions[a].y -= uyCorrection;
+                    } else {
+                        positions[a].x -= uxCorrection / 2;
+                        positions[a].y -= uyCorrection / 2;
+                        positions[b].x += uxCorrection / 2;
+                        positions[b].y += uyCorrection / 2;
+                    }
+                    moved = true;
+                }
+            }
+
+            if (!moved) {
+                break;
+            }
+        }
+    },
+
+    /**
+     * Deterministic force relaxation producing a compact, balanced layout
+     * with short links:
+     * - springs along the links pull the bodies toward the rest length;
+     * - pairwise repulsion keeps the bodies apart, with a size-aware push
+     *   based on rectangle projections when two bodies would overlap;
+     * - a light gravity pulls toward the origin so the graph stays centered
+     *   on the entry point;
+     * - pinned bodies (manual drags, the root) never move.
+     */
+    relax(seed, pinned, links, restLength, iterations, bodySize) {
+        const keys = Object.keys(seed).filter((key) => seed[key]);
+        if (keys.length <= 1) {
+            const fixed = {};
+            keys.forEach((key) => {
+                fixed[key] = { x: seed[key].x, y: seed[key].y };
+            });
+
+            return fixed;
+        }
+
+        const pos = {};
+        const vel = {};
+        keys.forEach((key) => {
+            pos[key] = { x: seed[key].x, y: seed[key].y };
+            vel[key] = { x: 0, y: 0 };
+        });
+        const pinnedSet = pinned instanceof Set ? pinned : new Set(pinned);
+
+        const K_SPRING = 0.05;
+        const K_PUSH = 0.25;
+        const K_SPREAD = 1600;
+        const K_GRAVITY = 0.0025;
+        const DAMPING = 0.6;
+        const MAX_STEP = 45;
+        const MARGIN = 30;
+
+        for (let iteration = 0; iteration < iterations; iteration += 1) {
+            const force = {};
+            keys.forEach((key) => {
+                force[key] = { x: 0, y: 0 };
+            });
+
+            // Pairwise repulsion: size-aware collision push plus a mild
+            // general spread.
+            for (let i = 0; i < keys.length; i += 1) {
+                for (let j = i + 1; j < keys.length; j += 1) {
+                    const a = keys[i];
+                    const b = keys[j];
+                    let dx = pos[b].x - pos[a].x;
+                    let dy = pos[b].y - pos[a].y;
+                    let d = Math.hypot(dx, dy);
+                    if (d < 1) {
+                        dx = 1;
+                        dy = 0;
+                        d = 1;
+                    }
+                    const ux = dx / d;
+                    const uy = dy / d;
+                    const minDist = (() => {
+                        const sa = bodySize(a);
+                        const sb = bodySize(b);
+
+                        return sa.a * Math.abs(ux) + sa.b * Math.abs(uy)
+                            + sb.a * Math.abs(ux) + sb.b * Math.abs(uy) + MARGIN;
+                    })();
+                    let push = K_SPREAD / (d * d);
+                    if (d < minDist) {
+                        push += (minDist - d) * K_PUSH;
+                    }
+                    force[a].x -= ux * push;
+                    force[a].y -= uy * push;
+                    force[b].x += ux * push;
+                    force[b].y += uy * push;
+                }
+            }
+
+            // Springs along the links.
+            links.forEach(({ a, b }) => {
+                if (!pos[a] || !pos[b]) {
+                    return;
+                }
+                const dx = pos[b].x - pos[a].x;
+                const dy = pos[b].y - pos[a].y;
+                const d = Math.max(1, Math.hypot(dx, dy));
+                const f = (d - restLength) * K_SPRING;
+                const ux = dx / d;
+                const uy = dy / d;
+                force[a].x += ux * f;
+                force[a].y += uy * f;
+                force[b].x -= ux * f;
+                force[b].y -= uy * f;
+            });
+
+            // Gravity + integration with damping and step clamping.
+            keys.forEach((key) => {
+                if (pinnedSet.has(key)) {
+                    vel[key] = { x: 0, y: 0 };
+
+                    return;
+                }
+                force[key].x -= pos[key].x * K_GRAVITY;
+                force[key].y -= pos[key].y * K_GRAVITY;
+                vel[key].x = (vel[key].x + force[key].x) * DAMPING;
+                vel[key].y = (vel[key].y + force[key].y) * DAMPING;
+                const speed = Math.hypot(vel[key].x, vel[key].y);
+                if (speed > MAX_STEP) {
+                    vel[key].x = (vel[key].x / speed) * MAX_STEP;
+                    vel[key].y = (vel[key].y / speed) * MAX_STEP;
+                }
+                pos[key].x += vel[key].x;
+                pos[key].y += vel[key].y;
+            });
+        }
+
+        return pos;
     },
 
     // ---- progressive visibility -------------------------------------------
@@ -281,6 +542,9 @@ window.impactDiagram = (graph) => ({
         this.expanded = this.expanded.includes(id)
             ? this.expanded.filter((expandedId) => expandedId !== id)
             : [...this.expanded, id];
+
+        // Newly revealed elements hang under the extended element.
+        this.rebuildLayout();
     },
 
     // ---- selection ----------------------------------------------------------
@@ -376,7 +640,7 @@ window.impactDiagram = (graph) => ({
             });
         } else {
             this.visibleNodeIds.forEach((id) => {
-                const pos = this.graphPos[id] || { x: 0, y: 0 };
+                const pos = this.manualNodePos[id] || this.defaultNodePos[id] || { x: 0, y: 0 };
                 minX = Math.min(minX, pos.x - GW / 2);
                 minY = Math.min(minY, pos.y - H / 2);
                 maxX = Math.max(maxX, pos.x + GW / 2);
@@ -412,7 +676,7 @@ window.impactDiagram = (graph) => ({
             return { x: rect.x + PAD, y: rect.y + HEAD + slot * (H + VGAP), w: CW, h: H };
         }
 
-        const pos = this.graphPos[id] || { x: 0, y: 0 };
+        const pos = this.manualNodePos[id] || this.defaultNodePos[id] || { x: 0, y: 0 };
 
         return { x: pos.x + this.origin.x - GW / 2, y: pos.y + this.origin.y - H / 2, w: GW, h: H };
     },
@@ -592,6 +856,7 @@ window.impactDiagram = (graph) => ({
             this.expanded = this.expanded.includes(this.sel)
                 ? this.expanded
                 : [...this.expanded, this.sel];
+            this.rebuildLayout();
         }
 
         this.sel = edge.otherId;
@@ -777,7 +1042,7 @@ window.impactDiagram = (graph) => ({
             const { width, height } = this.canvasSize;
             const x = Math.max(4, Math.min(width - GW - 4, p.x - d.offX));
             const y = Math.max(4, Math.min(height - H - 4, p.y - d.offY));
-            this.graphPos = { ...this.graphPos, [d.id]: { x: x - this.origin.x + GW / 2, y: y - this.origin.y + H / 2 } };
+            this.manualNodePos = { ...this.manualNodePos, [d.id]: { x: x - this.origin.x + GW / 2, y: y - this.origin.y + H / 2 } };
         }
     },
 
