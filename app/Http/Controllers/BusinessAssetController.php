@@ -13,7 +13,6 @@ use App\Models\GovernanceScore;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class BusinessAssetController extends Controller
@@ -21,12 +20,9 @@ class BusinessAssetController extends Controller
     /**
      * Display a listing of the business assets.
      */
-    public function index(Request $request): View
+    public function index(): View
     {
-        $search = $request->input('search', '');
-        $filters = $request->except(['search', 'page']);
-
-        $query = BusinessAsset::with([
+        $businessAssets = BusinessAsset::with([
             'dataInitiative',
             'domain',
             'dataSteward',
@@ -37,31 +33,11 @@ class BusinessAssetController extends Controller
                     $query->with('latestScore');
                 }]);
             },
-        ]);
+        ])
+            ->latest()
+            ->paginate(10);
 
-        // Apply search only if there's a search term
-        if ($search !== '') {
-            $query = $query->search($search);
-        }
-
-        // Apply filters (empty values are automatically skipped in Filterable trait)
-        $query = $query->filter($filters);
-
-        $businessAssets = $query->latest()
-            ->paginate(10)
-            ->withQueryString();
-
-        // Load filter options
-        $domains = Domain::orderBy('name')->get();
-        $dataInitiatives = DataInitiative::orderBy('label')->get();
-        $dataStewards = User::whereHas('roleAssignments.role', function ($query) {
-            $query->where('name', 'Data Steward');
-        })->orderBy('name')->get();
-        $dataOwners = User::whereHas('roleAssignments.role', function ($query) {
-            $query->where('name', 'Data Owner');
-        })->orderBy('name')->get();
-
-        return view('pages.business-assets.index', compact('businessAssets', 'search', 'filters', 'domains', 'dataInitiatives', 'dataStewards', 'dataOwners'));
+        return view('pages.business-assets.index', compact('businessAssets'));
     }
 
     /**

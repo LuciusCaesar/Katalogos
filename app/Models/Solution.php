@@ -8,11 +8,12 @@ use Database\Factories\SolutionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Laravel\Scout\Searchable;
 
 class Solution extends Model
 {
     /** @use HasFactory<SolutionFactory> */
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $fillable = [
         'name',
@@ -25,6 +26,19 @@ class Solution extends Model
         'dimension' => SolutionDimension::class,
         'implementation_status' => SolutionImplementationStatus::class,
     ];
+
+    /**
+     * Get the indexable data array for the model.
+     *
+     * @return array<string, string|null>
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'description' => $this->description,
+        ];
+    }
 
     /**
      * Get all root causes associated with this solution.

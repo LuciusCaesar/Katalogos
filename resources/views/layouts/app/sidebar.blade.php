@@ -12,6 +12,9 @@
 
             <flux:sidebar.nav>
                 <flux:sidebar.group :heading="__('Strategy')" class="grid">
+                    <flux:sidebar.item icon="magnifying-glass" :href="route('search')" :current="request()->routeIs('search')" wire:navigate>
+                        {{ __('Search') }}
+                    </flux:sidebar.item>
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
@@ -78,13 +81,24 @@
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
 
-        <!-- Mobile User Menu -->
-        <flux:header class="lg:hidden">
+        <!-- Global Search + User Menu -->
+        <flux:header>
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
+
+            <form action="{{ route('search') }}" method="GET" role="search" class="w-full max-w-sm">
+                <flux:input
+                    type="search"
+                    name="q"
+                    :value="request('q')"
+                    icon="magnifying-glass"
+                    :placeholder="__('Search…')"
+                    aria-label="{{ __('Search') }}"
+                />
+            </form>
 
             <flux:spacer />
 
-            <flux:dropdown position="top" align="end">
+            <flux:dropdown position="top" align="end" class="lg:hidden">
                 <flux:profile
                     :initials="auth()->user()->initials()"
                     icon-trailing="chevron-down"

@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use App\Services\GovernanceScoreService;
-use App\Traits\Filterable;
-use App\Traits\Searchable;
 use Database\Factories\BusinessAssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Laravel\Scout\Searchable;
 
 /**
  * @property int $id
@@ -31,7 +30,7 @@ use Illuminate\Support\Collection;
 class BusinessAsset extends Model
 {
     /** @use HasFactory<BusinessAssetFactory> */
-    use Filterable, HasFactory, Searchable;
+    use HasFactory, Searchable;
 
     protected $fillable = [
         'name',
@@ -49,13 +48,16 @@ class BusinessAsset extends Model
     ];
 
     /**
-     * Get fields that should be searched for Business Assets.
+     * Get the indexable data array for the model.
      *
-     * @return array<string>
+     * @return array<string, string|null>
      */
-    public function getSearchableFields(): array
+    public function toSearchableArray(): array
     {
-        return ['name', 'definition'];
+        return [
+            'name' => $this->name,
+            'definition' => $this->definition,
+        ];
     }
 
     /**

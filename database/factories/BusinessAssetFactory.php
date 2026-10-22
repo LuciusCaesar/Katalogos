@@ -20,7 +20,7 @@ class BusinessAssetFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->word(),
+            'name' => $this->faker->words(3, true),
             'definition' => $this->faker->sentence(),
             'data_initiative_id' => DataInitiative::factory(),
             'domain_id' => Domain::factory(),

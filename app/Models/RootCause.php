@@ -7,11 +7,12 @@ use Database\Factories\RootCauseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Laravel\Scout\Searchable;
 
 class RootCause extends Model
 {
     /** @use HasFactory<RootCauseFactory> */
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $fillable = [
         'name',
@@ -22,6 +23,19 @@ class RootCause extends Model
     protected $casts = [
         'dimension' => RootCauseDimension::class,
     ];
+
+    /**
+     * Get the indexable data array for the model.
+     *
+     * @return array<string, string|null>
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'description' => $this->description,
+        ];
+    }
 
     /**
      * Get all data issues associated with this root cause.

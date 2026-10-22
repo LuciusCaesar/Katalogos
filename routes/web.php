@@ -10,6 +10,7 @@ use App\Http\Controllers\DataQualityCheckController;
 use App\Http\Controllers\DataQualityCheckScoreController;
 use App\Http\Controllers\DataSourceController;
 use App\Http\Controllers\DomainController;
+use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\KPIController;
 use App\Http\Controllers\RegulationController;
 use App\Http\Controllers\RootCauseController;
@@ -20,6 +21,7 @@ Route::view('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::get('search', GlobalSearchController::class)->name('search');
     Route::get('business-assets', [BusinessAssetController::class, 'index'])->name('web.business-assets.index');
     Route::get('business-assets/create', [BusinessAssetController::class, 'create'])->name('web.business-assets.create');
     Route::post('business-assets', [BusinessAssetController::class, 'store'])->name('web.business-assets.store');

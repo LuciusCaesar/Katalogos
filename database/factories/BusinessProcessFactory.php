@@ -18,7 +18,7 @@ class BusinessProcessFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->word(),
+            'name' => $this->faker->unique()->words(3, true),
             'description' => $this->faker->paragraph(),
         ];
     }
