@@ -18,7 +18,7 @@
                     :class="view === 'blocks' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'"
                     class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors"
                 >
-                    {{ __('▦ Blocks (columns)') }}
+                    {{ __('▦ Blocks (star view)') }}
                 </button>
                 <button
                     type="button"
@@ -32,17 +32,16 @@
         </div>
 
         <p class="text-sm text-slate-500" x-text="view === 'blocks'
-            ? '{{ __('One block per type, stacked and reorderable elements. Links connect blocks with a counter; highlighting reveals which elements are related.') }}'
-            : '{{ __('Each element is a free, draggable node. Individual links with always-visible relationship labels.') }}'">
+            ? '{{ __('One floating block per entity type, arranged as a snowflake around the entry point at the center — new blocks appear next to the element they are extended from. Drag the background or scroll to move around, drag a block to reposition it.') }}'
+            : '{{ __('Each element is a free, draggable node arranged as a snowflake around the entry point, with always-visible relationship labels. Drag the background or scroll to move around.') }}'">
         </p>
 
         {{-- Legend --}}
-        <div class="flex items-center gap-4 text-xs text-slate-500 flex-wrap">
+        <div class="flex items-start gap-x-4 gap-y-1 text-xs text-slate-500 flex-wrap">
             <template x-for="rel in relsList" :key="rel.key">
                 <span class="flex items-center gap-1.5">
                     <span class="inline-block w-6 h-0.5 rounded" :style="`background: ${rel.color}`"></span>
                     <span x-text="rel.label"></span>
-                    <span x-show="rel.hiddenByDefault" class="text-amber-600 font-semibold">({{ __('hidden by default ⚡') }})</span>
                 </span>
             </template>
             <button x-show="sel" type="button" @click="clearSelection()" class="text-xs text-slate-500 hover:text-slate-800 underline">
@@ -53,34 +52,39 @@
         {{-- Diagram card --}}
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="flex">
-                {{-- Diagram area --}}
-                <div class="flex-1 min-w-0 overflow-x-auto">
+                {{-- Diagram area: fixed-height viewport, pan by dragging the background or scrolling --}}
+                <div class="flex-1 min-w-0 h-[70vh] relative overflow-hidden">
                     <div
                         x-ref="area"
-                        class="relative"
-                        :style="`width: ${canvasSize.width}px; height: ${canvasSize.height}px;`"
-                        @click="if ($event.target === $event.currentTarget) clearSelection()"
+                        class="absolute inset-0 overflow-hidden cursor-grab active:cursor-grabbing"
+                        @pointerdown="startPan($event)"
+                        @pointermove="moveDrag($event)"
+                        @pointerup="endDrag()"
+                        @pointercancel="endDrag()"
+                        @wheel.prevent="panBy($event.deltaX, $event.deltaY)"
+                        @click="backgroundClick($event)"
                     >
-                        {{-- Block backgrounds + headers (blocks view) --}}
-                        <template x-if="view === 'blocks'">
-                            <div>
-                                <template x-for="type in colTypes" :key="'bg-' + type">
-                                    <div
-                                        class="absolute rounded-2xl border border-slate-200 bg-slate-50/70 pointer-events-none"
-                                        :style="`left: ${blocksGeo.blocks[type].x}px; top: ${blocksGeo.blocks[type].y}px; width: ${blocksGeo.blocks[type].w}px; height: ${blocksGeo.blocks[type].h}px;`"
-                                    ></div>
-                                </template>
-                                <template x-for="type in colTypes" :key="'hd-' + type">
-                                    <div
-                                        class="absolute z-20 text-[11px] font-bold uppercase tracking-wider flex items-center gap-2 pointer-events-none"
-                                        :style="`left: ${blocksGeo.blocks[type].x + 18}px; top: 22px; color: ${types[type].color};`"
-                                    >
-                                        <span x-text="types[type].plural + ' (' + order[type].length + ')'"></span>
-                                        <span x-show="type === 'dq'" class="text-slate-400 normal-case font-normal">— {{ __('click ⚡ or ✕ to retract') }}</span>
+                        <div class="absolute inset-0" :style="`transform: translate(${pan.x}px, ${pan.y}px);`" @click="backgroundClick($event)">
+                            <div class="relative" :style="`width: ${canvasSize.width}px; height: ${canvasSize.height}px;`">
+                                {{-- Floating type blocks (blocks view, snowflake layout) --}}
+                                <template x-if="view === 'blocks'">
+                                    <div>
+                                        <template x-for="type in visibleTypes" :key="'bg-' + type">
+                                            <div
+                                                class="absolute rounded-2xl border border-slate-200 bg-slate-50/70 cursor-grab active:cursor-grabbing"
+                                                :style="`left: ${renderBlockRect(type).x}px; top: ${renderBlockRect(type).y}px; width: ${renderBlockRect(type).w}px; height: ${renderBlockRect(type).h}px;`"
+                                                @pointerdown="startBlockDrag($event, type)"
+                                            >
+                                                <div
+                                                    class="absolute text-[11px] font-bold uppercase tracking-wider flex items-center gap-2 pointer-events-none"
+                                                    :style="`left: 18px; top: 12px; color: ${types[type].color};`"
+                                                >
+                                                    <span x-text="types[type].plural + ' (' + visibleIdsOf(type).length + ')'"></span>
+                                                </div>
+                                            </div>
+                                        </template>
                                     </div>
                                 </template>
-                            </div>
-                        </template>
 
                         {{-- Edges (SVG layer under the cards) --}}
                         {{-- NOTE: <template x-for> cannot be used inside <svg> (SVG-namespace --}}
@@ -100,6 +104,30 @@
                                 <marker id="m-applies" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
                                     <path d="M0,0 L10,5 L0,10 z" fill="#f43f5e"></path>
                                 </marker>
+                                <marker id="m-used-by" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="#65a30d"></path>
+                                </marker>
+                                <marker id="m-affects" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"></path>
+                                </marker>
+                                <marker id="m-in-domain" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="#0891b2"></path>
+                                </marker>
+                                <marker id="m-in-initiative" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="#c026d3"></path>
+                                </marker>
+                                <marker id="m-contributes-to" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="#0284c7"></path>
+                                </marker>
+                                <marker id="m-violates" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="#ea580c"></path>
+                                </marker>
+                                <marker id="m-caused-by" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="#be123c"></path>
+                                </marker>
+                                <marker id="m-solved-by" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="#0d9488"></path>
+                                </marker>
                                 <marker id="m-dim" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
                                     <path d="M0,0 L10,5 L0,10 z" fill="#cbd5e1"></path>
                                 </marker>
@@ -108,7 +136,7 @@
                         </svg>
 
                         {{-- Cards --}}
-                        <template x-for="id in visibleIds" :key="id">
+                        <template x-for="id in visibleNodeIds" :key="id">
                             <button
                                 type="button"
                                 :aria-pressed="sel === id"
@@ -133,19 +161,21 @@
                                     <span
                                         x-show="hiddenCount(id) > 0"
                                         @pointerdown.stop
-                                        @click.stop="toggleDq()"
-                                        :title="dqDeployed ? '{{ __('Retract deployed relations') }}' : hiddenCount(id) + '{{ __(' hidden relation(s) — click to deploy') }}'"
-                                        class="ml-auto text-[10px] font-bold rounded-full px-1.5 py-0.5 border cursor-pointer select-none transition-colors"
-                                        :class="dqDeployed
+                                        @click.stop="toggleExpand(id)"
+                                        :title="hiddenCount(id) + '{{ __(' more relation(s) — click to extend from this element') }}'"
+                                        class="ml-auto text-[10px] font-bold rounded-full px-1.5 py-0.5 border cursor-pointer select-none transition-colors shrink-0"
+                                        :class="expanded.includes(id)
                                             ? 'bg-amber-200 border-amber-400 text-amber-900'
                                             : (sel === id
                                                 ? 'bg-amber-100 border-amber-400 text-amber-800 animate-pulse'
                                                 : 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100')"
-                                        x-text="dqDeployed ? '–' : '⚡' + hiddenCount(id)"
+                                        x-text="expanded.includes(id) ? '–' : '⚡' + hiddenCount(id)"
                                     ></span>
                                 </div>
                             </button>
                         </template>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -155,15 +185,22 @@
                         <div class="text-sm text-slate-400">
                             <p class="font-semibold text-slate-500 mb-1">{{ __('Detail panel') }}</p>
                             <p>{{ __('Click an element of the diagram to see the detail of its relationships.') }}</p>
-                            <div x-show="hiddenCarrierLabels.length > 0" class="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-2.5">
-                                <div class="text-xs font-semibold text-amber-800">⚡ {{ __('Hidden relations') }}</div>
+                            <div x-show="expandableLabels.length > 0" class="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-2.5">
+                                <div class="text-xs font-semibold text-amber-800">⚡ {{ __('Extend the graph') }}</div>
                                 <p class="text-[11px] text-amber-700 mt-0.5">
-                                    <span x-text="hiddenCarrierLabels.join(', ')"></span>
-                                    {{ __('have relations to non-deployed Data Quality elements.') }}
+                                    {{ __('Elements with more relations to reveal:') }}
                                 </p>
-                                <button type="button" @click="dqDeployed = true" class="mt-1.5 text-[11px] font-semibold px-2 py-1 rounded-md bg-amber-500 text-white hover:bg-amber-600">
-                                    {{ __('Deploy ⚡') }}
-                                </button>
+                                <div class="mt-1.5 flex flex-wrap gap-1.5">
+                                    <template x-for="item in expandableLabels" :key="item.id">
+                                        <button
+                                            type="button"
+                                            @click="toggleExpand(item.id)"
+                                            class="text-[11px] font-semibold px-2 py-1 rounded-md bg-amber-500 text-white hover:bg-amber-600"
+                                        >
+                                            <span x-text="item.label"></span> <span x-text="'(+' + item.count + ')'"></span>
+                                        </button>
+                                    </template>
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -200,23 +237,23 @@
                                         <div class="flex items-center gap-1.5 text-xs flex-wrap">
                                             <span class="text-slate-400 font-bold" x-text="edge.isOut ? '→' : '←'"></span>
                                             <span class="italic text-slate-500" x-text="edge.label"></span>
-                                            <span x-show="edge.hidden && !dqDeployed" class="text-[10px] font-bold text-amber-600">⚡ {{ __('hidden') }}</span>
+                                            <span x-show="!edge.visible" class="text-[10px] font-bold text-amber-600">⚡ {{ __('not yet shown') }}</span>
                                         </div>
                                         <div class="flex items-center gap-1.5 mt-1 flex-wrap">
                                             <button
                                                 type="button"
-                                                @click="select(edge.otherId)"
+                                                @click="selectRelated(edge)"
                                                 class="text-xs font-semibold px-2 py-0.5 rounded-md border hover:shadow-sm"
                                                 :class="`${types[nodeById[edge.otherId].type].border} ${types[nodeById[edge.otherId].type].bg} ${types[nodeById[edge.otherId].type].text}`"
                                                 x-text="nodeById[edge.otherId].label"
                                             ></button>
                                             <button
-                                                x-show="edge.hidden && !dqDeployed"
+                                                x-show="!edge.visible"
                                                 type="button"
-                                                @click="dqDeployed = true"
+                                                @click="toggleExpand(selectedNode.id)"
                                                 class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-amber-500 text-white hover:bg-amber-600"
                                             >
-                                                {{ __('Deploy ⚡') }}
+                                                {{ __('Extend ⚡') }}
                                             </button>
                                         </div>
                                     </div>
@@ -232,7 +269,7 @@
         </div>
 
         <p class="text-xs text-slate-400">
-            {{ __('Tips: click an element to highlight it with its direct neighbors; drag it to reorder (blocks view) or move it freely (graph view). The ⚡ badge signals hidden relations — click it to deploy the Data Quality block.') }}
+            {{ __('Tips: initially only the direct relationships of the entry point are shown. The ⚡ badge counts the hidden relations of an element — click it to extend the graph from there (new elements appear next to it). Click an element to highlight it with its direct neighbors. Drag the background or scroll with the mouse to move around; in the blocks view, drag a block to reposition it and an element to reorder it within its block; in the graph view, drag elements freely.') }}
         </p>
     </div>
 </x-layouts::app>

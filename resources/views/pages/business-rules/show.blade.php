@@ -17,6 +17,12 @@
                 @endif
             </div>
             <div class="flex space-x-2">
+                <a
+                    href="{{ route('web.impact-diagram.show', ['entityType' => 'business-rule', 'entity' => $businessRule]) }}"
+                    class="inline-flex items-center px-4 py-2 bg-indigo-600 dark:bg-indigo-500 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-900 uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:bg-indigo-700 dark:focus:bg-indigo-600 active:bg-indigo-800 dark:active:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition ease-in-out duration-150"
+                >
+                    {{ __('View impact diagram') }}
+                </a>
                 <a 
                     href="{{ route('web.business-rules.edit', $businessRule) }}"
                     class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"

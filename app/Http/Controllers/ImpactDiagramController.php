@@ -19,7 +19,7 @@ class ImpactDiagramController extends Controller
 
         return view('pages.impact-diagram.index', [
             'graph' => Js::from($builder->build($root)),
-            'rootLabel' => (string) $root->getAttribute('name'),
+            'rootLabel' => $builder->entityLabel($root),
         ]);
     }
 }
