@@ -235,6 +235,25 @@ class BusinessAsset extends Model
     }
 
     /**
+     * Get all business events this business asset is subject of.
+     *
+     * The pivot carries a nullable relation_type column reserved for the
+     * future "subject of" / "context of" distinction; this undifferentiated
+     * relation covers every pivot row.
+     *
+     * @return BelongsToMany<BusinessEvent, $this>
+     */
+    public function businessEvents(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            BusinessEvent::class,
+            'business_asset_business_event',
+            'business_asset_id',
+            'business_event_id'
+        );
+    }
+
+    /**
      * Get all regulations associated with this business asset.
      *
      * @return BelongsToMany<Regulation, $this>

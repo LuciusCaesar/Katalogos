@@ -53,4 +53,19 @@ class BusinessProcess extends Model
             'business_asset_id'
         );
     }
+
+    /**
+     * Get all business events occurring in this business process.
+     *
+     * @return BelongsToMany<BusinessEvent, $this>
+     */
+    public function businessEvents(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            BusinessEvent::class,
+            'business_event_business_process',
+            'business_process_id',
+            'business_event_id'
+        );
+    }
 }

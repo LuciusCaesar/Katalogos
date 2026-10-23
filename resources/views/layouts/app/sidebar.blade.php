@@ -63,6 +63,9 @@
                     <flux:sidebar.item icon="cog" :href="route('web.business-processes.index')" :current="request()->routeIs('web.business-processes.*')" wire:navigate>
                         {{ __('Business Processes') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="bolt" :href="route('web.business-events.index')" :current="request()->routeIs('web.business-events.*')" wire:navigate>
+                        {{ __('Business Events') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

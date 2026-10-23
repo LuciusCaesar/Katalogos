@@ -128,6 +128,12 @@
                                 <marker id="m-solved-by" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
                                     <path d="M0,0 L10,5 L0,10 z" fill="#0d9488"></path>
                                 </marker>
+                                <marker id="m-subject-of" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="#db2777"></path>
+                                </marker>
+                                <marker id="m-occurs-in" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="#f472b6"></path>
+                                </marker>
                                 <marker id="m-dim" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
                                     <path d="M0,0 L10,5 L0,10 z" fill="#cbd5e1"></path>
                                 </marker>

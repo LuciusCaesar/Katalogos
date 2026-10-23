@@ -26,7 +26,7 @@
             <flux:card class="p-8 text-center">
                 <flux:icon icon="magnifying-glass" variant="outline" class="mx-auto size-10 text-gray-400 dark:text-gray-500" />
                 <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                    {{ __('Start typing above to search across business assets, data issues, root causes, solutions, data sources and business processes.') }}
+                    {{ __('Start typing above to search across business assets, business events, data issues, root causes, solutions, data sources and business processes.') }}
                 </p>
             </flux:card>
         @elseif (count($groups) === 0)

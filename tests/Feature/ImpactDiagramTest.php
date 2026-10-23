@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\BusinessAsset;
+use App\Models\BusinessEvent;
 use App\Models\BusinessObjective;
 use App\Models\BusinessProcess;
 use App\Models\BusinessRule;
@@ -107,6 +108,7 @@ function impactDiagramScenario(): array
     $solution = Solution::factory()->create(['name' => 'Automated Reconciliation']);
     $process = BusinessProcess::factory()->create(['name' => 'Order Fulfilment Flow']);
     $objective = BusinessObjective::factory()->create(['name' => 'Improve Customer Trust']);
+    $event = BusinessEvent::factory()->create(['name' => 'Customer Registration']);
 
     $asset->businessRules()->attach($rule->id);
     $asset->dataSources()->attach($source->id);
@@ -117,6 +119,8 @@ function impactDiagramScenario(): array
     $rootCause->solutions()->attach($solution->id);
     $asset->businessProcesses()->attach($process->id);
     $asset->dataInitiative->businessObjectives()->attach($objective->id);
+    $event->businessAssets()->attach($asset->id);
+    $event->businessProcesses()->attach($process->id);
 
     return [
         'asset' => $asset,
@@ -129,6 +133,7 @@ function impactDiagramScenario(): array
         'solution' => $solution,
         'process' => $process,
         'objective' => $objective,
+        'event' => $event,
         'domain' => $asset->domain,
         'initiative' => $asset->dataInitiative,
     ];
@@ -192,6 +197,7 @@ it('accepts every supported entity type as the diagram entry point', function ()
         'root-cause' => ['rootcause', $scenario['rootCause']->id],
         'solution' => ['solution', $scenario['solution']->id],
         'business-process' => ['process', $scenario['process']->id],
+        'business-event' => ['event', $scenario['event']->id],
     ];
 
     foreach ($entryPoints as $slug => [$typeKey, $id]) {
@@ -329,6 +335,42 @@ it('covers the execution and quality chains: process, issue, root cause and solu
     expect(impactDiagramEdge($payload, "issue:{$issue->id}", "rule:{$rule->id}", 'violates'))->not->toBeNull();
     expect(impactDiagramEdge($payload, "issue:{$issue->id}", "rootcause:{$rootCause->id}", 'caused-by'))->not->toBeNull();
     expect(impactDiagramEdge($payload, "rootcause:{$rootCause->id}", "solution:{$solution->id}", 'solved-by'))->not->toBeNull();
+});
+
+it('covers business events related to assets and processes', function () {
+    [
+        'asset' => $asset,
+        'process' => $process,
+        'event' => $event,
+    ] = impactDiagramScenario();
+
+    $response = $this->actingAs($this->user)
+        ->get(impactDiagramUrl('business-event', $event->id));
+
+    $response->assertStatus(200)
+        ->assertSee('Customer Registration');
+
+    $payload = impactDiagramPayload($response);
+
+    expect($payload['rootId'])->toBe("event:{$event->id}");
+
+    $eventNode = impactDiagramNode($payload, "event:{$event->id}");
+    expect($eventNode)->not()->toBeNull()
+        ->and($eventNode['type'])->toBe('event')
+        ->and($eventNode['depth'])->toBe(0);
+
+    expect(impactDiagramNode($payload, "asset:{$asset->id}"))->not()->toBeNull()
+        ->and(impactDiagramNode($payload, "asset:{$asset->id}")['depth'])->toBe(1)
+        ->and(impactDiagramNode($payload, "process:{$process->id}"))->not()->toBeNull()
+        ->and(impactDiagramNode($payload, "process:{$process->id}")['depth'])->toBe(1);
+
+    $subjectEdge = impactDiagramEdge($payload, "asset:{$asset->id}", "event:{$event->id}", 'subject-of');
+    expect($subjectEdge)->not()->toBeNull()
+        ->and($subjectEdge['label'])->toBe('is subject of');
+
+    $occursEdge = impactDiagramEdge($payload, "event:{$event->id}", "process:{$process->id}", 'occurs-in');
+    expect($occursEdge)->not()->toBeNull()
+        ->and($occursEdge['label'])->toBe('occurs in');
 });
 
 it('extends the connected component transitively through shared sources', function () {

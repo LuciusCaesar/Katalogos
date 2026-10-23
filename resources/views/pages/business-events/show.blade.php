@@ -1,0 +1,118 @@
+<x-layouts::app :title="__('Business Event Details')">
+    <div class="space-y-6">
+        <!-- Header -->
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {{ __('Business Event Details') }}
+            </h1>
+            <div class="flex items-center space-x-4">
+                <a
+                    href="{{ route('web.impact-diagram.show', ['entityType' => 'business-event', 'entity' => $businessEvent]) }}"
+                    class="inline-flex items-center px-4 py-2 bg-indigo-600 dark:bg-indigo-500 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-900 uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:bg-indigo-700 dark:focus:bg-indigo-600 active:bg-indigo-800 dark:active:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition ease-in-out duration-150"
+                >
+                    {{ __('View impact diagram') }}
+                </a>
+                <a
+                    href="{{ route('web.business-events.edit', $businessEvent) }}"
+                    class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-900 uppercase tracking-widest hover:bg-blue-700 dark:hover:bg-blue-600 focus:bg-blue-700 dark:focus:bg-blue-600 active:bg-blue-800 dark:active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition ease-in-out duration-150"
+                >
+                    {{ __('Edit') }}
+                </a>
+                <form action="{{ route('web.business-events.destroy', $businessEvent) }}" method="POST" onsubmit="return confirm('{{ __('Are you sure you want to delete this business event?') }}');">
+                    @csrf
+                    @method('DELETE')
+                    <button
+                        type="submit"
+                        class="inline-flex items-center px-4 py-2 bg-red-600 dark:bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-900 uppercase tracking-widest hover:bg-red-700 dark:hover:bg-red-600 focus:bg-red-700 dark:focus:bg-red-600 active:bg-red-800 dark:active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition ease-in-out duration-150"
+                    >
+                        {{ __('Delete') }}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        @if (session('success'))
+            <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-md p-4">
+                <p class="text-green-800 dark:text-green-200 text-sm">{{ session('success') }}</p>
+            </div>
+        @endif
+
+        <!-- Details Card -->
+        <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">{{ $businessEvent->name }}</h2>
+
+            <div class="grid grid-cols-1 gap-6">
+                <!-- Name -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('Name') }}</h3>
+                    <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $businessEvent->name }}</p>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('Description') }}</h3>
+                    <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $businessEvent->description ?? '-' }}</p>
+                </div>
+
+                <!-- Business Assets -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('Business Assets') }}</h3>
+                    @if ($businessEvent->businessAssets->isEmpty())
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('No business assets associated.') }}</p>
+                    @else
+                        <div class="mt-2 bg-gray-50 dark:bg-zinc-700 rounded border border-gray-200 dark:border-zinc-600 p-4">
+                            <ul class="space-y-2">
+                                @foreach ($businessEvent->businessAssets as $businessAsset)
+                                    <li class="text-sm">
+                                        <a href="{{ route('web.business-assets.show', $businessAsset) }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                                            {{ $businessAsset->name }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Business Processes -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('Business Processes') }}</h3>
+                    @if ($businessEvent->businessProcesses->isEmpty())
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('No business processes associated.') }}</p>
+                    @else
+                        <div class="mt-2 bg-gray-50 dark:bg-zinc-700 rounded border border-gray-200 dark:border-zinc-600 p-4">
+                            <ul class="space-y-2">
+                                @foreach ($businessEvent->businessProcesses as $businessProcess)
+                                    <li class="text-sm">
+                                        <a href="{{ route('web.business-processes.show', $businessProcess) }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                                            {{ $businessProcess->name }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Meta -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('Created At') }}</h3>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $businessEvent->created_at->format('M d, Y H:i') }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('Updated At') }}</h3>
+                        <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $businessEvent->updated_at->format('M d, Y H:i') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back Link -->
+        <div>
+            <a href="{{ route('web.business-events.index') }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                {{ __('Back to Business Events') }}
+            </a>
+        </div>
+    </div>
+</x-layouts::app>

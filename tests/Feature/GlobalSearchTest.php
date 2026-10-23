@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\BusinessAsset;
+use App\Models\BusinessEvent;
 use App\Models\BusinessProcess;
 use App\Models\DataIssue;
 use App\Models\DataSource;
@@ -121,6 +122,20 @@ it('finds a business process matching the query', function () {
         ->assertSee('Order Fulfilment Flow')
         ->assertSee(route('web.business-processes.show', $businessProcess))
         ->assertDontSee($nonMatchingProcess->name);
+});
+
+it('finds a business event matching the query', function () {
+    $businessEvent = BusinessEvent::factory()->create(['name' => 'Customer Registration']);
+    $nonMatchingEvent = BusinessEvent::factory()->create();
+
+    $response = $this->actingAs($this->user)
+        ->get(route('search', ['q' => 'Customer Registration']));
+
+    $response->assertStatus(200)
+        ->assertSee(__('Business Events'))
+        ->assertSee('Customer Registration')
+        ->assertSee(route('web.business-events.show', $businessEvent))
+        ->assertDontSee($nonMatchingEvent->name);
 });
 
 it('finds a business asset by the name of its assigned data steward', function () {
@@ -247,7 +262,7 @@ it('ignores LIKE wildcards in the query', function () {
             ->assertStatus(200)
             ->getContent();
 
-        expect($content)->toContain(__('Start typing above to search across business assets, data issues, root causes, solutions, data sources and business processes.'));
+        expect($content)->toContain(__('Start typing above to search across business assets, business events, data issues, root causes, solutions, data sources and business processes.'));
 
         foreach ($assets as $asset) {
             expect($content)->not->toContain($asset->name);

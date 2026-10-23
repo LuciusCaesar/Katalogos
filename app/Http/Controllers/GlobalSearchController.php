@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BusinessAsset;
+use App\Models\BusinessEvent;
 use App\Models\BusinessProcess;
 use App\Models\DataIssue;
 use App\Models\DataSource;
@@ -69,6 +70,11 @@ class GlobalSearchController extends Controller
                 'title' => 'Business Processes',
                 'routeName' => 'web.business-processes.show',
                 'items' => BusinessProcess::search($query)->take(5)->get()->all(),
+            ],
+            [
+                'title' => 'Business Events',
+                'routeName' => 'web.business-events.show',
+                'items' => BusinessEvent::search($query)->take(5)->get()->all(),
             ],
         ];
 

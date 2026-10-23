@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\BusinessAssetController;
+use App\Http\Controllers\Api\BusinessEventController;
 use App\Http\Controllers\Api\BusinessObjectiveController;
 use App\Http\Controllers\Api\BusinessProcessController;
 use App\Http\Controllers\Api\BusinessRuleController;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::apiResource('business-objectives', BusinessObjectiveController::class);
     Route::apiResource('business-processes', BusinessProcessController::class);
+    Route::apiResource('business-events', BusinessEventController::class);
     Route::apiResource('kpis', KPIController::class);
     Route::apiResource('regulations', RegulationController::class);
     Route::apiResource('business-rules', BusinessRuleController::class);

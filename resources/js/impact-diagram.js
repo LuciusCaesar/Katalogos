@@ -39,6 +39,7 @@ const TYPES = {
     rootcause: { name: 'Root Cause', plural: 'Root Causes', color: '#ea580c', border: 'border-orange-300', dot: 'bg-orange-500', text: 'text-orange-900', bg: 'bg-orange-50' },
     solution: { name: 'Solution', plural: 'Solutions', color: '#0d9488', border: 'border-teal-300', dot: 'bg-teal-500', text: 'text-teal-900', bg: 'bg-teal-50' },
     process: { name: 'Business Process', plural: 'Business Processes', color: '#65a30d', border: 'border-lime-300', dot: 'bg-lime-500', text: 'text-lime-900', bg: 'bg-lime-50' },
+    event: { name: 'Business Event', plural: 'Business Events', color: '#db2777', border: 'border-pink-300', dot: 'bg-pink-500', text: 'text-pink-900', bg: 'bg-pink-50' },
 };
 
 const RELS = {
@@ -54,12 +55,14 @@ const RELS = {
     violates: { key: 'violates', color: '#ea580c', marker: 'm-violates', label: 'violates' },
     'caused-by': { key: 'caused-by', color: '#be123c', marker: 'm-caused-by', label: 'is caused by' },
     'solved-by': { key: 'solved-by', color: '#0d9488', marker: 'm-solved-by', label: 'is solved by' },
+    'subject-of': { key: 'subject-of', color: '#db2777', marker: 'm-subject-of', label: 'is subject of' },
+    'occurs-in': { key: 'occurs-in', color: '#f472b6', marker: 'm-occurs-in', label: 'occurs in' },
 };
 
 /**
  * Stable ordering of the types (angular order inside the tree sectors).
  */
-const BLOCK_ORDER = ['process', 'objective', 'initiative', 'domain', 'asset', 'source', 'dq', 'rule', 'issue', 'rootcause', 'solution'];
+const BLOCK_ORDER = ['process', 'event', 'objective', 'initiative', 'domain', 'asset', 'source', 'dq', 'rule', 'issue', 'rootcause', 'solution'];
 
 // Geometry constants (same card metrics as the prototype).
 const CW = 190, H = 52, VGAP = 18, PAD = 14, GW = 170;

@@ -3,6 +3,7 @@
 namespace App\Services\ImpactDiagram;
 
 use App\Models\BusinessAsset;
+use App\Models\BusinessEvent;
 use App\Models\BusinessObjective;
 use App\Models\BusinessProcess;
 use App\Models\BusinessRule;
@@ -49,6 +50,7 @@ final class ImpactDiagramBuilder
         'root-cause' => ['key' => 'rootcause', 'model' => RootCause::class],
         'solution' => ['key' => 'solution', 'model' => Solution::class],
         'business-process' => ['key' => 'process', 'model' => BusinessProcess::class],
+        'business-event' => ['key' => 'event', 'model' => BusinessEvent::class],
     ];
 
     /**
@@ -64,6 +66,7 @@ final class ImpactDiagramBuilder
             ['method' => 'businessRules', 'rel' => 'conform', 'label' => 'must conform to', 'from' => 'asset', 'to' => 'rule'],
             ['method' => 'dataSources', 'rel' => 'contained', 'label' => 'is contained', 'from' => 'asset', 'to' => 'source'],
             ['method' => 'businessProcesses', 'rel' => 'used-by', 'label' => 'uses', 'from' => 'process', 'to' => 'asset'],
+            ['method' => 'businessEvents', 'rel' => 'subject-of', 'label' => 'is subject of', 'from' => 'asset', 'to' => 'event'],
             ['method' => 'dataIssues', 'rel' => 'affects', 'label' => 'affects', 'from' => 'issue', 'to' => 'asset'],
             ['method' => 'domain', 'rel' => 'in-domain', 'label' => 'belongs to', 'from' => 'asset', 'to' => 'domain'],
             ['method' => 'dataInitiative', 'rel' => 'in-initiative', 'label' => 'is part of', 'from' => 'asset', 'to' => 'initiative'],
@@ -105,6 +108,11 @@ final class ImpactDiagramBuilder
         ],
         'process' => [
             ['method' => 'businessAssets', 'rel' => 'used-by', 'label' => 'uses', 'from' => 'process', 'to' => 'asset'],
+            ['method' => 'businessEvents', 'rel' => 'occurs-in', 'label' => 'occurs in', 'from' => 'event', 'to' => 'process'],
+        ],
+        'event' => [
+            ['method' => 'businessAssets', 'rel' => 'subject-of', 'label' => 'is subject of', 'from' => 'asset', 'to' => 'event'],
+            ['method' => 'businessProcesses', 'rel' => 'occurs-in', 'label' => 'occurs in', 'from' => 'event', 'to' => 'process'],
         ],
     ];
 
@@ -125,6 +133,7 @@ final class ImpactDiagramBuilder
         'rootcause' => 'web.root-causes.show',
         'solution' => 'web.solutions.show',
         'process' => 'web.business-processes.show',
+        'event' => 'web.business-events.show',
     ];
 
     /**
@@ -133,7 +142,7 @@ final class ImpactDiagramBuilder
      *
      * @var array<int, string>
      */
-    private const TYPE_ORDER = ['process', 'objective', 'initiative', 'domain', 'asset', 'source', 'dq', 'rule', 'issue', 'rootcause', 'solution'];
+    private const TYPE_ORDER = ['process', 'event', 'objective', 'initiative', 'domain', 'asset', 'source', 'dq', 'rule', 'issue', 'rootcause', 'solution'];
 
     /**
      * Resolve an entity type slug and id to the root model.
@@ -328,9 +337,9 @@ final class ImpactDiagramBuilder
         }
 
         /**
-         * BusinessObjective|Domain|DataIssue|DataSource|DataQualityCheck|BusinessProcess
+         * BusinessObjective|Domain|DataIssue|DataSource|DataQualityCheck|BusinessProcess|BusinessEvent
          *
-         * @var BusinessObjective|Domain|DataIssue|DataSource|DataQualityCheck|BusinessProcess $model
+         * @var BusinessObjective|Domain|DataIssue|DataSource|DataQualityCheck|BusinessProcess|BusinessEvent $model
          */
         return ['Description' => (string) ($model->description ?? '')];
     }

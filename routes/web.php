@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BusinessAssetController;
+use App\Http\Controllers\BusinessEventController;
 use App\Http\Controllers\BusinessObjectiveController;
 use App\Http\Controllers\BusinessProcessController;
 use App\Http\Controllers\BusinessRuleController;
@@ -72,6 +73,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('business-processes/{businessProcess}/edit', [BusinessProcessController::class, 'edit'])->name('web.business-processes.edit');
     Route::put('business-processes/{businessProcess}', [BusinessProcessController::class, 'update'])->name('web.business-processes.update');
     Route::delete('business-processes/{businessProcess}', [BusinessProcessController::class, 'destroy'])->name('web.business-processes.destroy');
+
+    Route::get('business-events', [BusinessEventController::class, 'index'])->name('web.business-events.index');
+    Route::get('business-events/create', [BusinessEventController::class, 'create'])->name('web.business-events.create');
+    Route::post('business-events', [BusinessEventController::class, 'store'])->name('web.business-events.store');
+    Route::get('business-events/{businessEvent}', [BusinessEventController::class, 'show'])->name('web.business-events.show');
+    Route::get('business-events/{businessEvent}/edit', [BusinessEventController::class, 'edit'])->name('web.business-events.edit');
+    Route::put('business-events/{businessEvent}', [BusinessEventController::class, 'update'])->name('web.business-events.update');
+    Route::delete('business-events/{businessEvent}', [BusinessEventController::class, 'destroy'])->name('web.business-events.destroy');
 
     Route::get('regulations', [RegulationController::class, 'index'])->name('web.regulations.index');
     Route::get('regulations/create', [RegulationController::class, 'create'])->name('web.regulations.create');
