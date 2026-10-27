@@ -47,32 +47,32 @@
             </div>
         </div>
 
-        <!-- Governance Score Summary -->
+        <!-- Governance Score Summary (computed on read from the asset score log) -->
         <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{{ __('Governance Score') }}</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-gray-50 dark:bg-zinc-700 rounded-lg p-4 text-center">
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Current Average') }}</p>
-                    <p class="text-2xl font-bold @if($dataInitiative->average_governance_score >= 0.8) text-green-600 dark:text-green-400
-                            @elseif($dataInitiative->average_governance_score >= 0.5) text-yellow-600 dark:text-yellow-400
+                    <p class="text-2xl font-bold @if($governanceMetrics['average'] >= 0.8) text-green-600 dark:text-green-400
+                            @elseif($governanceMetrics['average'] >= 0.5) text-yellow-600 dark:text-yellow-400
                             @else text-red-600 dark:text-red-400 @endif">
-                        {{ $dataInitiative->average_governance_score !== null ? number_format($dataInitiative->average_governance_score * 100, 1) . '%' : '-' }}
+                        {{ $governanceMetrics['average'] !== null ? number_format($governanceMetrics['average'] * 100, 1) . '%' : '-' }}
+                    </p>
+                </div>
+                <div class="bg-gray-50 dark:bg-zinc-700 rounded-lg p-4 text-center">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Total Governance Points') }}</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        {{ number_format($governanceMetrics['total_points'], 1) }} / {{ number_format($governanceMetrics['max_possible_points'], 1) }}
                     </p>
                 </div>
                 <div class="bg-gray-50 dark:bg-zinc-700 rounded-lg p-4 text-center">
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Business Assets') }}</p>
                     <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        {{ $dataInitiative->businessAssets->count() }}
-                    </p>
-                </div>
-                <div class="bg-gray-50 dark:bg-zinc-700 rounded-lg p-4 text-center">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Score History Entries') }}</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        {{ $dataInitiative->governanceScoreHistory->count() }}
+                        {{ $governanceMetrics['scored_assets'] }} / {{ $governanceMetrics['total_assets'] }}
                     </p>
                 </div>
             </div>
-            @if($dataInitiative->governanceScoreHistory->isNotEmpty())
+            @if($governanceMetrics['scored_assets'] > 0)
                 <div class="mt-4">
                     <a href="{{ route('web.data-initiatives.governance-score.history', $dataInitiative) }}" 
                        class="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm">

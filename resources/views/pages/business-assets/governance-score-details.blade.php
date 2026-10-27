@@ -38,7 +38,7 @@
                         {{ number_format($businessAsset->governanceScore->score * 100, 1) }}%
                     </span>
                     <span class="text-lg text-gray-500 dark:text-gray-400">
-                        ({{ number_format($businessAsset->governanceScore->score, 2) }}/{{ $businessAsset->governanceScore->max_possible_score }})
+                        ({{ number_format($businessAsset->governanceScore->achieved_score, 1) }} / {{ number_format($businessAsset->governanceScore->max_possible_score, 1) }} pts)
                     </span>
                 </div>
                 <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
@@ -56,9 +56,7 @@
                 <div class="p-6">
                     <div class="space-y-3">
                         @php
-                            $criteria = App\Models\GovernanceCriterion::whereIn('key', array_keys($businessAsset->governanceScore->criteria_results ?? []))
-                                ->get()
-                                ->keyBy('key');
+                            $criteria = collect(App\Services\GovernanceCriteria::all())->keyBy('key');
                         @endphp
                         @foreach($businessAsset->governanceScore->criteria_results as $key => $met)
                             <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-zinc-700/50 rounded-lg">
@@ -74,11 +72,11 @@
                                     @endif
                                     <div>
                                         <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                            {{ $criteria[$key]?->name ?? $key }}
+                                            {{ $criteria[$key]['name'] ?? $key }}
                                         </p>
-                                        @if($criteria[$key]?->description)
+                                        @if($criteria[$key]['description'] ?? null)
                                             <p class="text-xs text-gray-500 dark:text-gray-400">
-                                                {{ $criteria[$key]->description }}
+                                                {{ $criteria[$key]['description'] }}
                                             </p>
                                         @endif
                                     </div>

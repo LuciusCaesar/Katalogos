@@ -3,9 +3,8 @@
 use App\Models\BusinessAsset;
 use App\Models\BusinessRule;
 use App\Models\DataInitiative;
-use App\Models\DataInitiativeGovernanceScoreHistory;
 use App\Models\User;
-use Database\Seeders\GovernanceCriterionSeeder;
+use App\Services\DataInitiativeGovernanceProjection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 
@@ -13,139 +12,178 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create();
-    $this->seed(GovernanceCriterionSeeder::class);
+    $this->projection = app(DataInitiativeGovernanceProjection::class);
 });
 
-it('calculates average governance score for data initiative', function () {
-    $initiative = DataInitiative::factory()->create();
+// A factory business asset has name + definition + domain + data initiative,
+// so its baseline score is 6.0 achieved points out of 14.5 possible (ratio 6/14.5).
 
-    // Create business assets with different scores
+it('computes the average ratio and total points of member assets', function () {
+    $initiative = DataInitiative::factory()->create();
     $asset1 = BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
-    $asset2 = BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
+    $rule = BusinessRule::factory()->create();
+    $asset1->businessRules()->attach($rule->id);
+    $asset1->calculateGovernanceScore(); // 8.0 points
+    $asset2 = BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]); // 6.0 points
 
-    // Force scores to known values
-    $asset1->calculateGovernanceScore();
-    $asset2->calculateGovernanceScore();
+    $metrics = $this->projection->metrics($initiative);
 
-    $initiative->refresh();
-
-    expect($initiative->average_governance_score)->not->toBeNull();
-    expect($initiative->average_governance_score)->toBeGreaterThanOrEqual(0);
-    expect($initiative->average_governance_score)->toBeLessThanOrEqual(1);
+    expect($metrics['scored_assets'])->toBe(2);
+    expect($metrics['total_assets'])->toBe(2);
+    expect($metrics['total_points'])->toEqualWithDelta(14.0, 1e-9);
+    expect($metrics['max_possible_points'])->toEqualWithDelta(29.0, 1e-9);
+    expect($metrics['average'])->toEqualWithDelta(((8.0 / 14.5) + (6.0 / 14.5)) / 2, 1e-9);
 });
 
-it('creates history entry when score changes', function () {
+it('returns null average and zero points for an empty initiative', function () {
+    $initiative = DataInitiative::factory()->create();
+
+    $metrics = $this->projection->metrics($initiative);
+
+    expect($metrics['average'])->toBeNull();
+    expect($metrics['total_points'])->toBe(0.0);
+    expect($metrics['scored_assets'])->toBe(0);
+    expect($metrics['total_assets'])->toBe(0);
+});
+
+it('ignores assets that do not belong to the initiative', function () {
+    $initiative = DataInitiative::factory()->create();
+    BusinessAsset::factory()->create(); // belongs to another initiative
+
+    $metrics = $this->projection->metrics($initiative);
+
+    expect($metrics['total_assets'])->toBe(0);
+    expect($metrics['average'])->toBeNull();
+});
+
+it('rebuilds the initiative timeline from the asset score log', function () {
     $initiative = DataInitiative::factory()->create();
     $asset = BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
 
-    // Initial calculation
+    $history = $this->projection->history($initiative);
+
+    expect($history)->toHaveCount(1);
+    expect($history[0]['scored_assets'])->toBe(1);
+    expect($history[0]['total_points'])->toEqualWithDelta(6.0, 1e-9);
+    expect($history[0]['average'])->toEqualWithDelta(6.0 / 14.5, 1e-9);
+    expect($history[0]['business_asset_id'])->toBe($asset->id);
+    expect($history[0]['event'])->toContain('Business Asset #'.$asset->id);
+    expect($history[0]['event'])->toContain('created');
+});
+
+it('emits a new timeline point only when the aggregate changes', function () {
+    $initiative = DataInitiative::factory()->create();
+    $asset = BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
+
+    // Recalculation without any change → no new score row → no new point
     $asset->calculateGovernanceScore();
+    expect($this->projection->history($initiative))->toHaveCount(1);
 
-    // Should have at least 1 history entry
-    expect($initiative->governanceScoreHistory()->count())->toBeGreaterThanOrEqual(1);
-});
-
-it('recalculates when business asset is linked', function () {
-    $initiative1 = DataInitiative::factory()->create();
-    $initiative2 = DataInitiative::factory()->create();
-    $asset = BusinessAsset::factory()->create(['data_initiative_id' => $initiative1->id]);
-
-    // Reset history
-    DataInitiativeGovernanceScoreHistory::query()->delete();
-
-    $initialHistoryCount = $initiative2->governanceScoreHistory()->count();
-
-    // Reassign asset from initiative1 to initiative2
-    // This tests both unlinking from old and linking to new
-    $asset->update(['data_initiative_id' => $initiative2->id]);
-
-    $initiative2->refresh();
-    expect($initiative2->governanceScoreHistory()->count())->toBeGreaterThan($initialHistoryCount);
-    expect($initiative2->governanceScoreHistory()->latest()->first()->event)
-        ->toContain('Business Asset #'.$asset->id);
-});
-
-it('recalculates when business asset governance score changes', function () {
-    $initiative = DataInitiative::factory()->create();
-    $asset = BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
-
-    $initialScore = $initiative->average_governance_score;
-    $initialHistoryCount = $initiative->governanceScoreHistory()->count();
-
-    // Trigger score change by attaching a business rule
+    // Actual change → new point, most recent first
     $rule = BusinessRule::factory()->create();
     $asset->businessRules()->attach($rule->id);
     $asset->calculateGovernanceScore(['action' => 'business_rule_attached']);
 
-    $initiative->refresh();
+    $history = $this->projection->history($initiative);
 
-    // The score should have changed (or at least we should have more history)
-    // Note: It may add 1 or more history entries depending on the flow
-    expect($initiative->governanceScoreHistory()->count())->toBeGreaterThanOrEqual($initialHistoryCount);
+    expect($history)->toHaveCount(2);
+    expect($history[0]['total_points'])->toEqualWithDelta(8.0, 1e-9);
+    expect($history[0]['event'])->toContain('business_rule_attached');
+    expect($history[1]['total_points'])->toEqualWithDelta(6.0, 1e-9);
 });
 
-it('handles empty data initiative gracefully', function () {
-    $initiative = DataInitiative::factory()->create();
-
-    // Empty initiative should have null or 0 score
-    expect($initiative->average_governance_score)->toBeNull();
-});
-
-it('recalculates both old and new initiative on reassignment', function () {
+it('tracks membership changes across initiatives in the timeline', function () {
     $initiative1 = DataInitiative::factory()->create();
     $initiative2 = DataInitiative::factory()->create();
     $asset = BusinessAsset::factory()->create(['data_initiative_id' => $initiative1->id]);
 
-    // Trigger initial calculation
-    $asset->calculateGovernanceScore();
-
-    $initialHistory1 = $initiative1->governanceScoreHistory()->count();
-    $initialHistory2 = $initiative2->governanceScoreHistory()->count();
-
-    // Reassign
+    // Reassigning the asset fires a new score row snapshotting the new initiative
     $asset->update(['data_initiative_id' => $initiative2->id]);
 
-    $initiative1->refresh();
-    $initiative2->refresh();
+    $history1 = $this->projection->history($initiative1);
+    $history2 = $this->projection->history($initiative2);
 
-    expect($initiative1->governanceScoreHistory()->count())->toBeGreaterThanOrEqual($initialHistory1 + 1);
-    expect($initiative2->governanceScoreHistory()->count())->toBeGreaterThanOrEqual($initialHistory2 + 1);
+    // initiative1: the asset joined, then left (aggregate back to empty)
+    expect($history1)->toHaveCount(2);
+    expect($history1[0]['scored_assets'])->toBe(0);
+    expect($history1[0]['average'])->toBeNull();
+    expect($history1[1]['scored_assets'])->toBe(1);
 
-    // Check the latest events contain the business asset id
-    $latest1 = $initiative1->governanceScoreHistory()->latest()->first();
-    $latest2 = $initiative2->governanceScoreHistory()->latest()->first();
-
-    expect($latest1->event)->toContain('Business Asset #'.$asset->id);
-    expect($latest2->event)->toContain('Business Asset #'.$asset->id);
+    // initiative2: a single point with the asset
+    expect($history2)->toHaveCount(1);
+    expect($history2[0]['scored_assets'])->toBe(1);
+    expect($history2[0]['total_points'])->toEqualWithDelta(6.0, 1e-9);
 });
 
-it('api returns average governance score', function () {
+it('averages across multiple assets and emits a point per membership change', function () {
+    $initiative = DataInitiative::factory()->create();
+    BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
+    BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
+
+    $history = $this->projection->history($initiative);
+
+    expect($history)->toHaveCount(2);
+    expect($history[0]['scored_assets'])->toBe(2);
+    expect($history[1]['scored_assets'])->toBe(1);
+    expect($history[0]['average'])->toEqualWithDelta(6.0 / 14.5, 1e-9);
+});
+
+it('is resilient to replayed requests duplicating a score calculation', function () {
     $initiative = DataInitiative::factory()->create();
     $asset = BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
 
-    // Trigger score calculation
-    $asset->calculateGovernanceScore();
-    $initiative->refresh();
+    // A real score change, then the same calculation replayed (double submission):
+    // the second run sees the same score as the latest row and appends nothing.
+    $rule = BusinessRule::factory()->create();
+    $asset->businessRules()->attach($rule->id);
+    $asset->calculateGovernanceScore(['action' => 'business_rule_attached']);
+    $asset->calculateGovernanceScore(['action' => 'business_rule_attached']);
 
+    expect($asset->governanceScores()->count())->toBe(2);
+    expect($this->projection->history($initiative))->toHaveCount(2);
+});
+
+it('api returns computed governance metrics', function () {
     Sanctum::actingAs($this->user);
+
+    $initiative = DataInitiative::factory()->create();
+    BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
 
     $response = $this->getJson("/api/v1/data-initiatives/{$initiative->id}");
 
-    $response->assertStatus(200)
-        ->assertJsonPath('data.average_governance_score', $initiative->average_governance_score);
+    $response->assertStatus(200);
+
+    $data = $response->json('data');
+    expect($data['average_governance_score'])->toEqualWithDelta(6.0 / 14.5, 1e-9);
+    expect($data['total_governance_score'])->toEqualWithDelta(6.0, 1e-9);
+    expect($data['max_governance_score'])->toEqualWithDelta(14.5, 1e-9);
 });
 
-it('api returns governance score history', function () {
+it('api returns the projected governance score history', function () {
+    Sanctum::actingAs($this->user);
+
     $initiative = DataInitiative::factory()->create();
     $asset = BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
-
-    // Trigger score calculation
-    $asset->calculateGovernanceScore();
-
-    Sanctum::actingAs($this->user);
 
     $response = $this->getJson("/api/v1/data-initiatives/{$initiative->id}/governance-score-history");
 
     $response->assertStatus(200)
-        ->assertJsonStructure(['data' => [['id', 'score', 'event', 'calculated_at']]]);
+        ->assertJsonStructure([
+            'data' => [
+                '*' => [
+                    'calculated_at',
+                    'average',
+                    'total_points',
+                    'max_possible_points',
+                    'scored_assets',
+                    'business_asset_id',
+                    'business_asset',
+                    'event',
+                ],
+            ],
+        ]);
+
+    $point = $response->json('data.0');
+    expect($point['event'])->toContain('Business Asset #'.$asset->id);
+    expect((float) $point['total_points'])->toEqualWithDelta(6.0, 1e-9);
 });

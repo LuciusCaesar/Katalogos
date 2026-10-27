@@ -8,4 +8,5 @@ Before planning or editing, find the row whose globs match the file's path and r
 | database/** | .ai/rules/database.md |
 | app/Services/ImpactDiagram/** | .ai/rules/impact-diagram.md |
 | resources/js/impact-diagram.js | .ai/rules/js.md |
+| app/Services/Governance*.php, app/Services/DataInitiativeGovernanceProjection.php, app/Models/GovernanceScore.php, app/Observers/BusinessAssetObserver.php, app/Listeners/CalculateGovernanceScore.php | .ai/rules/listeners.md |
 | app/Models/BusinessEvent.php | .ai/rules/models.md |

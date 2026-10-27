@@ -314,11 +314,12 @@ class BusinessAsset extends Model
     }
 
     /**
-     * Calculate and save governance score.
+     * Calculate the governance score and append it to the fact log.
+     * Returns null when the score did not change (no row appended).
      *
      * @param  array<string, mixed>|null  $changes
      */
-    public function calculateGovernanceScore(?array $changes = null): GovernanceScore
+    public function calculateGovernanceScore(?array $changes = null): ?GovernanceScore
     {
         return app(GovernanceScoreService::class)->calculateAndSave($this, $changes);
     }

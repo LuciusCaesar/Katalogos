@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\StoreDataInitiativeRequest;
 use App\Http\Requests\Api\UpdateDataInitiativeRequest;
-use App\Http\Resources\DataInitiativeGovernanceScoreHistoryResource;
 use App\Http\Resources\DataInitiativeResource;
 use App\Models\DataInitiative;
+use App\Services\DataInitiativeGovernanceProjection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -40,7 +40,7 @@ class DataInitiativeController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified resource.
      */
     public function update(UpdateDataInitiativeRequest $request, DataInitiative $dataInitiative): DataInitiativeResource
     {
@@ -60,14 +60,13 @@ class DataInitiativeController extends Controller
     }
 
     /**
-     * Get the governance score history for a Data Initiative.
+     * Get the governance score history of a data initiative, projected from
+     * the business asset score fact log.
      */
-    public function governanceScoreHistory(DataInitiative $dataInitiative): AnonymousResourceCollection
+    public function governanceScoreHistory(DataInitiative $dataInitiative): JsonResponse
     {
-        $history = $dataInitiative->governanceScoreHistory()
-            ->orderBy('calculated_at', 'desc')
-            ->paginate();
+        $history = app(DataInitiativeGovernanceProjection::class)->history($dataInitiative);
 
-        return DataInitiativeGovernanceScoreHistoryResource::collection($history);
+        return response()->json(['data' => $history]);
     }
 }

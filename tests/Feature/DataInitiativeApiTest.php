@@ -1,7 +1,7 @@
 <?php
 
+use App\Models\BusinessAsset;
 use App\Models\DataInitiative;
-use App\Models\DataInitiativeGovernanceScoreHistory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -99,29 +99,34 @@ it('requires authentication', function () {
     $response->assertStatus(401);
 });
 
-it('gets governance score history for a data initiative', function () {
+it('gets the projected governance score history for a data initiative', function () {
     Sanctum::actingAs($this->user);
 
     $initiative = DataInitiative::factory()->create();
-    $history = DataInitiativeGovernanceScoreHistory::factory()->count(3)->create([
-        'data_initiative_id' => $initiative->id,
-    ]);
+    $asset = BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
 
     $response = $this->getJson('/api/v1/data-initiatives/'.$initiative->id.'/governance-score-history');
 
     $response->assertStatus(200)
-        ->assertJsonCount(3, 'data')
         ->assertJsonStructure([
             'data' => [
                 '*' => [
-                    'id',
-                    'data_initiative_id',
-                    'score',
-                    'event',
                     'calculated_at',
-                    'created_at',
-                    'updated_at',
+                    'average',
+                    'total_points',
+                    'max_possible_points',
+                    'scored_assets',
+                    'business_asset_id',
+                    'business_asset',
+                    'event',
                 ],
             ],
         ]);
+
+    $point = $response->json('data.0');
+    expect($point['business_asset_id'])->toBe($asset->id);
+    expect($point['business_asset'])->toBe($asset->name);
+    expect($point['event'])->toContain('Business Asset #'.$asset->id);
+    expect((float) $point['total_points'])->toEqualWithDelta(6.0, 1e-9);
+    expect((float) $point['average'])->toEqualWithDelta(6.0 / 14.5, 1e-9);
 });

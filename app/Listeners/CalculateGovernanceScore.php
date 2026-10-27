@@ -3,9 +3,6 @@
 namespace App\Listeners;
 
 use App\Events\BusinessAssetChanged;
-use App\Models\BusinessAsset;
-use App\Models\DataInitiative;
-use App\Services\DataInitiativeGovernanceScoreService;
 use App\Services\GovernanceScoreService;
 
 class CalculateGovernanceScore
@@ -14,73 +11,22 @@ class CalculateGovernanceScore
      * Create the event listener.
      */
     public function __construct(
-        private GovernanceScoreService $scoreService,
-        private DataInitiativeGovernanceScoreService $initiativeScoreService
+        private GovernanceScoreService $scoreService
     ) {}
 
     /**
      * Handle the event.
+     *
+     * Appends a score row to the asset's fact log — but only when the score
+     * actually changed, which makes replayed events (double submissions)
+     * harmless. Initiative-level metrics need no write here: they are
+     * projected on read from this log (DataInitiativeGovernanceProjection).
      */
     public function handle(BusinessAssetChanged $event): void
     {
-        $asset = $event->businessAsset;
-
-        // 1. Calculate Business Asset governance score
         $this->scoreService->calculateAndSave(
-            $asset,
+            $event->businessAsset,
             $event->changes ?? ['reason' => 'model_changed']
         );
-
-        // 2. Trigger Data Initiative recalculation if it has one
-        if ($asset->data_initiative_id) {
-            // Load the initiative directly to avoid relationship caching issues
-            $initiative = DataInitiative::find($asset->data_initiative_id, 'id');
-
-            if ($initiative instanceof DataInitiative) {
-                $eventMessage = $this->buildEventMessage($asset, $event->changes);
-
-                $this->initiativeScoreService->calculateAndSave(
-                    $initiative,
-                    $eventMessage
-                );
-            }
-        }
-    }
-
-    /**
-     * Build a descriptive event message for Data Initiative history.
-     *
-     * @param  array<string, mixed>|null  $changes
-     */
-    private function buildEventMessage(BusinessAsset $asset, ?array $changes): string
-    {
-        if ($changes === null) {
-            return "Business Asset #{$asset->id} changed";
-        }
-
-        if (isset($changes['action'])) {
-            if ($changes['action'] === 'created') {
-                return "Business Asset #{$asset->id} created";
-            }
-            if ($changes['action'] === 'deleted') {
-                return "Business Asset #{$asset->id} deleted";
-            }
-            if (isset($changes['changed_fields']) && in_array('data_initiative_id', $changes['changed_fields'], true)) {
-                // Check if this is a link (from null) or reassignment (from one initiative to another)
-                if (array_key_exists('old_data_initiative_id', $changes) && $changes['old_data_initiative_id'] === null) {
-                    return "Business Asset #{$asset->id} linked";
-                }
-
-                return "Business Asset #{$asset->id} reassigned";
-            }
-            if (isset($changes['changed_fields'])) {
-                /** @var array<string> $changedFields */
-                $changedFields = $changes['changed_fields'];
-
-                return "Business Asset #{$asset->id} updated: ".implode(', ', $changedFields);
-            }
-        }
-
-        return "Business Asset #{$asset->id} changed";
     }
 }

@@ -54,9 +54,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('data-initiatives/{dataInitiative}/team', [DataInitiativeController::class, 'editTeam'])->name('web.data-initiatives.team');
     Route::put('data-initiatives/{dataInitiative}/team', [DataInitiativeController::class, 'updateTeam'])->name('web.data-initiatives.team.update');
 
-    // Governance Score History routes for Data Initiatives
+    // Governance Score History route for Data Initiatives (projected from the asset score log)
     Route::get('data-initiatives/{dataInitiative}/governance-score/history', [DataInitiativeController::class, 'showGovernanceScoreHistory'])->name('web.data-initiatives.governance-score.history');
-    Route::get('data-initiatives/{dataInitiative}/governance-score/{history}', [DataInitiativeController::class, 'showSpecificGovernanceScore'])->name('web.data-initiatives.governance-score.show');
 
     Route::get('business-objectives', [BusinessObjectiveController::class, 'index'])->name('web.business-objectives.index');
     Route::get('business-objectives/create', [BusinessObjectiveController::class, 'create'])->name('web.business-objectives.create');

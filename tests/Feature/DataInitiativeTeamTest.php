@@ -4,7 +4,7 @@ use App\Models\DataInitiative;
 use App\Models\Domain;
 use App\Models\Role;
 use App\Models\User;
-use App\Services\DataInitiativeGovernanceScoreService;
+use App\Services\DataInitiativeGovernanceProjection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -305,7 +305,7 @@ it('does not show user as data steward when only assigned as data owner on this 
     expect($initiative2->dataOwner()->first())->toBeNull();
 });
 
-it('triggers governance score recalculation when assigning data steward', function () {
+it('does not recalculate asset governance scores when assigning a data steward to the initiative', function () {
     $domain = Domain::factory()->create();
     $steward = User::factory()->create(['name' => 'New Steward']);
 
@@ -314,42 +314,30 @@ it('triggers governance score recalculation when assigning data steward', functi
         'label' => 'Test Initiative',
     ]);
 
-    // Create a business asset for the initiative so it has scores to average
-    // Note: This triggers initial DataInitiative governance score calculation via listener
+    // Create a business asset for the initiative; its creation computes its score (6.0 points)
     $businessAsset = $dataInitiative->businessAssets()->create([
         'name' => 'Test Asset',
         'definition' => 'Test Definition',
         'domain_id' => $domain->id,
     ]);
+    expect($businessAsset->governanceScores()->count())->toBe(1);
 
-    // Get initial history count
-    $initialHistoryCount = $dataInitiative->governanceScoreHistory()->count();
-
-    // Update DataInitiative team
     $this->actingAs($this->user)
         ->put(route('web.data-initiatives.team.update', $dataInitiative), [
             'data_steward_id' => $steward->id,
         ])
         ->assertRedirect(route('web.data-initiatives.show', $dataInitiative));
 
-    // Refresh the model to get the latest values
-    $dataInitiative->refresh();
+    // Initiative team changes do not affect business asset scores...
+    expect($businessAsset->governanceScores()->count())->toBe(1);
 
-    // Verify governance score recalculation was triggered
-    // Note: A new history entry is only created if the score changed
-    // Since DataInitiative score is average of BusinessAssets, and we didn't change any BusinessAssets,
-    // the score might not have changed, so we just verify the average_governance_score is still set
-    expect($dataInitiative->average_governance_score)->not()->toBeNull();
-
-    // If a new history entry was created, it should have the team_updated event
-    $teamUpdatedHistoryExists = $dataInitiative->governanceScoreHistory()
-        ->where('event', 'team_updated')
-        ->exists();
-    // Note: This might be false if the score didn't change
-    // expect($teamUpdatedHistoryExists)->toBeTrue();
+    // ...and the initiative metrics, computed from asset scores, stay unchanged
+    $metrics = app(DataInitiativeGovernanceProjection::class)->metrics($dataInitiative->fresh());
+    expect($metrics['total_points'])->toEqualWithDelta(6.0, 1e-9);
+    expect($metrics['average'])->toEqualWithDelta(6.0 / 14.5, 1e-9);
 });
 
-it('triggers governance score recalculation when assigning data owner', function () {
+it('does not recalculate asset governance scores when assigning a data owner to the initiative', function () {
     $domain = Domain::factory()->create();
     $owner = User::factory()->create(['name' => 'New Owner']);
 
@@ -358,16 +346,12 @@ it('triggers governance score recalculation when assigning data owner', function
         'label' => 'Test Initiative',
     ]);
 
-    // Create a business asset for the initiative so it has scores to average
-    // Note: This triggers initial DataInitiative governance score calculation via listener
     $businessAsset = $dataInitiative->businessAssets()->create([
         'name' => 'Test Asset',
         'definition' => 'Test Definition',
         'domain_id' => $domain->id,
     ]);
-
-    // Get initial count after BusinessAsset creation
-    $initialHistoryCount = $dataInitiative->governanceScoreHistory()->count();
+    expect($businessAsset->governanceScores()->count())->toBe(1);
 
     $this->actingAs($this->user)
         ->put(route('web.data-initiatives.team.update', $dataInitiative), [
@@ -375,15 +359,13 @@ it('triggers governance score recalculation when assigning data owner', function
         ])
         ->assertRedirect(route('web.data-initiatives.show', $dataInitiative));
 
-    // Refresh the model to get the latest values
-    $dataInitiative->refresh();
+    expect($businessAsset->governanceScores()->count())->toBe(1);
 
-    // Verify governance score recalculation was triggered
-    // Note: A new history entry is only created if the score changed
-    expect($dataInitiative->average_governance_score)->not()->toBeNull();
+    $metrics = app(DataInitiativeGovernanceProjection::class)->metrics($dataInitiative->fresh());
+    expect($metrics['total_points'])->toEqualWithDelta(6.0, 1e-9);
 });
 
-it('triggers governance score recalculation when removing data steward', function () {
+it('does not recalculate asset governance scores when removing the initiative data steward', function () {
     $domain = Domain::factory()->create();
     $steward = User::factory()->create(['name' => 'Test Steward']);
 
@@ -392,26 +374,15 @@ it('triggers governance score recalculation when removing data steward', functio
         'label' => 'Test Initiative',
     ]);
 
-    // Create a business asset for the initiative
     $businessAsset = $dataInitiative->businessAssets()->create([
         'name' => 'Test Asset',
         'definition' => 'Test Definition',
         'domain_id' => $domain->id,
     ]);
+    expect($businessAsset->governanceScores()->count())->toBe(1);
 
     // Assign initial steward
     $dataInitiative->assignDataSteward($steward);
-
-    // Trigger initial score calculation
-    app(DataInitiativeGovernanceScoreService::class)->calculateAndSave(
-        $dataInitiative,
-        'initial'
-    );
-
-    // Clear the static event tracking to allow same event to be processed again
-    app(DataInitiativeGovernanceScoreService::class)->clearProcessedEvents();
-
-    $initialHistoryCount = $dataInitiative->governanceScoreHistory()->count();
 
     $this->actingAs($this->user)
         ->put(route('web.data-initiatives.team.update', $dataInitiative), [
@@ -419,10 +390,8 @@ it('triggers governance score recalculation when removing data steward', functio
         ])
         ->assertRedirect(route('web.data-initiatives.show', $dataInitiative));
 
-    // Refresh the model to get the latest values
-    $dataInitiative->refresh();
+    expect($businessAsset->governanceScores()->count())->toBe(1);
 
-    // Verify governance score recalculation was triggered
-    // Note: A new history entry is only created if the score changed
-    expect($dataInitiative->average_governance_score)->not()->toBeNull();
+    $metrics = app(DataInitiativeGovernanceProjection::class)->metrics($dataInitiative->fresh());
+    expect($metrics['total_points'])->toEqualWithDelta(6.0, 1e-9);
 });

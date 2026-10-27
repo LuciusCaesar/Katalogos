@@ -7,10 +7,9 @@ use App\Http\Requests\UpdateDataInitiativeRequest;
 use App\Http\Requests\UpdateDataInitiativeTeamRequest;
 use App\Models\BusinessObjective;
 use App\Models\DataInitiative;
-use App\Models\DataInitiativeGovernanceScoreHistory;
 use App\Models\Role;
 use App\Models\User;
-use App\Services\DataInitiativeGovernanceScoreService;
+use App\Services\DataInitiativeGovernanceProjection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -33,12 +32,18 @@ class DataInitiativeController extends Controller
             'businessObjectives',
             'dataSteward',
             'dataOwner',
-            'governanceScoreHistory',
         ])
             ->latest()
             ->paginate(10);
 
-        return view('pages.data-initiatives.index', compact('dataInitiatives'));
+        // Governance metrics are computed on read from the asset score log
+        $projection = app(DataInitiativeGovernanceProjection::class);
+        $governanceMetrics = [];
+        foreach ($dataInitiatives as $dataInitiative) {
+            $governanceMetrics[$dataInitiative->id] = $projection->metrics($dataInitiative);
+        }
+
+        return view('pages.data-initiatives.index', compact('dataInitiatives', 'governanceMetrics'));
     }
 
     /**
@@ -77,10 +82,12 @@ class DataInitiativeController extends Controller
             'businessObjectives',
             'dataSteward',
             'dataOwner',
-            'governanceScoreHistory' => fn ($query) => $query->orderBy('calculated_at', 'desc'),
         ]);
 
-        return view('pages.data-initiatives.show', compact('dataInitiative'));
+        // Governance metrics are computed on read from the asset score log
+        $governanceMetrics = app(DataInitiativeGovernanceProjection::class)->metrics($dataInitiative);
+
+        return view('pages.data-initiatives.show', compact('dataInitiative', 'governanceMetrics'));
     }
 
     /**
@@ -193,37 +200,26 @@ class DataInitiativeController extends Controller
             }
         }
 
-        // Trigger governance score recalculation for the Data Initiative
-        // This will recalculate the average of all Business Assets' governance scores
-        // Clear any previous event tracking for this initiative to ensure the event is processed
-        app(DataInitiativeGovernanceScoreService::class)->clearProcessedEvents();
-        app(DataInitiativeGovernanceScoreService::class)->calculateAndSave(
-            $dataInitiative,
-            'team_updated'
-        );
-
         return redirect()
             ->route('web.data-initiatives.show', $dataInitiative)
             ->with('success', __('Team updated successfully.'));
     }
 
     /**
-     * Show governance score history for a data initiative.
+     * Show the governance score history of a data initiative, projected from
+     * the business asset score fact log.
      */
     public function showGovernanceScoreHistory(DataInitiative $dataInitiative): View
     {
-        $dataInitiative->load(['governanceScoreHistory' => fn ($query) => $query->orderBy('calculated_at', 'desc')]);
+        $projection = app(DataInitiativeGovernanceProjection::class);
 
-        return view('pages.data-initiatives.governance-score-history', compact('dataInitiative'));
-    }
+        $governanceMetrics = $projection->metrics($dataInitiative);
+        $governanceHistory = $projection->history($dataInitiative);
 
-    /**
-     * Show details for a specific governance score history entry.
-     */
-    public function showSpecificGovernanceScore(DataInitiative $dataInitiative, DataInitiativeGovernanceScoreHistory $history): View
-    {
-        abort_unless($history->data_initiative_id === $dataInitiative->id, 404);
-
-        return view('pages.data-initiatives.governance-score-show', compact('dataInitiative', 'history'));
+        return view('pages.data-initiatives.governance-score-history', compact(
+            'dataInitiative',
+            'governanceMetrics',
+            'governanceHistory'
+        ));
     }
 }

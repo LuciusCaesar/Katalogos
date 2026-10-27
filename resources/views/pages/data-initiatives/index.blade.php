@@ -86,11 +86,11 @@
                                     {{ $initiative->dataOwner()->first()?->name ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 text-sm">
-                                    @if($initiative->average_governance_score)
-                                        <span class="@if($initiative->average_governance_score >= 0.8) text-green-600 dark:text-green-400
-                                            @elseif($initiative->average_governance_score >= 0.5) text-yellow-600 dark:text-yellow-400
+                                    @if(($governanceMetrics[$initiative->id]['average'] ?? null) !== null)
+                                        <span class="@if($governanceMetrics[$initiative->id]['average'] >= 0.8) text-green-600 dark:text-green-400
+                                            @elseif($governanceMetrics[$initiative->id]['average'] >= 0.5) text-yellow-600 dark:text-yellow-400
                                             @else text-red-600 dark:text-red-400 @endif font-medium">
-                                            {{ number_format($initiative->average_governance_score * 100, 1) }}%
+                                            {{ number_format($governanceMetrics[$initiative->id]['average'] * 100, 1) }}%
                                         </span>
                                     @else
                                         <span class="text-gray-400 dark:text-gray-500">-</span>

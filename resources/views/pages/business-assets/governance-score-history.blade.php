@@ -39,7 +39,7 @@
                             {{ number_format($businessAsset->governanceScore->score * 100, 1) }}%
                         </span>
                         <span class="text-lg text-gray-500 dark:text-gray-400">
-                            ({{ number_format($businessAsset->governanceScore->score, 2) }}/{{ $businessAsset->governanceScore->max_possible_score }})
+                            ({{ number_format($businessAsset->governanceScore->achieved_score, 1) }} / {{ number_format($businessAsset->governanceScore->max_possible_score, 1) }} pts)
                         </span>
                     </div>
                     <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
@@ -85,6 +85,9 @@
                                         @elseif($score->score >= 0.5) text-yellow-600 dark:text-yellow-400
                                         @else text-red-600 dark:text-red-400 @endif font-medium">
                                         {{ number_format($score->score * 100, 1) }}%
+                                    </span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                                        ({{ number_format($score->achieved_score, 1) }} / {{ number_format($score->max_possible_score, 1) }} pts)
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">

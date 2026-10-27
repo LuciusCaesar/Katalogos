@@ -329,7 +329,7 @@
                                 {{ number_format($businessAsset->governanceScore->score * 100, 1) }}%
                             </span>
                             <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">
-                                ({{ number_format($businessAsset->governanceScore->score, 2) }}/1.0)
+                                ({{ number_format($businessAsset->governanceScore->achieved_score, 1) }} / {{ number_format($businessAsset->governanceScore->max_possible_score, 1) }} pts)
                             </span>
                         @else
                             <span class="text-gray-400 dark:text-gray-500">-</span>

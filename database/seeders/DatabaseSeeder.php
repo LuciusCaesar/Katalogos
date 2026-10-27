@@ -19,7 +19,6 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             DomainSeeder::class,
-            GovernanceCriterionSeeder::class,
         ]);
 
         // Development/Testing seeders - only run in local and testing environments

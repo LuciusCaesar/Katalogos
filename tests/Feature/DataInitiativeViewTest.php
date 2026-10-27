@@ -4,7 +4,6 @@ use App\Models\BusinessAsset;
 use App\Models\BusinessObjective;
 use App\Models\BusinessRule;
 use App\Models\DataInitiative;
-use App\Models\DataInitiativeGovernanceScoreHistory;
 use App\Models\DataQualityCheck;
 use App\Models\DataQualityCheckScore;
 use App\Models\Role;
@@ -458,21 +457,17 @@ it('paginates data initiatives', function () {
 
 // Governance Score History Tests
 
-it('displays governance score history page', function () {
+it('displays governance score history page projected from the asset score log', function () {
     $initiative = DataInitiative::factory()->create();
-    DataInitiativeGovernanceScoreHistory::factory()->create([
-        'data_initiative_id' => $initiative->id,
-        'score' => 0.85,
-        'event' => 'Test Event',
-    ]);
+    BusinessAsset::factory()->create(['data_initiative_id' => $initiative->id]);
 
     $this->actingAs($this->user)
         ->get(route('web.data-initiatives.governance-score.history', $initiative))
         ->assertStatus(200)
         ->assertViewIs('pages.data-initiatives.governance-score-history')
         ->assertSee(__('Governance Score History'))
-        ->assertSee('85.0%')
-        ->assertSee('Test Event');
+        ->assertSee('41.4%') // 6.0 / 14.5 baseline score of a factory asset
+        ->assertSee('created');
 });
 
 it('displays empty state for governance score history', function () {
@@ -482,23 +477,6 @@ it('displays empty state for governance score history', function () {
         ->get(route('web.data-initiatives.governance-score.history', $initiative))
         ->assertStatus(200)
         ->assertSee(__('No governance score history available for this data initiative.'));
-});
-
-it('displays specific governance score show page', function () {
-    $initiative = DataInitiative::factory()->create();
-    $history = DataInitiativeGovernanceScoreHistory::factory()->create([
-        'data_initiative_id' => $initiative->id,
-        'score' => 0.90,
-        'event' => 'Specific Event',
-    ]);
-
-    $this->actingAs($this->user)
-        ->get(route('web.data-initiatives.governance-score.show', [$initiative, $history]))
-        ->assertStatus(200)
-        ->assertViewIs('pages.data-initiatives.governance-score-show')
-        ->assertSee(__('Governance Score Details'))
-        ->assertSee('90.0%')
-        ->assertSee('Specific Event');
 });
 
 // Menu Link Test

@@ -14,11 +14,7 @@ class DataInitiative extends Model
     /** @use HasFactory<DataInitiativeFactory> */
     use HasFactory;
 
-    protected $fillable = ['code', 'label', 'description', 'average_governance_score'];
-
-    protected $casts = [
-        'average_governance_score' => 'decimal:8',
-    ];
+    protected $fillable = ['code', 'label', 'description'];
 
     /**
      * Get all business assets belonging to this data initiative.
@@ -146,17 +142,6 @@ class DataInitiative extends Model
         return $this->roleAssignments()
             ->where('role_id', $role->id)
             ->delete() > 0;
-    }
-
-    /**
-     * Get all governance score history entries for this data initiative.
-     *
-     * @return HasMany<DataInitiativeGovernanceScoreHistory, $this>
-     */
-    public function governanceScoreHistory(): HasMany
-    {
-        return $this->hasMany(DataInitiativeGovernanceScoreHistory::class)
-            ->orderBy('calculated_at', 'desc');
     }
 
     /**
