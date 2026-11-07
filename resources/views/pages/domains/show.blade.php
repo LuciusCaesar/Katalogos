@@ -1,111 +1,56 @@
 <x-layouts::app :title="$domain->name">
-    <div class="space-y-6">
-        <div class="flex justify-between items-start">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {{ $domain->name }}
-                </h1>
-                @if ($domain->description)
-                    <p class="mt-2 text-gray-600 dark:text-gray-400">
-                        {{ $domain->description }}
-                    </p>
-                @endif
-            </div>
-            <div class="flex space-x-2">
-                <a
-                    href="{{ route('web.impact-diagram.show', ['entityType' => 'domain', 'entity' => $domain]) }}"
-                    class="inline-flex items-center px-4 py-2 bg-indigo-600 dark:bg-indigo-500 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-900 uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:bg-indigo-700 dark:focus:bg-indigo-600 active:bg-indigo-800 dark:active:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition ease-in-out duration-150"
-                >
-                    {{ __('View impact diagram') }}
-                </a>
-                <a 
-                    href="{{ route('web.domains.team', $domain) }}"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                    {{ __('Manage Team') }}
-                </a>
-                <a 
-                    href="{{ route('web.domains.edit', $domain) }}"
-                    class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
-                >
-                    {{ __('Edit') }}
-                </a>
-                <form method="POST" action="{{ route('web.domains.destroy', $domain) }}" onsubmit="return confirm('{{ __('Are you sure you want to delete this domain?') }}')">
-                    @csrf
-                    @method('DELETE')
-                    <button 
-                        type="submit"
-                        class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                    >
-                        {{ __('Delete') }}
-                    </button>
-                </form>
-            </div>
-        </div>
+    <x-catalog.show-layout
+        :title="$domain->name"
+        type-label="__('Domain')"
+        :breadcrumbs="[
+            ['label' => __('Domains'), 'href' => route('web.domains.index')],
+            ['label' => $domain->name, 'href' => null],
+        ]"
+        :definition="$domain->description"
+        :edit-url="route('web.domains.edit', $domain)"
+        :delete-url="route('web.domains.destroy', $domain)"
+        :delete-message="__('Are you sure you want to delete this domain?')"
+        :diagram-url="route('web.impact-diagram.show', ['entityType' => 'domain', 'entity' => $domain])"
+        :team-url="route('web.domains.team', $domain)"
+        :back-url="route('web.domains.index')"
+        back-label="__('Back to Domains')"
+    >
+        <x-slot:responsibilities>
+            <x-catalog.responsibilities
+                :groups="[
+                    ['role' => __('Domain Owner'), 'users' => $domain->domainOwner],
+                ]"
+            />
+        </x-slot:responsibilities>
 
-        @if (session('success'))
-            <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-md p-4">
-                <p class="text-green-800 dark:text-green-200 text-sm">{{ session('success') }}</p>
-            </div>
-        @endif
+        {{-- Business Terms --}}
+        <x-catalog.section
+            :title="__('Business Terms')"
+            :count="$domain->businessAssets->count()"
+            :empty-message="__('No business terms associated with this domain.')"
+            :empty="$domain->businessAssets->isEmpty()"
+        >
+            <x-catalog.table :columns="[__('Name'), __('Definition'), __('Data Initiative')]">
+                @foreach ($domain->businessAssets as $asset)
+                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-700">
+                        <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                            <a href="{{ route('web.business-assets.show', $asset) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
+                                {{ $asset->name }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                            {{ $asset->definition ?? '-' }}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                            {{ $asset->dataInitiative?->label ?? '-' }}
+                        </td>
+                    </tr>
+                @endforeach
+            </x-catalog.table>
+        </x-catalog.section>
 
-        <!-- Domain Owner Section -->
-        <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{{ __('Domain Owner') }}</h2>
-            <p class="text-gray-600 dark:text-gray-400">{{ $domain->domainOwner()->first()?->name ?? '-' }}</p>
-        </div>
-
-        <!-- Business Terms Section -->
-        <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-zinc-700">
-                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                    {{ __('Business Terms') }} ({{ $domain->businessAssets->count() }})
-                </h2>
-            </div>
-            @if ($domain->businessAssets->isEmpty())
-                <div class="p-8 text-center text-gray-500 dark:text-gray-400">
-                    {{ __('No business terms associated with this domain.') }}
-                </div>
-            @else
-                <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead class="bg-gray-50 dark:bg-zinc-700">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                {{ __('Name') }}
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                {{ __('Definition') }}
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                {{ __('Data Initiative') }}
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white dark:bg-zinc-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        @foreach ($domain->businessAssets as $asset)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-zinc-700">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                    <a href="{{ route('web.business-assets.show', $asset) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
-                                        {{ $asset->name }}
-                                    </a>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                    {{ $asset->definition ?? '-' }}
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                    {{ $asset->dataInitiative?->label ?? '-' }}
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            @endif
-        </div>
-
-        <div class="pt-4">
-            <a href="{{ route('web.domains.index') }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                {{ __('Back to Domains') }}
-            </a>
-        </div>
-    </div>
+        <x-slot:meta>
+            <x-catalog.timestamps :model="$domain" />
+        </x-slot:meta>
+    </x-catalog.show-layout>
 </x-layouts::app>

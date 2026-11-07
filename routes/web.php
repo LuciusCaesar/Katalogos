@@ -19,11 +19,19 @@ use App\Http\Controllers\RootCauseController;
 use App\Http\Controllers\SolutionController;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
+Route::get('/', function () {
+    return auth()->check() ? redirect()->route('dashboard') : view('welcome');
+})->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
     Route::get('search', GlobalSearchController::class)->name('search');
+
+    // "My space" listings: same index pages, scoped to the authenticated user
+    Route::get('my/assets', [BusinessAssetController::class, 'index'])->name('web.my-assets');
+    Route::get('my/initiatives', [DataInitiativeController::class, 'index'])->name('web.my-initiatives');
+    Route::get('my/domains', [DomainController::class, 'index'])->name('web.my-domains');
+    Route::get('my/sources', [DataSourceController::class, 'index'])->name('web.my-sources');
     Route::get('impact-diagram/{entityType}/{entity}', ImpactDiagramController::class)->name('web.impact-diagram.show');
     Route::get('business-assets', [BusinessAssetController::class, 'index'])->name('web.business-assets.index');
     Route::get('business-assets/create', [BusinessAssetController::class, 'create'])->name('web.business-assets.create');

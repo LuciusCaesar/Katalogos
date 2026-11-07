@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginatesCatalog;
 use App\Http\Requests\StoreBusinessRuleRequest;
 use App\Http\Requests\UpdateBusinessRuleRequest;
 use App\Models\BusinessAsset;
@@ -12,17 +13,22 @@ use Illuminate\View\View;
 
 class BusinessRuleController extends Controller
 {
+    use PaginatesCatalog;
+
     /**
      * Display a listing of the business rules.
      */
     public function index(): View
     {
-        $businessRules = BusinessRule::withCount(['businessAssets', 'dataIssues', 'dataQualityChecks'])
-            ->with(['dataQualityChecks' => function ($query) {
-                $query->with('latestScore');
-            }])
-            ->latest()
-            ->paginate(10);
+        $businessRules = $this->paginateCatalog(
+            BusinessRule::class,
+            [
+                'dataQualityChecks' => function ($query) {
+                    $query->with('latestScore');
+                },
+            ],
+            ['businessAssets', 'dataIssues', 'dataQualityChecks'],
+        );
 
         return view('pages.business-rules.index', compact('businessRules'));
     }

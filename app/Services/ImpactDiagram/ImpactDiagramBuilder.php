@@ -23,8 +23,8 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
  *
  * The registries below drive the whole feature: adding a new diagrammable
  * entity type later only requires a new TYPES entry, the relations to
- * traverse in RELATIONS, a SHOW_ROUTES entry, a TYPE_ORDER position, and
- * the node attributes in ATTRIBUTES.
+ * traverse in RELATIONS, a SHOW_ROUTES entry, an INDEX_ROUTES entry, a
+ * TYPE_ORDER position, and the node attributes in ATTRIBUTES.
  *
  * Every type can be used as the entry point of the diagram. The payload
  * carries the BFS depth of each node from the root; the frontend uses it
@@ -36,21 +36,21 @@ final class ImpactDiagramBuilder
     /**
      * Registry of diagrammable entity types: route slug => diagram data.
      *
-     * @var array<string, array{key: string, model: class-string<Model>}>
+     * @var array<string, array{key: string, model: class-string<Model>, plural: string}>
      */
     private const TYPES = [
-        'business-asset' => ['key' => 'asset', 'model' => BusinessAsset::class],
-        'business-rule' => ['key' => 'rule', 'model' => BusinessRule::class],
-        'data-source' => ['key' => 'source', 'model' => DataSource::class],
-        'data-quality-check' => ['key' => 'dq', 'model' => DataQualityCheck::class],
-        'data-initiative' => ['key' => 'initiative', 'model' => DataInitiative::class],
-        'business-objective' => ['key' => 'objective', 'model' => BusinessObjective::class],
-        'domain' => ['key' => 'domain', 'model' => Domain::class],
-        'data-issue' => ['key' => 'issue', 'model' => DataIssue::class],
-        'root-cause' => ['key' => 'rootcause', 'model' => RootCause::class],
-        'solution' => ['key' => 'solution', 'model' => Solution::class],
-        'business-process' => ['key' => 'process', 'model' => BusinessProcess::class],
-        'business-event' => ['key' => 'event', 'model' => BusinessEvent::class],
+        'business-asset' => ['key' => 'asset', 'model' => BusinessAsset::class, 'plural' => 'Business Assets'],
+        'business-rule' => ['key' => 'rule', 'model' => BusinessRule::class, 'plural' => 'Business Rules'],
+        'data-source' => ['key' => 'source', 'model' => DataSource::class, 'plural' => 'Data Sources'],
+        'data-quality-check' => ['key' => 'dq', 'model' => DataQualityCheck::class, 'plural' => 'Data Quality Checks'],
+        'data-initiative' => ['key' => 'initiative', 'model' => DataInitiative::class, 'plural' => 'Data Initiatives'],
+        'business-objective' => ['key' => 'objective', 'model' => BusinessObjective::class, 'plural' => 'Business Objectives'],
+        'domain' => ['key' => 'domain', 'model' => Domain::class, 'plural' => 'Domains'],
+        'data-issue' => ['key' => 'issue', 'model' => DataIssue::class, 'plural' => 'Data Issues'],
+        'root-cause' => ['key' => 'rootcause', 'model' => RootCause::class, 'plural' => 'Root Causes'],
+        'solution' => ['key' => 'solution', 'model' => Solution::class, 'plural' => 'Solutions'],
+        'business-process' => ['key' => 'process', 'model' => BusinessProcess::class, 'plural' => 'Business Processes'],
+        'business-event' => ['key' => 'event', 'model' => BusinessEvent::class, 'plural' => 'Business Events'],
     ];
 
     /**
@@ -137,6 +137,26 @@ final class ImpactDiagramBuilder
     ];
 
     /**
+     * Index route name per diagram type key (for breadcrumbs).
+     *
+     * @var array<string, string>
+     */
+    private const INDEX_ROUTES = [
+        'asset' => 'web.business-assets.index',
+        'rule' => 'web.business-rules.index',
+        'source' => 'web.data-sources.index',
+        'dq' => 'web.data-quality-checks.index',
+        'initiative' => 'web.data-initiatives.index',
+        'objective' => 'web.business-objectives.index',
+        'domain' => 'web.domains.index',
+        'issue' => 'web.data-issues.index',
+        'rootcause' => 'web.root-causes.index',
+        'solution' => 'web.solutions.index',
+        'process' => 'web.business-processes.index',
+        'event' => 'web.business-events.index',
+    ];
+
+    /**
      * Type display order, matching the frontend block order (computed to
      * keep related types adjacent and minimize edge crossings).
      *
@@ -216,17 +236,51 @@ final class ImpactDiagramBuilder
     }
 
     /**
-     * Diagram type key for a model instance.
+     * Diagram type entry for a model instance.
+     *
+     * @return array{key: string, model: class-string<Model>, plural: string}
      */
-    private function keyOf(Model $model): string
+    private function typeOf(Model $model): array
     {
         foreach (self::TYPES as $type) {
             if ($model instanceof $type['model']) {
-                return $type['key'];
+                return $type;
             }
         }
 
         abort(500, 'Unsupported impact diagram entity: '.$model::class);
+    }
+
+    /**
+     * Diagram type key for a model instance.
+     */
+    private function keyOf(Model $model): string
+    {
+        return $this->typeOf($model)['key'];
+    }
+
+    /**
+     * Show page URL of a diagrammable entity.
+     */
+    public function showUrl(Model $model): string
+    {
+        return route(self::SHOW_ROUTES[$this->keyOf($model)], $model);
+    }
+
+    /**
+     * Breadcrumb items leading to the entity's show page: index > entity.
+     *
+     * @return array<int, array{label: string, href: string|null}>
+     */
+    public function breadcrumbsFor(Model $model): array
+    {
+        $type = $this->typeOf($model);
+        $key = $type['key'];
+
+        return [
+            ['label' => __($type['plural']), 'href' => route(self::INDEX_ROUTES[$key])],
+            ['label' => $this->entityLabel($model), 'href' => route(self::SHOW_ROUTES[$key], $model)],
+        ];
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginatesCatalog;
 use App\Http\Requests\StoreDataIssueRequest;
 use App\Http\Requests\UpdateDataIssueRequest;
 use App\Models\BusinessAsset;
@@ -12,14 +13,14 @@ use Illuminate\View\View;
 
 class DataIssueController extends Controller
 {
+    use PaginatesCatalog;
+
     /**
      * Display a listing of the data issues.
      */
     public function index(): View
     {
-        $dataIssues = DataIssue::withCount('businessAssets')
-            ->latest()
-            ->paginate(10);
+        $dataIssues = $this->paginateCatalog(DataIssue::class, [], ['businessAssets']);
 
         return view('pages.data-issues.index', compact('dataIssues'));
     }

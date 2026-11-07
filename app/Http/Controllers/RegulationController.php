@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginatesCatalog;
 use App\Http\Requests\StoreRegulationRequest;
 use App\Http\Requests\UpdateRegulationRequest;
 use App\Models\BusinessAsset;
@@ -12,24 +13,16 @@ use Illuminate\View\View;
 
 class RegulationController extends Controller
 {
+    use PaginatesCatalog;
+
     /**
      * Display a listing of the regulations.
      */
     public function index(Request $request): View
     {
-        $search = $request->input('search', '');
+        $regulations = $this->paginateCatalog(Regulation::class, ['businessAssets']);
 
-        $query = Regulation::with(['businessAssets']);
-
-        if ($search !== '') {
-            $query = $query->search($search);
-        }
-
-        $regulations = $query->latest()
-            ->paginate(10)
-            ->withQueryString();
-
-        return view('pages.regulations.index', compact('regulations', 'search'));
+        return view('pages.regulations.index', compact('regulations'));
     }
 
     /**

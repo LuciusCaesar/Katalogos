@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginatesCatalog;
 use App\Http\Requests\StoreBusinessProcessRequest;
 use App\Http\Requests\UpdateBusinessProcessRequest;
 use App\Models\BusinessAsset;
@@ -12,14 +13,14 @@ use Illuminate\View\View;
 
 class BusinessProcessController extends Controller
 {
+    use PaginatesCatalog;
+
     /**
      * Display a listing of the business processes.
      */
     public function index(Request $request): View
     {
-        $businessProcesses = BusinessProcess::with(['businessAssets'])
-            ->latest()
-            ->paginate(10);
+        $businessProcesses = $this->paginateCatalog(BusinessProcess::class, ['businessAssets']);
 
         return view('pages.business-processes.index', compact('businessProcesses'));
     }

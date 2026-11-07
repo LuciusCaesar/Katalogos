@@ -7,13 +7,27 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Scout\Searchable;
 
 class BusinessObjective extends Model
 {
     /** @use HasFactory<BusinessObjectiveFactory> */
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $fillable = ['name', 'description'];
+
+    /**
+     * Get the indexable data array for the model.
+     *
+     * @return array<string, string|null>
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'description' => $this->description,
+        ];
+    }
 
     /**
      * Get all data initiatives associated with this business objective.

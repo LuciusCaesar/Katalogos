@@ -817,3 +817,78 @@ it('validates availability is valid value when storing', function () {
         ])
         ->assertSessionHasErrors('availability');
 });
+
+// Governance Score Pages Tests
+
+it('displays governance score details page', function () {
+    $asset = BusinessAsset::factory()->create(['name' => 'Governed Asset']);
+
+    $this->actingAs($this->user)
+        ->get(route('web.business-assets.governance-score.details', $asset))
+        ->assertStatus(200)
+        ->assertViewIs('pages.business-assets.governance-score-details')
+        ->assertSee(__('Governance Score Details'))
+        ->assertSee('Governed Asset')
+        ->assertSee('41.4%') // 6.0 / 14.5 baseline score of a factory asset
+        ->assertSee(__('Current Governance Score'))
+        ->assertSee(__('Scoring Criteria'))
+        ->assertSee('Has Name')
+        ->assertSee(__('Met'))
+        ->assertSee(__('Not Met')) // a factory asset has no data steward
+        ->assertSee(__('View History'))
+        ->assertSee(__('Back to Business Asset'))
+        ->assertSee(route('web.business-assets.show', $asset));
+});
+
+it('displays governance score history page', function () {
+    $asset = BusinessAsset::factory()->create(['name' => 'Governed Asset']);
+
+    $this->actingAs($this->user)
+        ->get(route('web.business-assets.governance-score.history', $asset))
+        ->assertStatus(200)
+        ->assertViewIs('pages.business-assets.governance-score-history')
+        ->assertSee(__('Governance Score History'))
+        ->assertSee('Governed Asset')
+        ->assertSee('41.4%')
+        ->assertSee(__('Score History'))
+        ->assertSee(__('View Details'))
+        ->assertSee(__('View Current Details'))
+        ->assertSee(__('Back to Business Asset'));
+});
+
+it('displays empty state for governance score history', function () {
+    $asset = BusinessAsset::factory()->create();
+    $asset->governanceScores()->delete();
+
+    $this->actingAs($this->user)
+        ->get(route('web.business-assets.governance-score.history', $asset))
+        ->assertStatus(200)
+        ->assertSee(__('No governance score history available for this business asset.'));
+});
+
+it('displays details of a specific governance score', function () {
+    $asset = BusinessAsset::factory()->create(['name' => 'Governed Asset']);
+    $score = $asset->governanceScore;
+
+    $this->actingAs($this->user)
+        ->get(route('web.business-assets.governance-score.show', [$asset, $score]))
+        ->assertStatus(200)
+        ->assertViewIs('pages.business-assets.governance-score-show')
+        ->assertSee(__('Governance Score Details'))
+        ->assertSee('Governed Asset')
+        ->assertSee('41.4%')
+        ->assertSee(__('Score Summary'))
+        ->assertSee(__('Scoring Criteria'))
+        ->assertSee(__('Back to History'))
+        ->assertSee(__('Back to Business Asset'))
+        ->assertSee(route('web.business-assets.governance-score.history', $asset));
+});
+
+it('returns 404 when the governance score belongs to another asset', function () {
+    $asset = BusinessAsset::factory()->create();
+    $otherAsset = BusinessAsset::factory()->create();
+
+    $this->actingAs($this->user)
+        ->get(route('web.business-assets.governance-score.show', [$asset, $otherAsset->governanceScore]))
+        ->assertNotFound();
+});

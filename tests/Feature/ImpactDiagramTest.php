@@ -446,3 +446,24 @@ it('includes the show url and side panel attributes in the asset node payload', 
         ->and($assetNode['attributes'])->toHaveKey('Data Initiative')
         ->and($assetNode['attributes']['Data Initiative'])->toBe($asset->dataInitiative->label);
 });
+
+// Page chrome
+
+it('shows breadcrumbs and a back link to the root entity page', function () {
+    $asset = BusinessAsset::factory()->create(['name' => 'Customer Master Record']);
+
+    $response = $this->actingAs($this->user)
+        ->get(impactDiagramUrl('business-asset', $asset->id));
+
+    $response->assertStatus(200)
+        ->assertViewHas('rootShowUrl', route('web.business-assets.show', $asset))
+        ->assertViewHas('rootBreadcrumbs', [
+            ['label' => __('Business Assets'), 'href' => route('web.business-assets.index')],
+            ['label' => 'Customer Master Record', 'href' => route('web.business-assets.show', $asset)],
+        ])
+        ->assertSee(__('Business Assets'))
+        ->assertSee(__('Impact Diagram'))
+        ->assertSee('Back to Customer Master Record')
+        ->assertSee(route('web.business-assets.index'), false)
+        ->assertSee(route('web.business-assets.show', $asset), false);
+});

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginatesCatalog;
 use App\Http\Requests\StoreRootCauseRequest;
 use App\Http\Requests\UpdateRootCauseRequest;
 use App\Models\DataIssue;
@@ -11,14 +12,14 @@ use Illuminate\View\View;
 
 class RootCauseController extends Controller
 {
+    use PaginatesCatalog;
+
     /**
      * Display a listing of the root causes.
      */
     public function index(): View
     {
-        $rootCauses = RootCause::withCount('dataIssues')
-            ->latest()
-            ->paginate(10);
+        $rootCauses = $this->paginateCatalog(RootCause::class, [], ['dataIssues']);
 
         return view('pages.root-causes.index', compact('rootCauses'));
     }

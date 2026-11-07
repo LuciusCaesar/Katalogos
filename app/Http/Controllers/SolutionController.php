@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginatesCatalog;
 use App\Http\Requests\StoreSolutionRequest;
 use App\Http\Requests\UpdateSolutionRequest;
 use App\Models\RootCause;
@@ -11,14 +12,14 @@ use Illuminate\View\View;
 
 class SolutionController extends Controller
 {
+    use PaginatesCatalog;
+
     /**
      * Display a listing of the solutions.
      */
     public function index(): View
     {
-        $solutions = Solution::withCount('rootCauses')
-            ->latest()
-            ->paginate(10);
+        $solutions = $this->paginateCatalog(Solution::class, [], ['rootCauses']);
 
         return view('pages.solutions.index', compact('solutions'));
     }

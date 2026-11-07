@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginatesCatalog;
 use App\Http\Requests\StoreDataInitiativeRequest;
 use App\Http\Requests\UpdateDataInitiativeRequest;
 use App\Http\Requests\UpdateDataInitiativeTeamRequest;
@@ -16,12 +17,14 @@ use Illuminate\View\View;
 
 class DataInitiativeController extends Controller
 {
+    use PaginatesCatalog;
+
     /**
      * Display a listing of the data initiatives.
      */
     public function index(Request $request): View
     {
-        $dataInitiatives = DataInitiative::with([
+        $dataInitiatives = $this->paginateCatalog(DataInitiative::class, [
             'businessAssets' => function ($query) {
                 $query->with(['businessRules' => function ($query) {
                     $query->with(['dataQualityChecks' => function ($query) {
@@ -32,9 +35,7 @@ class DataInitiativeController extends Controller
             'businessObjectives',
             'dataSteward',
             'dataOwner',
-        ])
-            ->latest()
-            ->paginate(10);
+        ]);
 
         // Governance metrics are computed on read from the asset score log
         $projection = app(DataInitiativeGovernanceProjection::class);

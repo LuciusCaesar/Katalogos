@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginatesCatalog;
 use App\Http\Requests\StoreDomainRequest;
 use App\Http\Requests\UpdateDomainRequest;
 use App\Http\Requests\UpdateDomainTeamRequest;
@@ -13,15 +14,14 @@ use Illuminate\View\View;
 
 class DomainController extends Controller
 {
+    use PaginatesCatalog;
+
     /**
      * Display a listing of the domains.
      */
     public function index(): View
     {
-        $domains = Domain::withCount('businessAssets')
-            ->with('domainOwner')
-            ->latest()
-            ->paginate(10);
+        $domains = $this->paginateCatalog(Domain::class, ['domainOwner'], ['businessAssets']);
 
         return view('pages.domains.index', compact('domains'));
     }

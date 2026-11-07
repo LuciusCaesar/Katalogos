@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginatesCatalog;
 use App\Events\BusinessAssetChanged;
 use App\Http\Requests\StoreBusinessAssetRequest;
 use App\Http\Requests\UpdateBusinessAssetRequest;
@@ -17,12 +18,14 @@ use Illuminate\View\View;
 
 class BusinessAssetController extends Controller
 {
+    use PaginatesCatalog;
+
     /**
      * Display a listing of the business assets.
      */
     public function index(): View
     {
-        $businessAssets = BusinessAsset::with([
+        $businessAssets = $this->paginateCatalog(BusinessAsset::class, [
             'dataInitiative',
             'domain',
             'dataSteward',
@@ -33,9 +36,7 @@ class BusinessAssetController extends Controller
                     $query->with('latestScore');
                 }]);
             },
-        ])
-            ->latest()
-            ->paginate(10);
+        ]);
 
         return view('pages.business-assets.index', compact('businessAssets'));
     }

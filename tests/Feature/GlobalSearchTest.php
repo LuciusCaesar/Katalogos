@@ -2,9 +2,16 @@
 
 use App\Models\BusinessAsset;
 use App\Models\BusinessEvent;
+use App\Models\BusinessObjective;
 use App\Models\BusinessProcess;
+use App\Models\BusinessRule;
+use App\Models\DataInitiative;
 use App\Models\DataIssue;
+use App\Models\DataQualityCheck;
 use App\Models\DataSource;
+use App\Models\Domain;
+use App\Models\KPI;
+use App\Models\Regulation;
 use App\Models\Role;
 use App\Models\RootCause;
 use App\Models\Solution;
@@ -262,12 +269,136 @@ it('ignores LIKE wildcards in the query', function () {
             ->assertStatus(200)
             ->getContent();
 
-        expect($content)->toContain(__('Start typing above to search across business assets, business events, data issues, root causes, solutions, data sources and business processes.'));
+        expect($content)->toContain(__('Start typing above to search across the whole catalog.'));
 
         foreach ($assets as $asset) {
             expect($content)->not->toContain($asset->name);
         }
     }
+});
+
+it('finds a domain matching the query', function () {
+    $domain = Domain::factory()->create(['name' => 'Customer Domain']);
+    $nonMatchingDomain = Domain::factory()->create(['name' => 'Zqvwx Unrelated Domain']);
+
+    $response = $this->actingAs($this->user)
+        ->get(route('search', ['q' => 'Customer Domain']));
+
+    $response->assertStatus(200)
+        ->assertSee(__('Domains'))
+        ->assertSee('Customer Domain')
+        ->assertSee(route('web.domains.show', $domain))
+        ->assertDontSee($nonMatchingDomain->name);
+});
+
+it('finds a data initiative matching the query', function () {
+    $initiative = DataInitiative::factory()->create(['label' => 'Customer 360 Initiative']);
+    $nonMatchingInitiative = DataInitiative::factory()->create(['label' => 'Zqvwx Unrelated Initiative']);
+
+    $response = $this->actingAs($this->user)
+        ->get(route('search', ['q' => 'Customer 360 Initiative']));
+
+    $response->assertStatus(200)
+        ->assertSee(__('Data Initiatives'))
+        ->assertSee('Customer 360 Initiative')
+        ->assertSee(route('web.data-initiatives.show', $initiative))
+        ->assertDontSee($nonMatchingInitiative->label);
+});
+
+it('finds a business objective matching the query', function () {
+    $objective = BusinessObjective::factory()->create(['name' => 'Improve Customer Trust']);
+    $nonMatchingObjective = BusinessObjective::factory()->create(['name' => 'Zqvwx Unrelated Objective']);
+
+    $response = $this->actingAs($this->user)
+        ->get(route('search', ['q' => 'Improve Customer Trust']));
+
+    $response->assertStatus(200)
+        ->assertSee(__('Business Objectives'))
+        ->assertSee('Improve Customer Trust')
+        ->assertSee(route('web.business-objectives.show', $objective))
+        ->assertDontSee($nonMatchingObjective->name);
+});
+
+it('finds a KPI matching the query', function () {
+    $kpi = KPI::factory()->create(['name' => 'Customer Satisfaction Score']);
+    $nonMatchingKpi = KPI::factory()->create(['name' => 'Zqvwx Unrelated Kpi']);
+
+    $response = $this->actingAs($this->user)
+        ->get(route('search', ['q' => 'Customer Satisfaction Score']));
+
+    $response->assertStatus(200)
+        ->assertSee(__('KPIs'))
+        ->assertSee('Customer Satisfaction Score')
+        ->assertSee(route('web.kpis.show', $kpi))
+        ->assertDontSee($nonMatchingKpi->name);
+});
+
+it('finds a business rule matching the query', function () {
+    $rule = BusinessRule::factory()->create(['name' => 'Customer Email Uniqueness']);
+    $nonMatchingRule = BusinessRule::factory()->create(['name' => 'Zqvwx Unrelated Rule']);
+
+    $response = $this->actingAs($this->user)
+        ->get(route('search', ['q' => 'Customer Email Uniqueness']));
+
+    $response->assertStatus(200)
+        ->assertSee(__('Business Rules'))
+        ->assertSee('Customer Email Uniqueness')
+        ->assertSee(route('web.business-rules.show', $rule))
+        ->assertDontSee($nonMatchingRule->name);
+});
+
+it('finds a data quality check matching the query', function () {
+    $rule = BusinessRule::factory()->create();
+    $check = DataQualityCheck::factory()->create(['name' => 'Customer Email Format Check', 'business_rule_id' => $rule->id]);
+    $nonMatchingCheck = DataQualityCheck::factory()->create(['name' => 'Zqvwx Unrelated Check', 'business_rule_id' => $rule->id]);
+
+    $response = $this->actingAs($this->user)
+        ->get(route('search', ['q' => 'Customer Email Format Check']));
+
+    $response->assertStatus(200)
+        ->assertSee(__('Data Quality Checks'))
+        ->assertSee('Customer Email Format Check')
+        ->assertSee(route('web.data-quality-checks.show', $check))
+        ->assertDontSee($nonMatchingCheck->name);
+});
+
+it('finds a regulation matching the query', function () {
+    $regulation = Regulation::factory()->create(['name' => 'Customer Data Retention Policy']);
+    $nonMatchingRegulation = Regulation::factory()->create(['name' => 'Zqvwx Unrelated Regulation']);
+
+    $response = $this->actingAs($this->user)
+        ->get(route('search', ['q' => 'Customer Data Retention Policy']));
+
+    $response->assertStatus(200)
+        ->assertSee(__('Regulations'))
+        ->assertSee('Customer Data Retention Policy')
+        ->assertSee(route('web.regulations.show', $regulation))
+        ->assertDontSee($nonMatchingRegulation->name);
+});
+
+it('links each result group to its filtered index page', function () {
+    BusinessAsset::factory()->create(['name' => 'Customer Analytics Asset']);
+    DataIssue::factory()->create(['name' => 'Customer Analytics Issue']);
+
+    $response = $this->actingAs($this->user)
+        ->get(route('search', ['q' => 'Customer Analytics']));
+
+    $response->assertStatus(200)
+        ->assertSee(route('web.business-assets.index', ['q' => 'Customer Analytics']))
+        ->assertSee(route('web.data-issues.index', ['q' => 'Customer Analytics']))
+        ->assertSee(__('View all'));
+});
+
+it('offers browse-by-type shortcuts when no query is entered', function () {
+    $response = $this->actingAs($this->user)
+        ->get(route('search'));
+
+    $response->assertStatus(200)
+        ->assertSee(__('Start typing above to search across the whole catalog.'))
+        ->assertSee(route('web.domains.index'))
+        ->assertSee(route('web.business-assets.index'))
+        ->assertSee(route('web.data-quality-checks.index'))
+        ->assertSee(route('web.business-events.index'));
 });
 
 it('does not duplicate a business asset matching by both name and steward', function () {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginatesCatalog;
 use App\Http\Requests\StoreDataQualityCheckRequest;
 use App\Http\Requests\UpdateDataQualityCheckRequest;
 use App\Models\BusinessRule;
@@ -12,15 +13,14 @@ use Illuminate\View\View;
 
 class DataQualityCheckController extends Controller
 {
+    use PaginatesCatalog;
+
     /**
      * Display a listing of the data quality checks.
      */
     public function index(): View
     {
-        $dataQualityChecks = DataQualityCheck::withCount(['dataSources'])
-            ->with('businessRule')
-            ->latest()
-            ->paginate(10);
+        $dataQualityChecks = $this->paginateCatalog(DataQualityCheck::class, ['businessRule'], ['dataSources']);
 
         return view('pages.data-quality-checks.index', compact('dataQualityChecks'));
     }

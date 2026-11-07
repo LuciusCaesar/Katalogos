@@ -1,26 +1,18 @@
 <x-layouts::app :title="__('Edit Data Initiative')">
-    <div class="space-y-6">
-        <!-- Header -->
-        <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {{ __('Edit Data Initiative') }}: {{ $dataInitiative->label }}
-            </h1>
-        </div>
-
-        <!-- Form -->
-        <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
-            <x-data-initiatives.form 
-                :dataInitiative="$dataInitiative" 
-                :businessObjectives="$businessObjectives" 
-                :selectedBusinessObjectiveIds="$selectedBusinessObjectiveIds" 
-            />
-        </div>
-
-        <!-- Back Link -->
-        <div>
-            <a href="{{ route('web.data-initiatives.index') }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                {{ __('Back to Data Initiatives') }}
-            </a>
-        </div>
-    </div>
+    <x-catalog.form-layout
+        :title="__('Edit Data Initiative') . ': ' . $dataInitiative->label"
+        :breadcrumbs="[
+            ['label' => __('Data Initiatives'), 'href' => route('web.data-initiatives.index')],
+            ['label' => $dataInitiative->label, 'href' => route('web.data-initiatives.show', $dataInitiative)],
+            ['label' => __('Edit'), 'href' => null],
+        ]"
+        :back-url="route('web.data-initiatives.show', $dataInitiative)"
+        back-label="__('Back to Data Initiative')"
+    >
+        <x-data-initiatives.form
+            :dataInitiative="$dataInitiative"
+            :businessObjectives="$businessObjectives"
+            :selectedBusinessObjectiveIds="$selectedBusinessObjectiveIds"
+        />
+    </x-catalog.form-layout>
 </x-layouts::app>

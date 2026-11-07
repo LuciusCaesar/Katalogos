@@ -467,7 +467,11 @@ it('displays governance score history page projected from the asset score log', 
         ->assertViewIs('pages.data-initiatives.governance-score-history')
         ->assertSee(__('Governance Score History'))
         ->assertSee('41.4%') // 6.0 / 14.5 baseline score of a factory asset
-        ->assertSee('created');
+        ->assertSee('created')
+        ->assertSee(__('Current Metrics'))
+        ->assertSee(__('Score History'))
+        ->assertSee(__('Back to Data Initiative'))
+        ->assertSee(route('web.data-initiatives.show', $initiative));
 });
 
 it('displays empty state for governance score history', function () {

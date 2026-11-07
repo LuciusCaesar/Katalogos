@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginatesCatalog;
 use App\Http\Requests\StoreBusinessObjectiveRequest;
 use App\Http\Requests\UpdateBusinessObjectiveRequest;
 use App\Models\BusinessObjective;
@@ -11,14 +12,14 @@ use Illuminate\View\View;
 
 class BusinessObjectiveController extends Controller
 {
+    use PaginatesCatalog;
+
     /**
      * Display a listing of the business objectives.
      */
     public function index(Request $request): View
     {
-        $businessObjectives = BusinessObjective::with(['dataInitiatives', 'kpis'])
-            ->latest()
-            ->paginate(10);
+        $businessObjectives = $this->paginateCatalog(BusinessObjective::class, ['dataInitiatives', 'kpis']);
 
         return view('pages.business-objectives.index', compact('businessObjectives'));
     }

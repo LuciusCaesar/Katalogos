@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginatesCatalog;
 use App\Http\Requests\StoreDataSourceRequest;
 use App\Http\Requests\UpdateDataSourceRequest;
 use App\Http\Requests\UpdateDataSourceTeamRequest;
@@ -14,15 +15,14 @@ use Illuminate\View\View;
 
 class DataSourceController extends Controller
 {
+    use PaginatesCatalog;
+
     /**
      * Display a listing of the data sources.
      */
     public function index(): View
     {
-        $dataSources = DataSource::withCount('businessAssets')
-            ->with('dataCustodian')
-            ->latest()
-            ->paginate(10);
+        $dataSources = $this->paginateCatalog(DataSource::class, ['dataCustodian'], ['businessAssets']);
 
         return view('pages.data-sources.index', compact('dataSources'));
     }

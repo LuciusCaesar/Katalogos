@@ -8,13 +8,28 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Laravel\Scout\Searchable;
 
 class DataInitiative extends Model
 {
     /** @use HasFactory<DataInitiativeFactory> */
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $fillable = ['code', 'label', 'description'];
+
+    /**
+     * Get the indexable data array for the model.
+     *
+     * @return array<string, string|null>
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'code' => $this->code,
+            'label' => $this->label,
+            'description' => $this->description,
+        ];
+    }
 
     /**
      * Get all business assets belonging to this data initiative.

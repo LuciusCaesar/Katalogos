@@ -9,17 +9,31 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Laravel\Scout\Searchable;
 
 class DataQualityCheck extends Model
 {
     /** @use HasFactory<DataQualityCheckFactory> */
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $fillable = [
         'name',
         'description',
         'business_rule_id',
     ];
+
+    /**
+     * Get the indexable data array for the model.
+     *
+     * @return array<string, string|null>
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'description' => $this->description,
+        ];
+    }
 
     /**
      * Get the business rule that owns this data quality check.

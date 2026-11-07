@@ -1,104 +1,50 @@
-<x-layouts::app :title="__('Regulation Details')">
-    <div class="space-y-6">
-        <!-- Header -->
-        <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {{ __('Regulation Details') }}
-            </h1>
-            <div class="flex items-center space-x-4">
-                <a 
-                    href="{{ route('web.regulations.edit', $regulation) }}"
-                    class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-900 uppercase tracking-widest hover:bg-blue-700 dark:hover:bg-blue-600 focus:bg-blue-700 dark:focus:bg-blue-600 active:bg-blue-800 dark:active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition ease-in-out duration-150"
-                >
-                    {{ __('Edit') }}
+<x-layouts::app :title="$regulation->name">
+    <x-catalog.show-layout
+        :title="$regulation->name"
+        type-label="__('Regulation')"
+        :breadcrumbs="[
+            ['label' => __('Regulations'), 'href' => route('web.regulations.index')],
+            ['label' => $regulation->name, 'href' => null],
+        ]"
+        :definition="$regulation->description"
+        :edit-url="route('web.regulations.edit', $regulation)"
+        :delete-url="route('web.regulations.destroy', $regulation)"
+        :delete-message="__('Are you sure you want to delete this regulation?')"
+        :back-url="route('web.regulations.index')"
+        back-label="__('Back to Regulations')"
+    >
+        <x-catalog.detail-card :title="__('Documentation URL')">
+            @if ($regulation->documentation_url)
+                <a href="{{ $regulation->documentation_url }}" target="_blank" class="break-all hover:text-blue-600 dark:hover:text-blue-400">
+                    {{ $regulation->documentation_url }}
                 </a>
-                <form action="{{ route('web.regulations.destroy', $regulation) }}" method="POST" onsubmit="return confirm('{{ __("Are you sure you want to delete this regulation?") }}');">
-                    @csrf
-                    @method('DELETE')
-                    <button 
-                        type="submit"
-                        class="inline-flex items-center px-4 py-2 bg-red-600 dark:bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-900 uppercase tracking-widest hover:bg-red-700 dark:hover:bg-red-600 focus:bg-red-700 dark:focus:bg-red-600 active:bg-red-800 dark:active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition ease-in-out duration-150"
-                    >
-                        {{ __('Delete') }}
-                    </button>
-                </form>
+            @else
+                <span class="text-gray-400 dark:text-gray-500">-</span>
+            @endif
+        </x-catalog.detail-card>
+
+        {{-- Business Assets --}}
+        <x-catalog.section
+            :title="__('Business Assets')"
+            :count="$regulation->businessAssets->count()"
+            :empty-message="__('No business assets associated.')"
+            :empty="$regulation->businessAssets->isEmpty()"
+        >
+            <div class="px-6 py-4">
+                <ul class="list-inside list-disc space-y-2 text-sm">
+                    @foreach ($regulation->businessAssets as $businessAsset)
+                        <li>
+                            <a href="{{ route('web.business-assets.show', $businessAsset) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                {{ $businessAsset->name }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
             </div>
-        </div>
+        </x-catalog.section>
 
-        @if (session('success'))
-            <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-md p-4">
-                <p class="text-green-800 dark:text-green-200 text-sm">{{ session('success') }}</p>
-            </div>
-        @endif
-
-        <!-- Details Card -->
-        <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">{{ $regulation->name }}</h2>
-
-            <div class="grid grid-cols-1 gap-6">
-                <!-- Name -->
-                <div>
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('Name') }}</h3>
-                    <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $regulation->name }}</p>
-                </div>
-
-                <!-- Description -->
-                <div>
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('Description') }}</h3>
-                    <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $regulation->description ?? '-' }}</p>
-                </div>
-
-                <!-- Documentation URL -->
-                <div>
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('Documentation URL') }}</h3>
-                    @if ($regulation->documentation_url)
-                        <a href="{{ $regulation->documentation_url }}" target="_blank" class="mt-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                            {{ $regulation->documentation_url }}
-                        </a>
-                    @else
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ '-' }}</p>
-                    @endif
-                </div>
-
-                <!-- Business Assets -->
-                <div>
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('Business Assets') }}</h3>
-                    @if ($regulation->businessAssets->isEmpty())
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('No business assets associated.') }}</p>
-                    @else
-                        <div class="mt-2 bg-gray-50 dark:bg-zinc-700 rounded border border-gray-200 dark:border-zinc-600 p-4">
-                            <ul class="space-y-2">
-                                @foreach ($regulation->businessAssets as $businessAsset)
-                                    <li class="text-sm">
-                                        <a href="{{ route('web.business-assets.show', $businessAsset) }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                                            {{ $businessAsset->name }}
-                                        </a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Meta -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('Created At') }}</h3>
-                        <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $regulation->created_at->format('M d, Y H:i') }}</p>
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('Updated At') }}</h3>
-                        <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $regulation->updated_at->format('M d, Y H:i') }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Back Link -->
-        <div>
-            <a href="{{ route('web.regulations.index') }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                {{ __('Back to Regulations') }}
-            </a>
-        </div>
-    </div>
+        <x-slot:meta>
+            <x-catalog.timestamps :model="$regulation" />
+        </x-slot:meta>
+    </x-catalog.show-layout>
 </x-layouts::app>

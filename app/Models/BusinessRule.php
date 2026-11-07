@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Scout\Searchable;
 
 class BusinessRule extends Model
 {
     /** @use HasFactory<BusinessRuleFactory> */
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $fillable = [
         'name',
@@ -23,6 +24,19 @@ class BusinessRule extends Model
     protected $casts = [
         'dimension' => BusinessRuleDimension::class,
     ];
+
+    /**
+     * Get the indexable data array for the model.
+     *
+     * @return array<string, string|null>
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'description' => $this->description,
+        ];
+    }
 
     /**
      * Get all business assets associated with this business rule.

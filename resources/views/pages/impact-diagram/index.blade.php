@@ -1,6 +1,10 @@
 <x-layouts::app :title="__('Impact Diagram')">
     @vite('resources/js/impact-diagram.js')
     <div x-data="impactDiagram({!! $graph !!})" class="space-y-4" @keyup.escape.window="clearSelection()">
+        <x-catalog.breadcrumbs
+            :items="[...$rootBreadcrumbs, ['label' => __('Impact Diagram'), 'href' => null]]"
+        />
+
         {{-- Header --}}
         <div class="flex items-center justify-between flex-wrap gap-2">
             <div>
@@ -11,23 +15,28 @@
                     {{ __('Starting from') }}: <span class="font-semibold">{{ $rootLabel }}</span>
                 </p>
             </div>
-            <div class="inline-flex rounded-xl border border-slate-200 bg-white shadow-sm p-1 gap-1">
-                <button
-                    type="button"
-                    @click="view = 'blocks'"
-                    :class="view === 'blocks' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'"
-                    class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors"
-                >
-                    {{ __('▦ Blocks (star view)') }}
-                </button>
-                <button
-                    type="button"
-                    @click="view = 'graph'"
-                    :class="view === 'graph' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'"
-                    class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors"
-                >
-                    {{ __('⬡ Free graph') }}
-                </button>
+            <div class="flex items-center gap-2">
+                <flux:button :href="$rootShowUrl" variant="ghost" icon="arrow-left" size="sm">
+                    {{ __('Back to :label', ['label' => $rootLabel]) }}
+                </flux:button>
+                <div class="inline-flex rounded-xl border border-slate-200 bg-white shadow-sm p-1 gap-1">
+                    <button
+                        type="button"
+                        @click="view = 'blocks'"
+                        :class="view === 'blocks' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'"
+                        class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors"
+                    >
+                        {{ __('▦ Blocks (star view)') }}
+                    </button>
+                    <button
+                        type="button"
+                        @click="view = 'graph'"
+                        :class="view === 'graph' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'"
+                        class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors"
+                    >
+                        {{ __('⬡ Free graph') }}
+                    </button>
+                </div>
             </div>
         </div>
 

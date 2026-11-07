@@ -11,13 +11,49 @@
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Strategy')" class="grid">
-                    <flux:sidebar.item icon="magnifying-glass" :href="route('search')" :current="request()->routeIs('search')" wire:navigate>
-                        {{ __('Search') }}
-                    </flux:sidebar.item>
+                @php
+                    $mySpaceCounts = $mySpaceCounts ?? [];
+                    $myAssetsCount = (int) ($mySpaceCounts[\App\Models\BusinessAsset::class] ?? 0);
+                    $myInitiativesCount = (int) ($mySpaceCounts[\App\Models\DataInitiative::class] ?? 0);
+                    $myDomainsCount = (int) ($mySpaceCounts[\App\Models\Domain::class] ?? 0);
+                    $mySourcesCount = (int) ($mySpaceCounts[\App\Models\DataSource::class] ?? 0);
+                @endphp
+
+                @if ($myAssetsCount + $myInitiativesCount + $myDomainsCount + $mySourcesCount > 0)
+                    <flux:sidebar.group :heading="__('My Space')" class="grid">
+                        @if ($myAssetsCount > 0)
+                            <flux:sidebar.item icon="book-open" :href="route('web.my-assets')" :current="request()->routeIs('web.my-assets')" :badge="$myAssetsCount" wire:navigate>
+                                {{ __('My Assets') }}
+                            </flux:sidebar.item>
+                        @endif
+                        @if ($myInitiativesCount > 0)
+                            <flux:sidebar.item icon="folder-open" :href="route('web.my-initiatives')" :current="request()->routeIs('web.my-initiatives')" :badge="$myInitiativesCount" wire:navigate>
+                                {{ __('My Initiatives') }}
+                            </flux:sidebar.item>
+                        @endif
+                        @if ($myDomainsCount > 0)
+                            <flux:sidebar.item icon="squares-2x2" :href="route('web.my-domains')" :current="request()->routeIs('web.my-domains')" :badge="$myDomainsCount" wire:navigate>
+                                {{ __('My Domains') }}
+                            </flux:sidebar.item>
+                        @endif
+                        @if ($mySourcesCount > 0)
+                            <flux:sidebar.item icon="circle-stack" :href="route('web.my-sources')" :current="request()->routeIs('web.my-sources')" :badge="$mySourcesCount" wire:navigate>
+                                {{ __('My Sources') }}
+                            </flux:sidebar.item>
+                        @endif
+                    </flux:sidebar.group>
+                @endif
+
+                <flux:sidebar.group :heading="__('Overview')" class="grid">
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="magnifying-glass" :href="route('search')" :current="request()->routeIs('search')" wire:navigate>
+                        {{ __('Search') }}
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
+
+                <flux:sidebar.group :heading="__('Business Context')" class="grid">
                     <flux:sidebar.item icon="squares-2x2" :href="route('web.domains.index')" :current="request()->routeIs('web.domains.*')" wire:navigate>
                         {{ __('Domains') }}
                     </flux:sidebar.item>
@@ -31,18 +67,20 @@
                         {{ __('KPIs') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
-                <flux:sidebar.group :heading="__('Glossary')" class="grid">
+
+                <flux:sidebar.group :heading="__('Catalog')" class="grid">
                     <flux:sidebar.item icon="book-open" :href="route('web.business-assets.index')" :current="request()->routeIs('web.business-assets.*')" wire:navigate>
                         {{ __('Business Assets') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="document-text" :href="route('web.business-rules.index')" :current="request()->routeIs('web.business-rules.*')" wire:navigate>
+                        {{ __('Business Rules') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="document-duplicate" :href="route('web.regulations.index')" :current="request()->routeIs('web.regulations.*')" wire:navigate>
                         {{ __('Regulations') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
+
                 <flux:sidebar.group :heading="__('Quality')" class="grid">
-                    <flux:sidebar.item icon="document-text" :href="route('web.business-rules.index')" :current="request()->routeIs('web.business-rules.*')" wire:navigate>
-                        {{ __('Business Rules') }}
-                    </flux:sidebar.item>
                     <flux:sidebar.item icon="shield-check" :href="route('web.data-quality-checks.index')" :current="request()->routeIs('web.data-quality-checks.*')" wire:navigate>
                         {{ __('Data Quality Checks') }}
                     </flux:sidebar.item>
@@ -56,6 +94,7 @@
                         {{ __('Solutions') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
+
                 <flux:sidebar.group :heading="__('Lineage')" class="grid">
                     <flux:sidebar.item icon="circle-stack" :href="route('web.data-sources.index')" :current="request()->routeIs('web.data-sources.*')" wire:navigate>
                         {{ __('Data Sources') }}

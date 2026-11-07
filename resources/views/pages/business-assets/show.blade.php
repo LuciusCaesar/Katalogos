@@ -1,360 +1,240 @@
 <x-layouts::app :title="$businessAsset->name">
-    <div class="space-y-6">
-        <!-- Header Section with Action Buttons -->
-        <div class="flex justify-between items-start">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {{ $businessAsset->name }}
-                </h1>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">
-                    {{ $businessAsset->definition ?? '-' }}
-                </p>
-            </div>
-            <div class="flex space-x-2">
-                <a
-                    href="{{ route('web.impact-diagram.show', ['entityType' => 'business-asset', 'entity' => $businessAsset]) }}"
-                    class="inline-flex items-center px-4 py-2 bg-indigo-600 dark:bg-indigo-500 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-900 uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:bg-indigo-700 dark:focus:bg-indigo-600 active:bg-indigo-800 dark:active:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition ease-in-out duration-150"
-                >
-                    {{ __('View impact diagram') }}
-                </a>
-                <a
-                    href="{{ route('web.business-assets.team', $businessAsset) }}"
-                    class="inline-flex items-center px-4 py-2 bg-green-600 dark:bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-900 uppercase tracking-widest hover:bg-green-700 dark:hover:bg-green-600 focus:bg-green-700 dark:focus:bg-green-600 active:bg-green-800 dark:active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition ease-in-out duration-150"
-                >
-                    {{ __('Manage Team') }}
-                </a>
-                <a 
-                    href="{{ route('web.business-assets.edit', $businessAsset) }}"
-                    class="inline-flex items-center px-4 py-2 bg-yellow-600 dark:bg-yellow-500 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-900 uppercase tracking-widest hover:bg-yellow-700 dark:hover:bg-yellow-600 focus:bg-yellow-700 dark:focus:bg-yellow-600 active:bg-yellow-800 dark:active:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition ease-in-out duration-150"
-                >
-                    {{ __('Edit') }}
-                </a>
-                <form method="POST" action="{{ route('web.business-assets.destroy', $businessAsset) }}" onsubmit="return confirm('{{ __('Are you sure you want to delete this business asset?') }}')">
-                    @csrf
-                    @method('DELETE')
-                    <button 
-                        type="submit"
-                        class="inline-flex items-center px-4 py-2 bg-red-600 dark:bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-900 uppercase tracking-widest hover:bg-red-700 dark:hover:bg-red-600 focus:bg-red-700 dark:focus:bg-red-600 active:bg-red-800 dark:active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition ease-in-out duration-150"
-                    >
-                        {{ __('Delete') }}
-                    </button>
-                </form>
-            </div>
-        </div>
-        
-        <!-- Data Quality Check Scores Summary -->
-        @if ($businessAsset->businessRules->isNotEmpty())
-            @php
-                $hasScores = $businessAsset->businessRules
-                    ->flatMap(fn ($rule) => $rule->dataQualityChecks)
-                    ->filter(fn ($dqc) => $dqc->latestScore !== null)
-                    ->isNotEmpty();
-            @endphp
-            @if ($hasScores)
-                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
-                    <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{{ __('Data Quality Check Scores Summary') }}</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-gray-50 dark:bg-zinc-700 rounded-lg p-4 text-center">
-                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Minimum Score') }}</p>
-                            <p class="text-2xl font-bold @if($businessAsset->min_data_quality_check_score >= 0.9) text-green-600 dark:text-green-400
-                                    @elseif($businessAsset->min_data_quality_check_score >= 0.7) text-yellow-600 dark:text-yellow-400
-                                    @else text-red-600 dark:text-red-400 @endif">
-                                {{ $businessAsset->min_data_quality_check_score !== null ? number_format($businessAsset->min_data_quality_check_score * 100, 2) . '%' : '-' }}
-                            </p>
-                        </div>
-                        <div class="bg-gray-50 dark:bg-zinc-700 rounded-lg p-4 text-center">
-                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Average Score') }}</p>
-                            <p class="text-2xl font-bold @if($businessAsset->avg_data_quality_check_score >= 0.9) text-green-600 dark:text-green-400
-                                    @elseif($businessAsset->avg_data_quality_check_score >= 0.7) text-yellow-600 dark:text-yellow-400
-                                    @else text-red-600 dark:text-red-400 @endif">
-                                {{ $businessAsset->avg_data_quality_check_score !== null ? number_format($businessAsset->avg_data_quality_check_score * 100, 2) . '%' : '-' }}
-                            </p>
-                        </div>
-                        <div class="bg-gray-50 dark:bg-zinc-700 rounded-lg p-4 text-center">
-                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Maximum Score') }}</p>
-                            <p class="text-2xl font-bold @if($businessAsset->max_data_quality_check_score >= 0.9) text-green-600 dark:text-green-400
-                                    @elseif($businessAsset->max_data_quality_check_score >= 0.7) text-yellow-600 dark:text-yellow-400
-                                    @else text-red-600 dark:text-red-400 @endif">
-                                {{ $businessAsset->max_data_quality_check_score !== null ? number_format($businessAsset->max_data_quality_check_score * 100, 2) . '%' : '-' }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            @endif
-        @endif
+    <x-catalog.show-layout
+        :title="$businessAsset->name"
+        type-label="__('Business Asset')"
+        :breadcrumbs="[
+            ['label' => __('Business Assets'), 'href' => route('web.business-assets.index')],
+            ['label' => $businessAsset->name, 'href' => null],
+        ]"
+        :definition="$businessAsset->definition"
+        :edit-url="route('web.business-assets.edit', $businessAsset)"
+        :delete-url="route('web.business-assets.destroy', $businessAsset)"
+        :delete-message="__('Are you sure you want to delete this business asset?')"
+        :diagram-url="route('web.impact-diagram.show', ['entityType' => 'business-asset', 'entity' => $businessAsset])"
+        :team-url="route('web.business-assets.team', $businessAsset)"
+        :back-url="route('web.business-assets.index')"
+        back-label="__('Back to Business Assets')"
+    >
+        <x-slot:responsibilities>
+            <x-catalog.responsibilities
+                :groups="[
+                    ['role' => __('Data Steward'), 'users' => $businessAsset->dataSteward],
+                    ['role' => __('Data Owner'), 'users' => $businessAsset->dataOwner],
+                ]"
+            />
+        </x-slot:responsibilities>
 
-        <!-- Two-column layout -->
-        <div class="grid gap-6 lg:grid-cols-3">
-            <!-- Left column (2/3 width) - main content area -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Business Rules Section -->
-                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-zinc-700">
-                        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                            {{ __('Business Rules') }} ({{ $businessAsset->businessRules->count() }})
-                        </h2>
-                    </div>
-                    @if ($businessAsset->businessRules->isEmpty())
-                        <div class="p-8 text-center text-gray-500 dark:text-gray-400">
-                            {{ __('No business rules associated with this business asset.') }}
-                        </div>
-                    @else
-                        <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-zinc-700">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        {{ __('Name') }}
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        {{ __('Description') }}
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white dark:bg-zinc-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                @foreach ($businessAsset->businessRules as $rule)
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-700">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            <a href="{{ route('web.business-rules.show', $rule) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
-                                                {{ $rule->name }}
-                                            </a>
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                            {{ $rule->description ?? '-' }}
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    @endif
+        <x-slot:metrics>
+            <div class="space-y-3">
+                <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                    <x-catalog.metric-card :label="__('Governance Score')">
+                        <x-catalog.score :value="$businessAsset->governanceScore?->score" variant="governance" />
+                    </x-catalog.metric-card>
+                    <x-catalog.metric-card :label="__('Avg DQ Score')">
+                        <x-catalog.score :value="$businessAsset->avg_data_quality_check_score" :decimals="2" />
+                    </x-catalog.metric-card>
+                    <x-catalog.metric-card :label="__('Min DQ Score')">
+                        <x-catalog.score :value="$businessAsset->min_data_quality_check_score" :decimals="2" />
+                    </x-catalog.metric-card>
+                    <x-catalog.metric-card :label="__('Max DQ Score')">
+                        <x-catalog.score :value="$businessAsset->max_data_quality_check_score" :decimals="2" />
+                    </x-catalog.metric-card>
                 </div>
-
-                <!-- Data Issues Section -->
-                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-zinc-700">
-                        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                            {{ __('Data Issues') }} ({{ $businessAsset->dataIssues->count() }})
-                        </h2>
+                @if ($businessAsset->governanceScore)
+                    <div class="flex gap-4 text-sm">
+                        <a href="{{ route('web.business-assets.governance-score.details', $businessAsset) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                            {{ __('Details') }}
+                        </a>
+                        <a href="{{ route('web.business-assets.governance-score.history', $businessAsset) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                            {{ __('History') }}
+                        </a>
                     </div>
-                    @if ($businessAsset->dataIssues->isEmpty())
-                        <div class="p-8 text-center text-gray-500 dark:text-gray-400">
-                            {{ __('No data issues associated with this business asset.') }}
+                @endif
+            </div>
+        </x-slot:metrics>
+
+        {{-- Business Rules --}}
+        <x-catalog.section
+            :title="__('Business Rules')"
+            :count="$businessAsset->businessRules->count()"
+            :empty-message="__('No business rules associated with this business asset.')"
+            :empty="$businessAsset->businessRules->isEmpty()"
+        >
+            <x-catalog.table :columns="[__('Name'), __('Description')]">
+                @foreach ($businessAsset->businessRules as $rule)
+                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-700">
+                        <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                            <a href="{{ route('web.business-rules.show', $rule) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
+                                {{ $rule->name }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                            {{ $rule->description ?? '-' }}
+                        </td>
+                    </tr>
+                @endforeach
+            </x-catalog.table>
+        </x-catalog.section>
+
+        {{-- Data Issues --}}
+        <x-catalog.section
+            :title="__('Data Issues')"
+            :count="$businessAsset->dataIssues->count()"
+            :empty-message="__('No data issues associated with this business asset.')"
+            :empty="$businessAsset->dataIssues->isEmpty()"
+        >
+            <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                @foreach ($businessAsset->dataIssues as $dataIssue)
+                    <div x-data="{ open: false }" class="p-6">
+                        <div class="flex items-start">
+                            <button
+                                @click="open = !open"
+                                class="mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 transition-colors hover:bg-gray-200 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+                                aria-label="{{ __('Toggle root causes') }}"
+                            >
+                                <svg x-show="!open" class="h-4 w-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                <svg x-show="open" class="h-4 w-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"></path>
+                                </svg>
+                            </button>
+                            <div class="flex-1">
+                                <a href="{{ route('web.data-issues.show', $dataIssue) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
+                                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                        {{ $dataIssue->name }}
+                                    </h3>
+                                </a>
+                                <span class="ml-3 mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                                    {{ $dataIssue->created_at->format('Y-m-d H:i') }}
+                                </span>
+                                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                    {{ $dataIssue->description ?? '-' }}
+                                </p>
+                            </div>
                         </div>
-                    @else
-                        <div class="divide-y divide-gray-200 dark:divide-gray-700">
-                            @foreach ($businessAsset->dataIssues as $dataIssue)
-                                <div x-data="{ open: false }" class="p-6">
-                                    <div class="flex items-start">
-                                        <button 
-                                            @click="open = !open" 
-                                            class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-zinc-700 hover:bg-gray-200 dark:hover:bg-zinc-600 mr-3 flex-shrink-0 transition-colors"
-                                            aria-label="{{ __('Toggle root causes') }}"
-                                        >
-                                            <svg x-show="!open" class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                            </svg>
-                                            <svg x-show="open" class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"></path>
-                                            </svg>
-                                        </button>
-                                        <div class="flex-1">
-                                            <a href="{{ route('web.data-issues.show', $dataIssue) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
-                                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                                    {{ $dataIssue->name }}
-                                                </h3>
+                        @if ($dataIssue->rootCauses->isNotEmpty())
+                            <div x-show="open" x-transition x-collapse class="mt-4 ml-9 space-y-4">
+                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    {{ __('Root Causes') }}:
+                                </h4>
+                                @foreach ($dataIssue->rootCauses as $rootCause)
+                                    <div class="border-l-4 border-blue-500 pl-4">
+                                        <div class="flex items-center gap-2">
+                                            @if ($rootCause->dimension)
+                                                @php
+                                                    $icon = match ($rootCause->dimension->value) {
+                                                        'People' => 'user-group',
+                                                        'Process' => 'cog-6-tooth',
+                                                        'Tool' => 'wrench-screwdriver',
+                                                        default => 'puzzle-piece',
+                                                    };
+                                                @endphp
+                                                <flux:icon name="{{ $icon }}" variant="outline" class="h-4 w-4 text-blue-500" />
+                                            @endif
+                                            <a href="{{ route('web.root-causes.show', $rootCause) }}" class="text-sm font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                                {{ $rootCause->name }}
                                             </a>
-                                            <span class="ml-3 text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                                                {{ $dataIssue->created_at->format('Y-m-d H:i') }}
-                                            </span>
-                                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                                {{ $dataIssue->description ?? '-' }}
-                                            </p>
                                         </div>
-                                    </div>
-                                    @if ($dataIssue->rootCauses->isNotEmpty())
-                                        <div x-show="open" x-transition x-collapse class="mt-4 ml-9 space-y-4">
-                                            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                {{ __('Root Causes') }}:
-                                            </h4>
-                                            @foreach ($dataIssue->rootCauses as $rootCause)
-                                                <div class="border-l-4 border-blue-500 pl-4">
-                                                    <div class="flex items-center gap-2">
-                                                        @if ($rootCause->dimension)
-                                                            @php
-                                                                $icon = match ($rootCause->dimension->value) {
-                                                                    'People' => 'user-group',
-                                                                    'Process' => 'cog-6-tooth',
-                                                                    'Tool' => 'wrench-screwdriver',
-                                                                    default => 'puzzle-piece',
-                                                                };
-                                                            @endphp
-                                                            <flux:icon name="{{ $icon }}" variant="outline" class="w-4 h-4 text-blue-500" />
-                                                        @endif
-                                                        <a href="{{ route('web.root-causes.show', $rootCause) }}" class="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                                                            {{ $rootCause->name }}
-                                                        </a>
-                                                    </div>
-                                                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                                                        {{ $rootCause->description ?? '-' }}
-                                                    </p>
-                                                    @if ($rootCause->solutions->isNotEmpty())
-                                                        <h6 class="text-sm font-medium text-gray-700 dark:text-gray-300 mt-4 mb-2">
-                                                            {{ __('Solutions') }}:
-                                                        </h6>
-                                                        <div class="ml-4 space-y-2">
-                                                            @foreach ($rootCause->solutions as $solution)
-                                                                <div class="bg-gray-50 dark:bg-zinc-700 rounded p-3">
-                                                                    <div class="flex items-center gap-2">
-                                                                        @if ($solution->dimension)
-                                                                            @php
-                                                                                $solutionIcon = match ($solution->dimension->value) {
-                                                                                    'People' => 'user-group',
-                                                                                    'Process' => 'cog-6-tooth',
-                                                                                    'Tool' => 'wrench-screwdriver',
-                                                                                    default => 'check-circle',
-                                                                                };
-                                                                            @endphp
-                                                                            <flux:icon name="{{ $solutionIcon }}" variant="outline" class="w-4 h-4 text-green-500" />
-                                                                        @endif
-                                                                        <a href="{{ route('web.solutions.show', $solution) }}" class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                                                                            {{ $solution->name }}
-                                                                        </a>
-                                                                    </div>
-                                                                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                                        {{ $solution->description ?? '-' }}
-                                                                    </p>
-                                                                </div>
-                                                            @endforeach
+                                        <p class="mb-3 text-sm text-gray-500 dark:text-gray-400">
+                                            {{ $rootCause->description ?? '-' }}
+                                        </p>
+                                        @if ($rootCause->solutions->isNotEmpty())
+                                            <h6 class="mt-4 mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                {{ __('Solutions') }}:
+                                            </h6>
+                                            <div class="ml-4 space-y-2">
+                                                @foreach ($rootCause->solutions as $solution)
+                                                    <div class="rounded bg-gray-50 p-3 dark:bg-zinc-700">
+                                                        <div class="flex items-center gap-2">
+                                                            @if ($solution->dimension)
+                                                                @php
+                                                                    $solutionIcon = match ($solution->dimension->value) {
+                                                                        'People' => 'user-group',
+                                                                        'Process' => 'cog-6-tooth',
+                                                                        'Tool' => 'wrench-screwdriver',
+                                                                        default => 'check-circle',
+                                                                    };
+                                                                @endphp
+                                                                <flux:icon name="{{ $solutionIcon }}" variant="outline" class="h-4 w-4 text-green-500" />
+                                                            @endif
+                                                            <a href="{{ route('web.solutions.show', $solution) }}" class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                                                {{ $solution->name }}
+                                                            </a>
                                                         </div>
-                                                    @else
-                                                        <p class="text-sm text-gray-400 dark:text-gray-500 italic">
-                                                            {{ __('No solutions defined for this root cause.') }}
+                                                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                                            {{ $solution->description ?? '-' }}
                                                         </p>
-                                                    @endif
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-            </div>
-            
-            <!-- Right column (1/3 width) - info cards -->
-            <div class="lg:col-span-1 space-y-4">
-                <!-- Domain Card -->
-                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {{ __('Domain') }}
-                    </h3>
-                    <p class="mt-2 text-gray-900 dark:text-gray-100">
-                        {{ $businessAsset->domain?->name ?? '-' }}
-                    </p>
-                </div>
-                
-                <!-- Data Initiative Card -->
-                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {{ __('Data Initiative') }}
-                    </h3>
-                    <p class="mt-2 text-gray-900 dark:text-gray-100">
-                        {{ $businessAsset->dataInitiative?->label ?? '-' }}
-                    </p>
-                </div>
-                
-                <!-- Data Steward Card -->
-                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {{ __('Data Steward') }}
-                    </h3>
-                    <p class="mt-2 text-gray-900 dark:text-gray-100">
-                        {{ $businessAsset->dataSteward()->first()?->name ?? '-' }}
-                    </p>
-                </div>
-                
-                <!-- Data Owner Card -->
-                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {{ __('Data Owner') }}
-                    </h3>
-                    <p class="mt-2 text-gray-900 dark:text-gray-100">
-                        {{ $businessAsset->dataOwner()->first()?->name ?? '-' }}
-                    </p>
-                </div>
-
-                <!-- Categorization Level Card -->
-                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {{ __('Categorization Level') }}
-                    </h3>
-                    <div class="mt-2 grid grid-cols-3 gap-2">
-                        <div class="text-center">
-                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                {{ __('Consistency') }}
-                            </p>
-                            <p class="mt-1 font-medium text-gray-900 dark:text-gray-100">
-                                {{ ucfirst($businessAsset->consistency ?? '-') }}
-                            </p>
-                        </div>
-                        <div class="text-center">
-                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                {{ __('Integrity') }}
-                            </p>
-                            <p class="mt-1 font-medium text-gray-900 dark:text-gray-100">
-                                {{ ucfirst($businessAsset->integrity ?? '-') }}
-                            </p>
-                        </div>
-                        <div class="text-center">
-                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                {{ __('Availability') }}
-                            </p>
-                            <p class="mt-1 font-medium text-gray-900 dark:text-gray-100">
-                                {{ ucfirst($businessAsset->availability ?? '-') }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Governance Score Card -->
-                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {{ __('Governance Score') }}
-                    </h3>
-                    <div class="mt-2">
-                        @if($businessAsset->governanceScore)
-                            <span class="text-3xl font-bold @if($businessAsset->governanceScore->score >= 0.8) text-green-600 dark:text-green-400
-                                @elseif($businessAsset->governanceScore->score >= 0.5) text-yellow-600 dark:text-yellow-400
-                                @else text-red-600 dark:text-red-400 @endif">
-                                {{ number_format($businessAsset->governanceScore->score * 100, 1) }}%
-                            </span>
-                            <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">
-                                ({{ number_format($businessAsset->governanceScore->achieved_score, 1) }} / {{ number_format($businessAsset->governanceScore->max_possible_score, 1) }} pts)
-                            </span>
-                        @else
-                            <span class="text-gray-400 dark:text-gray-500">-</span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <p class="text-sm italic text-gray-400 dark:text-gray-500">
+                                                {{ __('No solutions defined for this root cause.') }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
                         @endif
                     </div>
-                    <div class="mt-3 flex space-x-2">
-                        @if($businessAsset->governanceScore)
-                            <a href="{{ route('web.business-assets.governance-score.details', $businessAsset) }}" class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                                {{ __('Details') }}
-                            </a>
-                            <span class="text-gray-400 dark:text-gray-500">|</span>
-                            <a href="{{ route('web.business-assets.governance-score.history', $businessAsset) }}" class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                                {{ __('History') }}
-                            </a>
-                        @endif
+                @endforeach
+            </div>
+        </x-catalog.section>
+
+        <x-slot:aside>
+            <x-catalog.detail-card :title="__('Domain')">
+                @if ($businessAsset->domain)
+                    <a href="{{ route('web.domains.show', $businessAsset->domain) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
+                        {{ $businessAsset->domain->name }}
+                    </a>
+                @else
+                    <span class="text-gray-400 dark:text-gray-500">-</span>
+                @endif
+            </x-catalog.detail-card>
+
+            <x-catalog.detail-card :title="__('Data Initiative')">
+                @if ($businessAsset->dataInitiative)
+                    <a href="{{ route('web.data-initiatives.show', $businessAsset->dataInitiative) }}" class="hover:text-blue-600 dark:hover:text-blue-400">
+                        {{ $businessAsset->dataInitiative->label }}
+                    </a>
+                @else
+                    <span class="text-gray-400 dark:text-gray-500">-</span>
+                @endif
+            </x-catalog.detail-card>
+
+            <x-catalog.detail-card :title="__('Categorization Level')">
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                            {{ __('Consistency') }}
+                        </p>
+                        <p class="mt-1 font-medium">
+                            {{ ucfirst($businessAsset->consistency ?? '-') }}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                            {{ __('Integrity') }}
+                        </p>
+                        <p class="mt-1 font-medium">
+                            {{ ucfirst($businessAsset->integrity ?? '-') }}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                            {{ __('Availability') }}
+                        </p>
+                        <p class="mt-1 font-medium">
+                            {{ ucfirst($businessAsset->availability ?? '-') }}
+                        </p>
                     </div>
                 </div>
-            </div>
-        </div>
+            </x-catalog.detail-card>
+        </x-slot:aside>
 
-        <!-- Back Link -->
-        <div>
-            <a href="{{ route('web.business-assets.index') }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                {{ __('Back to Business Assets') }}
-            </a>
-        </div>
-    </div>
+        <x-slot:meta>
+            <x-catalog.timestamps :model="$businessAsset" />
+        </x-slot:meta>
+    </x-catalog.show-layout>
 </x-layouts::app>

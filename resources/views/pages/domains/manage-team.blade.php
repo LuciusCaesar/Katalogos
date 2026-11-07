@@ -1,38 +1,42 @@
 <x-layouts::app :title="__('Manage Team for :name', ['name' => $domain->name])">
     <div class="space-y-6">
-        <!-- Header Section -->
-        <div class="flex justify-between items-start">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {{ __('Manage Team') }}
-                </h1>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">
-                    {{ __('Assign Domain Owner for this domain.') }}
-                </p>
-            </div>
+        <x-catalog.breadcrumbs
+            :items="[
+                ['label' => __('Domains'), 'href' => route('web.domains.index')],
+                ['label' => $domain->name, 'href' => route('web.domains.show', $domain)],
+                ['label' => __('Manage Team'), 'href' => null],
+            ]"
+        />
+
+        {{-- Header --}}
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {{ __('Manage Team') }}
+            </h1>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">
+                {{ __('Assign Domain Owner for this domain.') }}
+            </p>
         </div>
 
-        <!-- Current Team Card -->
-        <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+        {{-- Current Team --}}
+        <flux:card class="space-y-4">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ __('Current Team') }}
             </h2>
 
             <div class="grid grid-cols-1 gap-6">
-                <div class="bg-gray-50 dark:bg-zinc-700 rounded-lg p-4">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                <div class="rounded-lg bg-gray-50 p-4 dark:bg-zinc-700">
+                    <h3 class="mb-2 text-sm font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                         {{ __('Domain Owner') }}
                     </h3>
-                    <p class="text-gray-900 dark:text-gray-100">
-                        {{ $domain->domainOwner()->first()?->name ?? '-' }}
-                    </p>
+                    <x-catalog.people :users="$domain->domainOwner" />
                 </div>
             </div>
-        </div>
+        </flux:card>
 
-        <!-- Team Form -->
-        <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+        {{-- Team Form --}}
+        <flux:card class="space-y-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ __('Update Team Assignments') }}
             </h2>
 
@@ -47,7 +51,7 @@
                     <select
                         id="domain_owner_id"
                         name="domain_owner_id"
-                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('domain_owner_id') border-red-500 dark:border-red-500 @enderror"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-100 @error('domain_owner_id') border-red-500 dark:border-red-500 @enderror"
                     >
                         <option value="">{{ __('-- Select Domain Owner --') }}</option>
                         @foreach ($users as $user)
@@ -62,28 +66,22 @@
                     @enderror
                 </div>
 
-                <div class="flex justify-end space-x-2 pt-4">
-                    <a
-                        href="{{ route('web.domains.show', $domain) }}"
-                        class="inline-flex items-center px-4 py-2 bg-gray-500 dark:bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-900 uppercase tracking-widest hover:bg-gray-600 dark:hover:bg-gray-500 focus:bg-gray-600 dark:focus:bg-gray-500 active:bg-gray-700 dark:active:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition ease-in-out duration-150"
-                    >
+                <div class="flex justify-end gap-2 pt-4">
+                    <flux:button :href="route('web.domains.show', $domain)" variant="ghost">
                         {{ __('Cancel') }}
-                    </a>
-                    <button
-                        type="submit"
-                        class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-900 uppercase tracking-widest hover:bg-blue-700 dark:hover:bg-blue-600 focus:bg-blue-700 dark:focus:bg-blue-600 active:bg-blue-800 dark:active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition ease-in-out duration-150"
-                    >
+                    </flux:button>
+                    <flux:button type="submit" variant="primary">
                         {{ __('Save Team') }}
-                    </button>
+                    </flux:button>
                 </div>
             </form>
-        </div>
+        </flux:card>
 
-        <!-- Back Link -->
+        {{-- Back link --}}
         <div>
-            <a href="{{ route('web.domains.show', $domain) }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+            <flux:button :href="route('web.domains.show', $domain)" variant="ghost" icon="arrow-left" size="sm">
                 {{ __('Back to Domain') }}
-            </a>
+            </flux:button>
         </div>
     </div>
 </x-layouts::app>

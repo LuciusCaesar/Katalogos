@@ -1,22 +1,14 @@
 <x-layouts::app :title="__('Edit Business Process')">
-    <div class="space-y-6">
-        <!-- Header -->
-        <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {{ __('Edit Business Process') }}
-            </h1>
-        </div>
-
-        <!-- Form -->
-        <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
-            <x-business-processes.form :businessProcess="$businessProcess" :businessAssets="$businessAssets" />
-        </div>
-
-        <!-- Back Link -->
-        <div>
-            <a href="{{ route('web.business-processes.index') }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                {{ __('Back to Business Processes') }}
-            </a>
-        </div>
-    </div>
+    <x-catalog.form-layout
+        :title="__('Edit Business Process') . ': ' . $businessProcess->name"
+        :breadcrumbs="[
+            ['label' => __('Business Processes'), 'href' => route('web.business-processes.index')],
+            ['label' => $businessProcess->name, 'href' => route('web.business-processes.show', $businessProcess)],
+            ['label' => __('Edit'), 'href' => null],
+        ]"
+        :back-url="route('web.business-processes.show', $businessProcess)"
+        back-label="__('Back to Business Process')"
+    >
+        <x-business-processes.form :businessProcess="$businessProcess" :businessAssets="$businessAssets" />
+    </x-catalog.form-layout>
 </x-layouts::app>

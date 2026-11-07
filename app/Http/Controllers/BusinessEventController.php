@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginatesCatalog;
 use App\Http\Requests\StoreBusinessEventRequest;
 use App\Http\Requests\UpdateBusinessEventRequest;
 use App\Models\BusinessAsset;
@@ -13,14 +14,14 @@ use Illuminate\View\View;
 
 class BusinessEventController extends Controller
 {
+    use PaginatesCatalog;
+
     /**
      * Display a listing of the business events.
      */
     public function index(Request $request): View
     {
-        $businessEvents = BusinessEvent::with(['businessAssets', 'businessProcesses'])
-            ->latest()
-            ->paginate(10);
+        $businessEvents = $this->paginateCatalog(BusinessEvent::class, ['businessAssets', 'businessProcesses']);
 
         return view('pages.business-events.index', compact('businessEvents'));
     }

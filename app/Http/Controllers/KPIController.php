@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PaginatesCatalog;
 use App\Http\Requests\StoreKPIRequest;
 use App\Http\Requests\UpdateKPIRequest;
 use App\Models\BusinessObjective;
@@ -12,14 +13,14 @@ use Illuminate\View\View;
 
 class KPIController extends Controller
 {
+    use PaginatesCatalog;
+
     /**
      * Display a listing of the KPIs.
      */
     public function index(Request $request): View
     {
-        $kpis = KPI::with(['businessObjective'])
-            ->latest()
-            ->paginate(10);
+        $kpis = $this->paginateCatalog(KPI::class, ['businessObjective']);
 
         return view('pages.kpis.index', compact('kpis'));
     }

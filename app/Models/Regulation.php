@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use App\Traits\Filterable;
-use App\Traits\Searchable;
 use Database\Factories\RegulationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Laravel\Scout\Searchable;
 
 /**
  * @property int $id
@@ -27,13 +27,16 @@ class Regulation extends Model
     ];
 
     /**
-     * Get fields that should be searched for Regulations.
+     * Get the indexable data array for the model.
      *
-     * @return array<string>
+     * @return array<string, string|null>
      */
-    public function getSearchableFields(): array
+    public function toSearchableArray(): array
     {
-        return ['name', 'description'];
+        return [
+            'name' => $this->name,
+            'description' => $this->description,
+        ];
     }
 
     /**

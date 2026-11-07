@@ -1,22 +1,13 @@
 <x-layouts::app :title="__('Create Business Event')">
-    <div class="space-y-6">
-        <!-- Header -->
-        <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {{ __('Create Business Event') }}
-            </h1>
-        </div>
-
-        <!-- Form -->
-        <div class="bg-white dark:bg-zinc-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
-            <x-business-events.form :businessAssets="$businessAssets" :businessProcesses="$businessProcesses" />
-        </div>
-
-        <!-- Back Link -->
-        <div>
-            <a href="{{ route('web.business-events.index') }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                {{ __('Back to Business Events') }}
-            </a>
-        </div>
-    </div>
+    <x-catalog.form-layout
+        :title="__('Create Business Event')"
+        :breadcrumbs="[
+            ['label' => __('Business Events'), 'href' => route('web.business-events.index')],
+            ['label' => __('Create Business Event'), 'href' => null],
+        ]"
+        :back-url="route('web.business-events.index')"
+        back-label="__('Back to Business Events')"
+    >
+        <x-business-events.form :businessAssets="$businessAssets" :businessProcesses="$businessProcesses" />
+    </x-catalog.form-layout>
 </x-layouts::app>
